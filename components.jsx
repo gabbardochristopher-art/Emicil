@@ -80,9 +80,10 @@ function Photo({ cat, ratio = "1 / 1", label, radius = "var(--r-md)", style }) {
 // ---------- Badge ----------
 function Badge({ children, tone = "or" }) {
   const tones = {
-    or:    { bg: "var(--noir)", c: "var(--blanc)" },
-    light: { bg: "var(--blanc)", c: "var(--noir)" },
+    or:    { bg: "var(--noir)",    c: "var(--blanc)" },
+    light: { bg: "var(--blanc)",   c: "var(--noir)" },
     soft:  { bg: "var(--or-soft)", c: "var(--or)" },
+    sale:  { bg: "#c0392b",        c: "#fff" },
   };
   const t = tones[tone];
   return <span style={{ background: t.bg, color: t.c, fontFamily: "var(--f-display)", fontSize: "0.6rem",
@@ -111,8 +112,9 @@ function ProductCard({ p, onOpen, onAdd, fav, onFav }) {
         )}
 
         <div style={{ position: "absolute", top: 12, left: 12, display: "flex", gap: 6 }}>
-          {p.best && <Badge>Best-seller</Badge>}
+          {p.best    && <Badge>Best-seller</Badge>}
           {p.nouveau && <Badge tone="soft">Nouveau</Badge>}
+          {p.badge === 'sale' && <Badge tone="sale">Soldes</Badge>}
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); onFav && onFav(p.id); }}
@@ -142,8 +144,11 @@ function ProductCard({ p, onOpen, onAdd, fav, onFav }) {
         <span style={{ fontSize: "0.66rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--texte-doux)" }}>{p.line}</span>
         <h3 style={{ fontSize: "1.05rem", fontWeight: 400 }}>{p.name}</h3>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
-          <Price value={p.price} size="1.05rem" />
-          <Stars note={p.note} size={12} />
+          <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
+            <Price value={p.price} size="1.05rem" color={p.badge === 'sale' ? "#c0392b" : "var(--noir)"} />
+            {p.oldPrice && <span style={{ fontSize: "0.82rem", color: "var(--texte-doux)", textDecoration: "line-through" }}>{euro(p.oldPrice)}</span>}
+          </div>
+          {p.note > 0 && <Stars note={p.note} size={12} />}
         </div>
       </div>
     </article>
