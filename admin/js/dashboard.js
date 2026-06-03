@@ -8,11 +8,25 @@ if (!token) window.location.replace('index.html');
 const API = '/api';
 const headers = () => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` });
 
-// Vérifie la session au chargement
+// Vérifie la session + charge les catégories
 (async () => {
-  const res = await fetch(`${API}/admin/verify`, { headers: headers() });
-  if (!res.ok) { sessionStorage.clear(); window.location.replace('index.html'); }
+  const [verifyRes, catsRes] = await Promise.all([
+    fetch(`${API}/admin/verify`, { headers: headers() }),
+    fetch(`${API}/categories`),
+  ]);
+  if (!verifyRes.ok) { sessionStorage.clear(); window.location.replace('index.html'); }
   document.getElementById('admin-email-display').textContent = sessionStorage.getItem('admin_email') || '';
+
+  if (catsRes.ok) {
+    const cats = await catsRes.json();
+    const select = document.getElementById('p-category');
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.label;
+      select.appendChild(opt);
+    });
+  }
 })();
 
 // ---- Navigation ----
@@ -127,6 +141,9 @@ function openEdit(id) {
   document.getElementById('product-id').value      = p.id;
   document.getElementById('p-name').value          = p.name || '';
   document.getElementById('p-category').value      = p.category || '';
+  // force la sélection au cas où le DOM n'est pas encore à jour
+  const catOpt = document.querySelector(`#p-category option[value="${p.category}"]`);
+  if (catOpt) catOpt.selected = true;
   document.getElementById('p-price').value         = p.price || '';
   document.getElementById('p-old-price').value     = p.old_price || '';
   document.getElementById('p-stock').value         = p.stock ?? 0;
