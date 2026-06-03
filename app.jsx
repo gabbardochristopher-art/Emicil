@@ -262,7 +262,7 @@ function App() {
 
   function openProduct(p) { go("product", { product: p }); }
   function onCheckoutDone({ total, ptsGagnes, mode }) {
-    setPoints(pt => pt + ptsGagnes);
+    // Points crédités uniquement après validation admin (Supabase Realtime)
     const ref = "EMI-" + Math.floor(2420 + Math.random() * 80);
     setNewOrders(o => [{ id: ref, date: "3 juin 2026", total, statut: mode === "collect" ? "En préparation" : "Confirmée",
       mode: mode === "collect" ? "Click & Collect" : mode === "relais" ? "Point relais" : "Domicile", articles: cart.reduce((s,i)=>s+i.qty,0), pts: ptsGagnes }, ...o]);
