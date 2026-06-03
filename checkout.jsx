@@ -82,7 +82,20 @@ function CartDrawer({ open, items, onClose, onQty, onRemove, onCheckout, go }) {
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "1.1rem", fontSize: "0.8rem", color: "var(--or)" }}>
                 <span>Points fidélité gagnés</span><span>+{Math.round(sousTotal)} pts</span>
               </div>
-              <button className="btn btn-dark btn-block" style={{ height: 50 }} onClick={onCheckout}>
+              {(() => {
+                const hasOOS = items.some(i => {
+                  const prod = (window.DATA.PRODUCTS || []).find(p => String(p.id) === String(i.id));
+                  return prod && prod.stock === 0;
+                });
+                return hasOOS ? (
+                  <div style={{ background: "#fff2f2", border: "1px solid #f5c6cb", borderRadius: "var(--r-sm)",
+                    padding: "0.75rem 1rem", fontSize: "0.82rem", color: "#c0392b", marginBottom: "0.8rem" }}>
+                    Un ou plusieurs articles sont épuisés. Retirez-les avant de commander.
+                  </div>
+                ) : null;
+              })()}
+              <button className="btn btn-dark btn-block" style={{ height: 50, opacity: items.some(i => { const p = (window.DATA.PRODUCTS||[]).find(x=>String(x.id)===String(i.id)); return p&&p.stock===0; }) ? 0.4 : 1 }}
+                onClick={() => { const hasOOS = items.some(i => { const p = (window.DATA.PRODUCTS||[]).find(x=>String(x.id)===String(i.id)); return p&&p.stock===0; }); if (!hasOOS) onCheckout(); }}>
                 Passer commande <Ico.arrow width={15} height={15} />
               </button>
             </div>
@@ -138,10 +151,33 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
     window.scrollTo(0, 0);
   }
 
+  const oosItems = items.filter(i => {
+    const prod = (window.DATA.PRODUCTS || []).find(p => String(p.id) === String(i.id));
+    return prod && prod.stock === 0;
+  });
+
   if (items.length === 0 && step < 4) {
     return <div className="container" style={{ padding: "5rem 0", textAlign: "center" }}>
       <p style={{ color: "var(--texte-doux)", marginBottom: "1.4rem" }}>Votre panier est vide.</p>
       <button className="btn btn-dark" onClick={() => go("shop")}>Aller à la boutique</button>
+    </div>;
+  }
+
+  if (oosItems.length > 0 && step < 4) {
+    return <div className="container" style={{ padding: "5rem 0", textAlign: "center" }}>
+      <div style={{ maxWidth: 480, margin: "0 auto" }}>
+        <div style={{ width: 60, height: 60, borderRadius: "50%", background: "#fff2f2", display: "grid", placeItems: "center", margin: "0 auto 1.4rem", color: "#c0392b" }}>
+          <Ico.close width={28} height={28} />
+        </div>
+        <h2 style={{ marginBottom: "0.8rem" }}>Article(s) épuisé(s)</h2>
+        <p style={{ color: "var(--texte-doux)", marginBottom: "0.6rem" }}>
+          Les articles suivants ne sont plus disponibles :
+        </p>
+        <ul style={{ listStyle: "none", marginBottom: "1.8rem" }}>
+          {oosItems.map((i, idx) => <li key={idx} style={{ color: "#c0392b", fontSize: "0.9rem", padding: "4px 0" }}>— {i.name}</li>)}
+        </ul>
+        <button className="btn btn-dark" onClick={() => go("shop")}>Retourner à la boutique</button>
+      </div>
     </div>;
   }
 

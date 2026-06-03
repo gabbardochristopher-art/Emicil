@@ -178,9 +178,12 @@ function ProductPage({ p, go, onAdd, favs, onFav, onOpen }) {
 
           {/* Ajouter */}
           <div style={{ display: "flex", gap: "0.8rem", alignItems: "center" }}>
-            <QtyStepper value={qty} onChange={setQty} />
-            <button className="btn btn-dark" style={{ flex: 1, height: 48 }} onClick={add}>
-              {added ? <><Ico.check width={16} height={16} /> Ajouté au panier</> : <><Ico.cart width={16} height={16} /> Ajouter — {euro(p.price * qty)}</>}
+            {p.stock > 0 && <QtyStepper value={qty} onChange={setQty} />}
+            <button className="btn btn-dark" style={{ flex: 1, height: 48, opacity: p.stock === 0 ? 0.5 : 1 }}
+              onClick={p.stock > 0 ? add : undefined} disabled={p.stock === 0}>
+              {p.stock === 0
+                ? "Stock épuisé"
+                : added ? <><Ico.check width={16} height={16} /> Ajouté au panier</> : <><Ico.cart width={16} height={16} /> Ajouter — {euro(p.price * qty)}</>}
             </button>
             <button onClick={() => onFav(p.id)} aria-label="Favori"
               style={{ width: 48, height: 48, borderRadius: "var(--r-sm)", border: "1px solid var(--ligne)", display: "grid", placeItems: "center",
