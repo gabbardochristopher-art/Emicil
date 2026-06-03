@@ -41,6 +41,7 @@ ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products     ENABLE ROW LEVEL SECURITY;
 
 -- Les produits sont lisibles par tout le monde (frontend public)
+DROP POLICY IF EXISTS "Lecture publique produits" ON products;
 CREATE POLICY "Lecture publique produits"
   ON products FOR SELECT USING (true);
 
