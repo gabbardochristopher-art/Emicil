@@ -139,36 +139,67 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Charge les produits depuis Supabase via l'API
+  // Charge + écoute les produits en temps réel (Supabase Realtime)
   useEffect(() => {
+    function mapProduct(p) {
+      return {
+        id: String(p.id),
+        cat: p.category || '',
+        name: p.name,
+        line: p.sku || '',
+        price: parseFloat(p.price),
+        oldPrice: p.old_price ? parseFloat(p.old_price) : null,
+        note: parseFloat(p.note) || 0,
+        avis: p.avis || 0,
+        boutique: p.stock > 0,
+        best: !!p.featured,
+        nouveau: !!p.new_arrival,
+        desc: p.description || '',
+        badge: p.badge || null,
+        stock: p.stock || 0,
+        image: p.image || '',
+      };
+    }
+
+    function refreshCounts() {
+      window.DATA.CATEGORIES.forEach(c => {
+        c.count = window.DATA.PRODUCTS.filter(p => p.cat === c.id).length;
+      });
+    }
+
+    // Chargement initial
     fetch('/api/products')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          window.DATA.PRODUCTS = data.map(p => ({
-            id: String(p.id),
-            cat: p.category || '',
-            name: p.name,
-            line: p.sku || '',
-            price: parseFloat(p.price),
-            oldPrice: p.old_price ? parseFloat(p.old_price) : null,
-            note: parseFloat(p.note) || 0,
-            avis: p.avis || 0,
-            boutique: p.stock > 0,
-            best: !!p.featured,
-            nouveau: !!p.new_arrival,
-            desc: p.description || '',
-            badge: p.badge || null,
-            stock: p.stock || 0,
-            image: p.image || '',
-          }));
-          window.DATA.CATEGORIES.forEach(c => {
-            c.count = window.DATA.PRODUCTS.filter(p => p.cat === c.id).length;
-          });
+          window.DATA.PRODUCTS = data.map(mapProduct);
+          refreshCounts();
           forceUpdate(n => n + 1);
         }
       })
       .catch(() => {});
+
+    // Écoute temps réel
+    const channel = window.SUPABASE
+      .channel('products-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'products' }, ({ new: p }) => {
+        window.DATA.PRODUCTS = [mapProduct(p), ...window.DATA.PRODUCTS];
+        refreshCounts();
+        forceUpdate(n => n + 1);
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'products' }, ({ new: p }) => {
+        window.DATA.PRODUCTS = window.DATA.PRODUCTS.map(x => x.id === String(p.id) ? mapProduct(p) : x);
+        refreshCounts();
+        forceUpdate(n => n + 1);
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'products' }, ({ old: p }) => {
+        window.DATA.PRODUCTS = window.DATA.PRODUCTS.filter(x => x.id !== String(p.id));
+        refreshCounts();
+        forceUpdate(n => n + 1);
+      })
+      .subscribe();
+
+    return () => window.SUPABASE.removeChannel(channel);
   }, []);
 
   function go(page, params = {}) { setRoute({ page, ...params }); window.scrollTo(0, 0); }
