@@ -61,10 +61,10 @@ function CategoryStrip({ go }) {
             onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div style={{ width: 46, height: 46, borderRadius: "50%", background: "var(--beige-bg2)", display: "grid", placeItems: "center", color: "var(--or)" }}>
-                {c.id === "cils" && <Ico.sparkle width={20} height={20} />}
-                {c.id === "accessoires" && <Ico.box width={20} height={20} />}
-                {c.id === "soins" && <Ico.leaf width={20} height={20} />}
-                {c.id === "cartes" && <Ico.gift width={20} height={20} />}
+                {c.id === "extensions"  && <Ico.sparkle width={20} height={20} />}
+                {c.id === "accessoires" && <Ico.box     width={20} height={20} />}
+                {c.id === "soins"       && <Ico.leaf    width={20} height={20} />}
+                {c.id === "colle"       && <Ico.gift    width={20} height={20} />}
               </div>
               <span style={{ fontSize: "0.72rem", color: "var(--texte-doux)" }}>{c.count} produits</span>
             </div>

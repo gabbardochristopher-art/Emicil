@@ -3,10 +3,10 @@
 // ==========================================================================
 
 const CATEGORIES = [
-  { id: "cils",       label: "Boîtes de cils",      tagline: "Extensions & franges à poser", count: 0 },
-  { id: "accessoires",label: "Accessoires de pose", tagline: "Pinces, colles, brosses",       count: 0 },
-  { id: "soins",      label: "Soins & entretien",   tagline: "Nettoyer, fortifier, sublimer",  count: 0 },
-  { id: "cartes",     label: "Cartes & prestations",tagline: "Offrir un moment beauté",        count: 0 },
+  { id: "extensions",  label: "Extensions de cil",  tagline: "Pose classique, volume, mega-volume", count: 0 },
+  { id: "accessoires", label: "Accessoires",         tagline: "Pinces, brosses, coussinets",         count: 0 },
+  { id: "soins",       label: "Soins & entretien",   tagline: "Nettoyer, fortifier, sublimer",       count: 0 },
+  { id: "colle",       label: "Colle",               tagline: "Adhésifs professionnels",             count: 0 },
 ];
 
 // Produits chargés dynamiquement depuis Supabase (voir app.jsx)
