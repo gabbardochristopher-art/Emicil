@@ -11,12 +11,13 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
     window.addEventListener("scroll", onScroll); return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const nav = [["home","Accueil"], ...CATEGORIES.map(c => ["cat:"+c.id, c.label]), ["account","Fidélité"]];
+  const nav = [["home","Accueil"], ...CATEGORIES.map(c => ["cat:"+c.id, c.label]), ["formation","Formation"], ["account","Fidélité"]];
 
   function handleNav(key) {
     setMenuOpen(false);
     if (key === "home") go("home");
     else if (key === "account") go("account");
+    else if (key === "formation") go("formation");
     else if (key.startsWith("cat:")) go("shop", { cat: key.slice(4) });
   }
 
@@ -32,7 +33,7 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
         <button className="hdr-burger" onClick={() => setMenuOpen(true)} aria-label="Menu" style={{ display: "none", color: "var(--noir)" }}><Ico.menu width={24} height={24} /></button>
 
         <nav className="hdr-nav" style={{ display: "flex", gap: "1.6rem", flex: 1 }}>
-          {[["home","Accueil"],["shop","Boutique"],["account","Fidélité"]].map(([k,l]) => (
+          {[["home","Accueil"],["shop","Boutique"],["formation","Formation"],["account","Fidélité"]].map(([k,l]) => (
             <button key={k} onClick={() => k === "shop" ? go("shop") : handleNav(k)}
               style={{ fontFamily: "var(--f-display)", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.74rem",
                 color: route.page === (k === "shop" ? "shop" : k) ? "var(--noir)" : "var(--texte-doux)", paddingBottom: 3,
@@ -234,6 +235,7 @@ function App() {
   else if (route.page === "shop") content = <ShopPage go={go} onOpen={openProduct} onAdd={addToCart} favs={favs} onFav={toggleFav} initialCat={route.cat} />;
   else if (route.page === "product") content = <ProductPage p={route.product} go={go} onAdd={addToCart} favs={favs} onFav={toggleFav} onOpen={openProduct} />;
   else if (route.page === "checkout") content = <CheckoutPage items={cart} go={go} onDone={onCheckoutDone} compte={{ points }} user={user} />;
+  else if (route.page === "formation") content = <FormationPage go={go} />;
   else if (route.page === "account") content = <AccountPage user={user} onLogout={async () => { await window.SUPABASE.auth.signOut(); }} go={go} points={points} orders={newOrders} />;
 
   return (
