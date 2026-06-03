@@ -114,8 +114,9 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
   const [usePts, setUsePts] = useState(false);
   const [relais, setRelais] = useState(0);
   const [creneau, setCreneau] = useState("Aujourd'hui · 16 h 00");
-  const [orderId, setOrderId] = useState(null);
-  const [saving, setSaving]  = useState(false);
+  const [orderId, setOrderId]     = useState(null);
+  const [saving, setSaving]       = useState(false);
+  const [payMethod, setPayMethod] = useState("card"); // "card" | "store"
 
   const sousTotal  = items.reduce((s, i) => s + i.price * i.qty, 0);
   const livraison  = mode === "collect" ? 0 : (sousTotal >= FRANCO && mode === "domicile" ? 0 : PROMOS_LIVRAISON[mode].prix);
@@ -139,7 +140,7 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({
           items: items.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty, opts: i.opts })),
-          total, shipping_cost: livraison, shipping_mode: mode,
+          total, shipping_cost: livraison, shipping_mode: mode, payment_method: payMethod,
         }),
       });
       const data = await res.json();
@@ -324,6 +325,35 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
           {step === 3 && (
             <div className="fade-up">
               <h2 style={{ fontSize: "1.5rem", marginBottom: "1.4rem" }}>Paiement</h2>
+
+              {/* Choix du mode de paiement */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", marginBottom: "1.4rem" }}>
+                {[
+                  { id: "card",  label: "Carte bancaire",   sub: "Visa, Mastercard, American Express", ico: "check" },
+                  { id: "store", label: "Payer en magasin",  sub: mode === "collect" ? "Règlement à l'institut lors du retrait" : "Disponible uniquement en Click & Collect", ico: "store" },
+                ].map(opt => (
+                  <button key={opt.id} onClick={() => opt.id === "store" && mode !== "collect" ? null : setPayMethod(opt.id)}
+                    style={{ textAlign: "left", padding: "1rem 1.2rem", borderRadius: "var(--r-md)", display: "flex", gap: "1rem",
+                      alignItems: "center", border: "1px solid " + (payMethod === opt.id ? "var(--or)" : "var(--ligne)"),
+                      background: payMethod === opt.id ? "var(--or-soft)" : "var(--blanc)",
+                      opacity: opt.id === "store" && mode !== "collect" ? 0.45 : 1,
+                      cursor: opt.id === "store" && mode !== "collect" ? "not-allowed" : "pointer", transition: "all .2s" }}>
+                    <span style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--beige-bg2)", display: "grid", placeItems: "center", color: "var(--or)", flexShrink: 0 }}>
+                      {opt.id === "card" ? <Ico.check width={20} height={20} /> : <Ico.store width={20} height={20} />}
+                    </span>
+                    <span style={{ flex: 1 }}>
+                      <span style={{ display: "block", fontFamily: "var(--f-display)", fontSize: "1rem" }}>{opt.label}</span>
+                      <span style={{ fontSize: "0.8rem", color: "var(--texte-doux)" }}>{opt.sub}</span>
+                    </span>
+                    <span style={{ width: 20, height: 20, borderRadius: "50%", border: "1px solid " + (payMethod === opt.id ? "var(--or)" : "var(--beige-deep)"),
+                      display: "grid", placeItems: "center", flexShrink: 0 }}>
+                      {payMethod === opt.id && <span style={{ width: 11, height: 11, borderRadius: "50%", background: "var(--or)" }} />}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Points fidélité */}
               {ptsDispo >= 100 && (
                 <label style={{ display: "flex", alignItems: "center", gap: 12, padding: "1.1rem 1.3rem", borderRadius: "var(--r-md)", marginBottom: "1.4rem",
                   border: "1px solid " + (usePts ? "var(--or)" : "var(--ligne)"), background: usePts ? "var(--or-soft)" : "var(--blanc)", cursor: "pointer" }}>
@@ -336,14 +366,35 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
                   </span>
                 </label>
               )}
-              <div style={{ background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-md)", padding: "1.4rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.9rem" }}>
-                <Field label="Numéro de carte" ph="0000 0000 0000 0000" full />
-                <Field label="Expiration" ph="MM / AA" />
-                <Field label="CVC" ph="123" />
-                <Field label="Nom sur la carte" value={`${COMPTE_DEMO.prenom} ${COMPTE_DEMO.nom}`} full />
-              </div>
+
+              {/* Formulaire carte */}
+              {payMethod === "card" && (
+                <div style={{ background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-md)", padding: "1.4rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.9rem" }}>
+                  <Field label="Numéro de carte" ph="0000 0000 0000 0000" full />
+                  <Field label="Expiration" ph="MM / AA" />
+                  <Field label="CVC" ph="123" />
+                  <Field label="Nom sur la carte" ph="Prénom NOM" full />
+                </div>
+              )}
+
+              {/* Paiement en magasin */}
+              {payMethod === "store" && (
+                <div style={{ background: "var(--beige-bg2)", border: "1px solid var(--ligne)", borderRadius: "var(--r-md)", padding: "1.4rem",
+                  display: "flex", gap: 14, alignItems: "flex-start" }}>
+                  <Ico.store width={22} height={22} style={{ color: "var(--or)", flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ fontSize: "0.88rem" }}>
+                    <p style={{ marginBottom: 6 }}>Vous réglerez <strong>{euro(total)}</strong> directement à l'institut lors du retrait de votre commande.</p>
+                    <p style={{ color: "var(--texte-doux)", fontSize: "0.82rem" }}>Espèces, CB et chèque acceptés.</p>
+                    <p style={{ color: "var(--texte-doux)", fontSize: "0.82rem", marginTop: 4 }}>
+                      <strong>50 avenue François Mitterand</strong>, 13170 Les Pennes-Mirabeau · Lun–Sam 10h–20h
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <p style={{ fontSize: "0.78rem", color: "var(--texte-doux)", marginTop: "1rem", display: "flex", alignItems: "center", gap: 6 }}>
-                <Ico.check width={14} height={14} style={{ color: "var(--or)" }} /> Paiement sécurisé · Démo, aucune carte ne sera débitée
+                <Ico.check width={14} height={14} style={{ color: "var(--or)" }} />
+                {payMethod === "store" ? "Commande réservée — paiement à l'institut" : "Paiement en ligne sécurisé (intégration Stripe à venir)"}
               </p>
             </div>
           )}
@@ -380,7 +431,8 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
             </div>
           </div>
           <button className="btn btn-dark btn-block" style={{ height: 50, marginTop: "1.4rem" }} onClick={next}>
-            {step < 3 ? "Continuer" : `Payer ${euro(total)}`} <Ico.arrow width={15} height={15} />
+            {step < 3 ? "Continuer" : payMethod === "store" ? `Réserver — payer en magasin` : `Payer ${euro(total)}`}
+            <Ico.arrow width={15} height={15} />
           </button>
           {step > 1 && <button className="btn btn-light btn-block" style={{ marginTop: "0.6rem" }} onClick={() => setStep(step - 1)}>Retour</button>}
         </aside>
