@@ -24,7 +24,7 @@ function AuthScreen({ onLogin, go }) {
   const [mode, setMode]       = useState("login");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg]         = useState(null); // { type, text }
-  const [form, setForm]       = useState({ firstName: "", lastName: "", email: "", password: "" });
+  const [form, setForm]       = useState({ firstName: "", lastName: "", email: "", password: "", phone: "" });
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
@@ -40,7 +40,7 @@ function AuthScreen({ onLogin, go }) {
           email: form.email.trim(),
           password: form.password,
           options: {
-            data: { firstName: form.firstName.trim(), lastName: form.lastName.trim() },
+            data: { firstName: form.firstName.trim(), lastName: form.lastName.trim(), phone: form.phone.trim() },
             emailRedirectTo: window.location.origin,
           }
         });
@@ -117,6 +117,9 @@ function AuthScreen({ onLogin, go }) {
             )}
             <Field label="E-mail"       id="email"    ph="vous@email.fr" type="email"    onChange={set("email")} />
             <Field label="Mot de passe" id="password" ph="••••••••"       type="password" onChange={set("password")} />
+            {mode === "signup" && (
+              <Field label="Téléphone (facultatif)" id="phone" ph="06 12 34 56 78" type="tel" onChange={set("phone")} />
+            )}
 
             {mode === "signup" && (
               <label style={{ display: "flex", gap: 8, fontSize: "0.8rem", color: "var(--texte-doux)" }}>

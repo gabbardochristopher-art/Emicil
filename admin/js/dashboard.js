@@ -33,13 +33,14 @@ const headers = () => ({ 'Content-Type': 'application/json', Authorization: `Bea
 const navLinks   = document.querySelectorAll('.nav-link');
 const sections   = document.querySelectorAll('.admin-section');
 const pageTitle  = document.getElementById('page-title');
-const TITLES = { overview: 'Tableau de bord', products: 'Produits', orders: 'Commandes', settings: 'Paramètres' };
+const TITLES = { overview: 'Tableau de bord', clients: 'Clients', products: 'Produits', orders: 'Commandes', settings: 'Paramètres' };
 
 function showSection(name) {
   navLinks.forEach(l  => l.classList.toggle('active', l.dataset.section === name));
   sections.forEach(s  => s.classList.toggle('hidden', s.id !== `section-${name}`));
   pageTitle.textContent = TITLES[name] || name;
   if (name === 'overview') loadStats();
+  if (name === 'clients')  loadClients();
   if (name === 'products') loadProducts();
   if (name === 'orders')   loadOrders();
 }
@@ -50,6 +51,49 @@ navLinks.forEach(link => link.addEventListener('click', e => { e.preventDefault(
 document.getElementById('logout-btn').addEventListener('click', () => {
   sessionStorage.clear();
   window.location.replace('index.html');
+});
+
+// =========================================================
+//  CLIENTS
+// =========================================================
+let allClients = [];
+
+async function loadClients() {
+  const tbody = document.getElementById('clients-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#7b7f93;padding:28px">Chargement…</td></tr>';
+
+  const res = await fetch(`${API}/admin/users`, { headers: headers() });
+  if (!res.ok) { tbody.innerHTML = '<tr><td colspan="6" style="color:red;padding:16px">Erreur.</td></tr>'; return; }
+
+  allClients = await res.json();
+  document.getElementById('clients-count').textContent = `${allClients.length} client(s) inscrit(s)`;
+  renderClients(allClients);
+}
+
+function renderClients(list) {
+  const tbody = document.getElementById('clients-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#7b7f93;padding:28px">Aucun client inscrit.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(u => `
+    <tr>
+      <td><strong>${u.firstName || '—'} ${u.lastName || ''}</strong></td>
+      <td>${u.email}</td>
+      <td>${u.phone || '—'}</td>
+      <td style="color:#b08d57;font-weight:600">${u.points} pts</td>
+      <td><span class="badge badge-${u.confirmed ? 'oui' : 'non'}">${u.confirmed ? '✓ Oui' : '✗ Non'}</span></td>
+      <td style="color:#7b7f93">${new Date(u.createdAt).toLocaleDateString('fr-FR')}</td>
+    </tr>`).join('');
+}
+
+document.getElementById('search-clients')?.addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  renderClients(allClients.filter(u =>
+    u.email.toLowerCase().includes(q) ||
+    (u.firstName + ' ' + u.lastName).toLowerCase().includes(q) ||
+    (u.phone || '').includes(q)
+  ));
 });
 
 // =========================================================
