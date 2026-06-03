@@ -134,16 +134,44 @@ function App() {
     if (data) setPoints(data.points || 0);
   }
 
-  // Auth Supabase — écoute la session
+  // Auth Supabase — écoute la session + points en temps réel
   useEffect(() => {
+    let profileChannel = null;
+
+    function setupRealtimePoints(userId) {
+      if (profileChannel) window.SUPABASE.removeChannel(profileChannel);
+      profileChannel = window.SUPABASE
+        .channel(`profile-${userId}`)
+        .on('postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
+          ({ new: profile }) => { setPoints(profile.points || 0); }
+        )
+        .subscribe();
+    }
+
     window.SUPABASE.auth.getSession().then(({ data: { session } }) => {
-      if (session) { setUser(session.user); setLoggedIn(true); loadPoints(session.user.id); }
+      if (session) {
+        setUser(session.user); setLoggedIn(true);
+        loadPoints(session.user.id);
+        setupRealtimePoints(session.user.id);
+      }
     });
+
     const { data: { subscription } } = window.SUPABASE.auth.onAuthStateChange((_event, session) => {
-      if (session) { setUser(session.user); setLoggedIn(true); loadPoints(session.user.id); }
-      else         { setUser(null); setLoggedIn(false); setPoints(0); }
+      if (session) {
+        setUser(session.user); setLoggedIn(true);
+        loadPoints(session.user.id);
+        setupRealtimePoints(session.user.id);
+      } else {
+        setUser(null); setLoggedIn(false); setPoints(0);
+        if (profileChannel) window.SUPABASE.removeChannel(profileChannel);
+      }
     });
-    return () => subscription.unsubscribe();
+
+    return () => {
+      subscription.unsubscribe();
+      if (profileChannel) window.SUPABASE.removeChannel(profileChannel);
+    };
   }, []);
 
   // Charge + écoute les produits en temps réel (Supabase Realtime)
