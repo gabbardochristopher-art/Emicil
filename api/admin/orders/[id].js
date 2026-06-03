@@ -31,8 +31,13 @@ module.exports = async function handler(req, res) {
     const { data: profile } = await supabase
       .from('profiles').select('points').eq('id', order.user_id).single();
     const currentPts = profile?.points || 0;
-    await supabase
-      .from('profiles').update({ points: currentPts + order.points_to_award }).eq('id', order.user_id);
+    const newPts = currentPts + order.points_to_award;
+
+    // upsert : crée le profil s'il n'existe pas, sinon met à jour
+    await supabase.from('profiles').upsert(
+      { id: order.user_id, points: newPts },
+      { onConflict: 'id' }
+    );
   }
 
   return res.status(200).json({ success: true, status });

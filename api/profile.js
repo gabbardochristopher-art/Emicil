@@ -14,12 +14,17 @@ module.exports = async function handler(req, res) {
   const { data: { user }, error } = await supabase.auth.getUser(auth.slice(7));
   if (error || !user) return safeError(res, 401, 'Session invalide');
 
-  // Récupère le profil (service_role bypass RLS — fiable)
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('points')
-    .eq('id', user.id)
-    .single();
+  // Récupère le profil — crée-le s'il n'existe pas encore
+  let { data: profile } = await supabase
+    .from('profiles').select('points').eq('id', user.id).single();
+
+  if (!profile) {
+    const { data: created } = await supabase
+      .from('profiles')
+      .upsert({ id: user.id, points: 0 }, { onConflict: 'id' })
+      .select('points').single();
+    profile = created;
+  }
 
   return res.status(200).json({ points: profile?.points ?? 0 });
 };
