@@ -1,35 +1,34 @@
 const bcrypt   = require('bcryptjs');
-const supabase  = require('../_lib/supabase');
+const { createClient } = require('@supabase/supabase-js');
 const { requireAdmin } = require('../_lib/auth');
+const { password, safeError } = require('../_lib/validate');
 
 module.exports = async function handler(req, res) {
+  res.setHeader('Content-Type', 'application/json');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'PUT') return res.status(405).json({ error: 'Méthode non autorisée' });
+  if (req.method !== 'PUT') return safeError(res, 405, 'Méthode non autorisée');
 
   const admin = requireAdmin(req, res);
   if (!admin) return;
 
-  const { currentPassword, newPassword } = req.body || {};
-  if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Champs requis manquants' });
-  if (newPassword.length < 6) return res.status(400).json({ error: 'Le nouveau mot de passe doit faire au moins 6 caractères' });
+  try {
+    const currentPassword = password(req.body?.currentPassword);
+    const newPassword     = password(req.body?.newPassword);
+    if (!currentPassword || !newPassword) return safeError(res, 400, 'Mot de passe invalide (minimum 6 caractères)');
 
-  const { data: user } = await supabase
-    .from('admin_users')
-    .select('password_hash')
-    .eq('id', admin.id)
-    .single();
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const { data: user } = await supabase.from('admin_users').select('password_hash').eq('id', admin.id).single();
+    if (!user) return safeError(res, 404, 'Utilisateur introuvable');
 
-  if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' });
+    const valid = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!valid) return safeError(res, 401, 'Mot de passe actuel incorrect');
 
-  const valid = await bcrypt.compare(currentPassword, user.password_hash);
-  if (!valid) return res.status(401).json({ error: 'Mot de passe actuel incorrect' });
+    const hash = await bcrypt.hash(newPassword, 12);
+    const { error } = await supabase.from('admin_users').update({ password_hash: hash }).eq('id', admin.id);
+    if (error) return safeError(res, 500, 'Erreur serveur');
 
-  const hash = await bcrypt.hash(newPassword, 12);
-  const { error } = await supabase
-    .from('admin_users')
-    .update({ password_hash: hash })
-    .eq('id', admin.id);
-
-  if (error) return res.status(500).json({ error: 'Erreur lors de la mise à jour' });
-  return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true });
+  } catch {
+    return safeError(res, 500, 'Erreur serveur');
+  }
 };
