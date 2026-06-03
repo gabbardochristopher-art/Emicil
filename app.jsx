@@ -120,22 +120,28 @@ function App() {
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [favs, setFavs] = useState([]);
-  const [user, setUser]       = useState(null);
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [toast, setToast]     = useState("");
-  const [points, setPoints]   = useState(window.DATA.COMPTE_DEMO.points);
+  const [user, setUser]           = useState(null);
+  const [loggedIn, setLoggedIn]   = useState(false);
+  const [toast, setToast]         = useState("");
+  const [points, setPoints]       = useState(0);
   const [newOrders, setNewOrders] = useState([]);
-  const [, forceUpdate]       = useState(0);
+  const [, forceUpdate]           = useState(0);
   const toastTimer = useRef(null);
+
+  // Charge les vrais points depuis Supabase
+  async function loadPoints(userId) {
+    const { data } = await window.SUPABASE.from('profiles').select('points').eq('id', userId).single();
+    if (data) setPoints(data.points || 0);
+  }
 
   // Auth Supabase — écoute la session
   useEffect(() => {
     window.SUPABASE.auth.getSession().then(({ data: { session } }) => {
-      if (session) { setUser(session.user); setLoggedIn(true); }
+      if (session) { setUser(session.user); setLoggedIn(true); loadPoints(session.user.id); }
     });
     const { data: { subscription } } = window.SUPABASE.auth.onAuthStateChange((_event, session) => {
-      if (session) { setUser(session.user); setLoggedIn(true); }
-      else         { setUser(null); setLoggedIn(false); }
+      if (session) { setUser(session.user); setLoggedIn(true); loadPoints(session.user.id); }
+      else         { setUser(null); setLoggedIn(false); setPoints(0); }
     });
     return () => subscription.unsubscribe();
   }, []);
