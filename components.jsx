@@ -98,7 +98,18 @@ function ProductCard({ p, onOpen, onAdd, fav, onFav }) {
       onClick={() => onOpen(p)}
       style={{ cursor: "pointer", display: "flex", flexDirection: "column", gap: "0.85rem" }}>
       <div style={{ position: "relative" }}>
-        <Photo cat={p.cat} radius="var(--r-md)" />
+        <Photo cat={p.cat} radius="var(--r-md)" style={{ opacity: p.stock === 0 ? 0.55 : 1 }} />
+
+        {/* Overlay stock épuisé */}
+        {p.stock === 0 && (
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+            borderRadius: "var(--r-md)", background: "rgba(29,26,22,0.38)", backdropFilter: "blur(2px)" }}>
+            <span style={{ background: "var(--noir)", color: "var(--blanc)", fontFamily: "var(--f-display)",
+              fontSize: "0.68rem", letterSpacing: "0.18em", textTransform: "uppercase",
+              padding: "6px 14px", borderRadius: "var(--r-pill)" }}>Stock épuisé</span>
+          </div>
+        )}
+
         <div style={{ position: "absolute", top: 12, left: 12, display: "flex", gap: 6 }}>
           {p.best && <Badge>Best-seller</Badge>}
           {p.nouveau && <Badge tone="soft">Nouveau</Badge>}
@@ -111,12 +122,14 @@ function ProductCard({ p, onOpen, onAdd, fav, onFav }) {
             color: fav ? "var(--or)" : "var(--texte)", transition: "all .2s" }}>
           <Ico.heart width={17} height={17} style={{ fill: fav ? "var(--or)" : "none" }} />
         </button>
+        {p.stock > 0 && (
         <div style={{ position: "absolute", left: 12, right: 12, bottom: 12,
           opacity: hover ? 1 : 0, transform: hover ? "none" : "translateY(8px)", transition: "all .25s" }}>
           <button className="btn btn-dark btn-block" onClick={(e) => { e.stopPropagation(); onAdd(p); }}>
             <Ico.cart width={15} height={15} /> Ajouter
           </button>
         </div>
+        )}
         {p.boutique && (
           <div style={{ position: "absolute", left: 12, bottom: 12, opacity: hover ? 0 : 1, transition: "opacity .2s",
             display: "flex", alignItems: "center", gap: 5, background: "rgba(251,248,242,0.85)", backdropFilter: "blur(4px)",
