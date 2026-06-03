@@ -94,26 +94,49 @@ function CartDrawer({ open, items, onClose, onQty, onRemove, onCheckout, go }) {
 }
 
 // ---------- Tunnel de commande ----------
-function CheckoutPage({ items, go, onDone, compte, userPoints }) {
-  const { PROMOS_LIVRAISON, FRANCO, COMPTE_DEMO } = window.DATA;
-  const [step, setStep] = useState(1); // 1 livraison, 2 coordonnées, 3 paiement, 4 confirmation
-  const [mode, setMode] = useState("collect");
+function CheckoutPage({ items, go, onDone, compte, user }) {
+  const { PROMOS_LIVRAISON, FRANCO } = window.DATA;
+  const [step, setStep]     = useState(1);
+  const [mode, setMode]     = useState("collect");
   const [usePts, setUsePts] = useState(false);
   const [relais, setRelais] = useState(0);
   const [creneau, setCreneau] = useState("Aujourd'hui · 16 h 00");
+  const [orderId, setOrderId] = useState(null);
+  const [saving, setSaving]  = useState(false);
 
-  const sousTotal = items.reduce((s, i) => s + i.price * i.qty, 0);
-  const livraison = mode === "collect" ? 0 : (sousTotal >= FRANCO && mode === "domicile" ? 0 : PROMOS_LIVRAISON[mode].prix);
-  const ptsDispo = (compte?.points ?? COMPTE_DEMO.points);
-  const reducPts = usePts ? Math.min(Math.floor(ptsDispo / 100) * 5, sousTotal) : 0;
-  const total = Math.max(0, sousTotal + livraison - reducPts);
-  const ptsGagnes = Math.round(sousTotal);
+  const sousTotal  = items.reduce((s, i) => s + i.price * i.qty, 0);
+  const livraison  = mode === "collect" ? 0 : (sousTotal >= FRANCO && mode === "domicile" ? 0 : PROMOS_LIVRAISON[mode].prix);
+  const ptsDispo   = compte?.points || 0;
+  const reducPts   = usePts ? Math.min(Math.floor(ptsDispo / 100) * 5, sousTotal) : 0;
+  const total      = Math.max(0, sousTotal + livraison - reducPts);
+  const ptsGagnes  = Math.round(sousTotal);
 
-  const steps = ["Livraison", "Coordonnées", "Paiement", "Confirmation"];
+  const steps     = ["Livraison", "Coordonnées", "Paiement", "Confirmation"];
   const relaisList = ["Tabac de la Pinède — 0,3 km", "Carrefour City Plan-de-Campagne — 1,1 km", "Relais Presse Centre — 1,8 km"];
-  const creneaux = ["Aujourd'hui · 16 h 00", "Aujourd'hui · 18 h 30", "Demain · 10 h 00", "Demain · 14 h 00"];
+  const creneaux  = ["Aujourd'hui · 16 h 00", "Aujourd'hui · 18 h 30", "Demain · 10 h 00", "Demain · 14 h 00"];
 
-  function next() { if (step < 3) setStep(step + 1); else { setStep(4); onDone && onDone({ total, ptsGagnes, mode }); window.scrollTo(0,0); } }
+  async function next() {
+    if (step < 3) { setStep(step + 1); return; }
+    setSaving(true);
+    try {
+      const { data: { session } } = await window.SUPABASE.auth.getSession();
+      const token = session?.access_token;
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({
+          items: items.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty, opts: i.opts })),
+          total, shipping_cost: livraison, shipping_mode: mode,
+        }),
+      });
+      const data = await res.json();
+      setOrderId(data.id || null);
+    } catch (e) {}
+    setSaving(false);
+    setStep(4);
+    onDone && onDone({ total, ptsGagnes, mode });
+    window.scrollTo(0, 0);
+  }
 
   if (items.length === 0 && step < 4) {
     return <div className="container" style={{ padding: "5rem 0", textAlign: "center" }}>
@@ -124,7 +147,7 @@ function CheckoutPage({ items, go, onDone, compte, userPoints }) {
 
   // Confirmation
   if (step === 4) {
-    const ref = "EMI-" + Math.floor(2400 + Math.random() * 99);
+    const ref = orderId || ("EMI-" + Math.floor(2400 + Math.random() * 99));
     return (
       <div className="container" style={{ maxWidth: 640, padding: "3.5rem 0 var(--pad-section)", textAlign: "center" }}>
         <div className="fade-up" style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--or)", color: "var(--blanc)", display: "grid", placeItems: "center", margin: "0 auto 1.6rem" }}>
@@ -142,7 +165,7 @@ function CheckoutPage({ items, go, onDone, compte, userPoints }) {
             <div style={{ textAlign: "right" }}><div style={{ fontSize: "0.72rem", color: "var(--texte-doux)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Total</div><Price value={total} size="1.1rem" /></div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--or)", fontSize: "0.9rem" }}>
-            <Ico.sparkle width={18} height={18} /> Vous venez de gagner <strong>{ptsGagnes} points fidélité</strong>.
+            <Ico.sparkle width={18} height={18} /> <strong>{ptsGagnes} points fidélité</strong> seront crédités après validation de votre commande.
           </div>
         </div>
         <div style={{ display: "flex", gap: "0.8rem", justifyContent: "center", flexWrap: "wrap" }}>

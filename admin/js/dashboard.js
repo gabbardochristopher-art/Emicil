@@ -33,7 +33,7 @@ const headers = () => ({ 'Content-Type': 'application/json', Authorization: `Bea
 const navLinks   = document.querySelectorAll('.nav-link');
 const sections   = document.querySelectorAll('.admin-section');
 const pageTitle  = document.getElementById('page-title');
-const TITLES = { overview: 'Tableau de bord', products: 'Produits', settings: 'Paramètres' };
+const TITLES = { overview: 'Tableau de bord', products: 'Produits', orders: 'Commandes', settings: 'Paramètres' };
 
 function showSection(name) {
   navLinks.forEach(l  => l.classList.toggle('active', l.dataset.section === name));
@@ -41,6 +41,7 @@ function showSection(name) {
   pageTitle.textContent = TITLES[name] || name;
   if (name === 'overview') loadStats();
   if (name === 'products') loadProducts();
+  if (name === 'orders')   loadOrders();
 }
 
 navLinks.forEach(link => link.addEventListener('click', e => { e.preventDefault(); showSection(link.dataset.section); }));
@@ -55,12 +56,82 @@ document.getElementById('logout-btn').addEventListener('click', () => {
 //  OVERVIEW
 // =========================================================
 async function loadStats() {
-  const res  = await fetch(`${API}/products`);
-  const data = res.ok ? await res.json() : [];
-  document.getElementById('stat-products').textContent = data.length;
-  document.getElementById('stat-featured').textContent = data.filter(p => p.featured).length;
-  document.getElementById('stat-stock').textContent    = data.reduce((s, p) => s + (p.stock || 0), 0);
+  const [prodRes, ordRes] = await Promise.all([
+    fetch(`${API}/products`),
+    fetch(`${API}/admin/orders`, { headers: headers() }),
+  ]);
+  const prods  = prodRes.ok  ? await prodRes.json()  : [];
+  const orders = ordRes.ok   ? await ordRes.json()   : [];
+  document.getElementById('stat-products').textContent = prods.length;
+  document.getElementById('stat-featured').textContent = prods.filter(p => p.featured).length;
+  document.getElementById('stat-stock').textContent    = prods.reduce((s, p) => s + (p.stock || 0), 0);
+
+  const pending = orders.filter(o => o.status === 'pending').length;
+  const badge   = document.getElementById('orders-badge');
+  if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
 }
+
+// =========================================================
+//  ORDERS
+// =========================================================
+let allOrders = [];
+let orderFilter = 'pending';
+
+async function loadOrders() {
+  const tbody = document.getElementById('orders-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Chargement…</td></tr>';
+  const res = await fetch(`${API}/admin/orders`, { headers: headers() });
+  if (!res.ok) { tbody.innerHTML = '<tr><td colspan="8" style="color:red;padding:16px">Erreur.</td></tr>'; return; }
+  allOrders = await res.json();
+  renderOrders();
+}
+
+function renderOrders() {
+  const tbody = document.getElementById('orders-tbody');
+  const list  = orderFilter === 'all' ? allOrders : allOrders.filter(o => o.status === orderFilter);
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Aucune commande.</td></tr>`;
+    return;
+  }
+  const STATUS = { pending: '⏳ En attente', validated: '✓ Validée', refused: '✗ Refusée' };
+  const MODE   = { collect: 'Click & Collect', relais: 'Point relais', domicile: 'Domicile' };
+  tbody.innerHTML = list.map(o => `
+    <tr>
+      <td><strong>${o.id}</strong></td>
+      <td>${o.user_name || o.user_email}</td>
+      <td>${new Date(o.created_at).toLocaleDateString('fr-FR')}</td>
+      <td>${MODE[o.shipping_mode] || o.shipping_mode}</td>
+      <td>${Number(o.total).toFixed(2)} €</td>
+      <td style="color:#b08d57">${o.points_to_award} pts</td>
+      <td><span class="badge badge-${o.status === 'pending' ? 'new' : o.status === 'validated' ? 'oui' : 'non'}">${STATUS[o.status]}</span></td>
+      <td>
+        ${o.status === 'pending' ? `
+          <button class="btn-action btn-edit"   onclick="processOrder('${o.id}','validated')">Valider</button>
+          <button class="btn-action btn-delete" onclick="processOrder('${o.id}','refused')">Refuser</button>
+        ` : '—'}
+      </td>
+    </tr>`).join('');
+}
+
+async function processOrder(id, status) {
+  const label = status === 'validated' ? 'Valider' : 'Refuser';
+  if (!confirm(`${label} la commande ${id} ?`)) return;
+  const res  = await fetch(`${API}/admin/orders/${id}`, {
+    method: 'PUT', headers: headers(), body: JSON.stringify({ status })
+  });
+  if (res.ok) { loadOrders(); loadStats(); }
+  else alert('Erreur lors du traitement.');
+}
+
+document.querySelectorAll('.order-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.order-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    orderFilter = btn.dataset.filter;
+    renderOrders();
+  });
+});
 
 // =========================================================
 //  PRODUCTS

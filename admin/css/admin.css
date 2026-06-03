@@ -1,6 +1,13 @@
 /* =============================================
    ADMIN — Variables & Reset
    ============================================= */
+.badge-count {
+  background: var(--a-error); color: #fff; border-radius: 50%;
+  min-width: 18px; height: 18px; font-size: .68rem; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 4px; margin-left: 6px;
+}
+.order-filter.active { background: var(--a-primary); color: #fff; border-color: var(--a-primary); }
 :root {
   --a-bg:       #0f1117;
   --a-surface:  #1a1d27;

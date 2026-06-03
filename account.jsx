@@ -152,19 +152,35 @@ function AuthScreen({ onLogin, go }) {
 }
 
 // ---------- Dashboard ----------
-function AccountPage({ user, onLogout, go, points, orders }) {
-  const { COMPTE_DEMO, PALIER_VALEUR } = window.DATA;
-  const [tab, setTab] = useState("fidelite");
+function AccountPage({ user, onLogout, go }) {
+  const { PALIER_VALEUR } = window.DATA;
+  const [tab, setTab]         = useState("fidelite");
+  const [pts, setPts]         = useState(0);
+  const [realOrders, setRealOrders] = useState([]);
+
+  useEffect(() => {
+    if (!user) return;
+    // Charge les points réels
+    window.SUPABASE.from('profiles').select('points').eq('id', user.id).single()
+      .then(({ data }) => { if (data) setPts(data.points || 0); });
+    // Charge les commandes réelles
+    window.SUPABASE.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      fetch('/api/orders', { headers: { Authorization: `Bearer ${session.access_token}` } })
+        .then(r => r.ok ? r.json() : [])
+        .then(data => setRealOrders(Array.isArray(data) ? data : []));
+    });
+  }, [user]);
 
   if (!user) return <AuthScreen onLogin={() => {}} go={go} />;
 
   const firstName = user.user_metadata?.firstName || user.email.split("@")[0];
-  const pts       = points ?? COMPTE_DEMO.points;
-  const c         = COMPTE_DEMO;
-  const allOrders = orders && orders.length ? [...orders, ...c.commandes] : c.commandes;
-  const seuil     = c.paliers.seuil;
-  const prog      = Math.min(100, (pts / seuil) * 100);
+  const allOrders = realOrders;
+  const seuil      = 1500;
+  const prog       = Math.min(100, (pts / seuil) * 100);
   const eurosDispo = Math.floor(pts / 100) * 5;
+  const palier     = pts >= 1500 ? "VIP" : pts >= 500 ? "Or" : pts >= 100 ? "Argent" : "Membre";
+  const palierNext = pts >= 1500 ? "VIP" : pts >= 500 ? "VIP" : pts >= 100 ? "Or" : "Argent";
   const tabs = [["fidelite","Fidélité"],["commandes","Commandes"],["infos","Mes infos"]];
 
   return (
@@ -192,7 +208,7 @@ function AccountPage({ user, onLogout, go, points, orders }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "var(--or)" }}>
                 <Ico.sparkle width={20} height={20} />
-                <span style={{ fontFamily: "var(--f-display)", letterSpacing: "0.16em", textTransform: "uppercase", fontSize: "0.78rem" }}>Membre {c.paliers.actuel}</span>
+                <span style={{ fontFamily: "var(--f-display)", letterSpacing: "0.16em", textTransform: "uppercase", fontSize: "0.78rem" }}>Membre {palier}</span>
               </span>
               <Logo size={14} color="var(--blanc)" tagline={false} />
             </div>
@@ -203,12 +219,12 @@ function AccountPage({ user, onLogout, go, points, orders }) {
             </div>
             <div style={{ marginTop: "2rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", marginBottom: 8, opacity: 0.8 }}>
-                <span>{c.paliers.actuel}</span><span>{c.paliers.prochain} · {seuil.toLocaleString("fr-FR")} pts</span>
+                <span>{palier}</span><span>{palierNext} · {seuil.toLocaleString("fr-FR")} pts</span>
               </div>
               <div style={{ height: 6, borderRadius: 999, background: "rgba(251,248,242,0.18)" }}>
                 <div style={{ height: "100%", width: prog + "%", borderRadius: 999, background: "var(--or)" }} />
               </div>
-              <div style={{ fontSize: "0.8rem", marginTop: 10, opacity: 0.75 }}>Plus que <strong style={{ color: "var(--or)" }}>{(seuil - pts).toLocaleString("fr-FR")} points</strong> pour passer membre {c.paliers.prochain}.</div>
+              <div style={{ fontSize: "0.8rem", marginTop: 10, opacity: 0.75 }}>Plus que <strong style={{ color: "var(--or)" }}>{Math.max(0, seuil - pts).toLocaleString("fr-FR")} points</strong> pour passer membre {palierNext}.</div>
             </div>
           </div>
 
