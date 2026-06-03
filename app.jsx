@@ -128,23 +128,30 @@ function App() {
   const [, forceUpdate]           = useState(0);
   const toastTimer = useRef(null);
 
-  // Charge les vrais points depuis Supabase
-  async function loadPoints(userId) {
-    const { data } = await window.SUPABASE.from('profiles').select('points').eq('id', userId).single();
-    if (data) setPoints(data.points || 0);
+  // Charge les points via l'API serveur (service_role — fiable après rechargement)
+  async function loadPoints(accessToken) {
+    try {
+      const res = await fetch('/api/profile', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPoints(data.points ?? 0);
+      }
+    } catch {}
   }
 
   // Auth Supabase — écoute la session + points en temps réel
   useEffect(() => {
     let profileChannel = null;
 
-    function setupRealtimePoints(userId) {
+    function setupRealtimePoints(userId, accessToken) {
       if (profileChannel) window.SUPABASE.removeChannel(profileChannel);
       profileChannel = window.SUPABASE
         .channel(`profile-${userId}`)
         .on('postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
-          ({ new: profile }) => { setPoints(profile.points || 0); }
+          ({ new: profile }) => { setPoints(profile.points ?? 0); }
         )
         .subscribe();
     }
@@ -152,16 +159,16 @@ function App() {
     window.SUPABASE.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(session.user); setLoggedIn(true);
-        loadPoints(session.user.id);
-        setupRealtimePoints(session.user.id);
+        loadPoints(session.access_token);
+        setupRealtimePoints(session.user.id, session.access_token);
       }
     });
 
     const { data: { subscription } } = window.SUPABASE.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setUser(session.user); setLoggedIn(true);
-        loadPoints(session.user.id);
-        setupRealtimePoints(session.user.id);
+        loadPoints(session.access_token);
+        setupRealtimePoints(session.user.id, session.access_token);
       } else {
         setUser(null); setLoggedIn(false); setPoints(0);
         if (profileChannel) window.SUPABASE.removeChannel(profileChannel);
