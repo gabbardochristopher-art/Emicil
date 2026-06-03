@@ -123,7 +123,40 @@ function App() {
   const [toast, setToast] = useState("");
   const [points, setPoints] = useState(window.DATA.COMPTE_DEMO.points);
   const [newOrders, setNewOrders] = useState([]);
+  const [, forceUpdate] = useState(0);
   const toastTimer = useRef(null);
+
+  // Charge les produits depuis Supabase via l'API
+  useEffect(() => {
+    fetch('/api/products')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          window.DATA.PRODUCTS = data.map(p => ({
+            id: String(p.id),
+            cat: p.category || '',
+            name: p.name,
+            line: p.sku || '',
+            price: parseFloat(p.price),
+            oldPrice: p.old_price ? parseFloat(p.old_price) : null,
+            note: parseFloat(p.note) || 0,
+            avis: p.avis || 0,
+            boutique: p.stock > 0,
+            best: !!p.featured,
+            nouveau: !!p.new_arrival,
+            desc: p.description || '',
+            badge: p.badge || null,
+            stock: p.stock || 0,
+            image: p.image || '',
+          }));
+          window.DATA.CATEGORIES.forEach(c => {
+            c.count = window.DATA.PRODUCTS.filter(p => p.cat === c.id).length;
+          });
+          forceUpdate(n => n + 1);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   function go(page, params = {}) { setRoute({ page, ...params }); window.scrollTo(0, 0); }
   function flash(msg) { setToast(msg); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(""), 2200); }
