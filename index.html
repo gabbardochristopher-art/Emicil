@@ -1,146 +1,179 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Emicil — Accueil</title>
-  <link rel="stylesheet" href="css/reset.css" />
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/header.css" />
-  <link rel="stylesheet" href="css/footer.css" />
-  <link rel="stylesheet" href="css/home.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Emicils — Institut & Boutique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Cormorant:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* Couleurs — beige dominant, noir en accent */
+    --noir: #1d1a16;
+    --noir-soft: #2c2823;
+    --texte: #34302a;
+    --texte-doux: #8c8175;
+    --beige-bg: #f4ede2;
+    --beige-bg2: #efe6d8;
+    --blanc: #fbf8f2;
+    --beige-soft: #e9ddca;
+    --beige-deep: #ddcdb2;
+    --ligne: #e3d8c5;
+    --or: #b08d57;          /* accent fidélité / doré chaud */
+    --or-soft: #f0e3cf;
+
+    /* Typo */
+    --f-display: 'Jost', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --f-serif: 'Cormorant', Georgia, serif;
+    --f-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --ls-wide: 0.34em;
+    --ls-mid: 0.18em;
+
+    /* Forme */
+    --r-sm: 4px;
+    --r-md: 8px;
+    --r-lg: 14px;
+    --r-pill: 999px;
+    --shadow: 0 18px 50px -28px rgba(60,45,25,0.45);
+    --shadow-soft: 0 10px 30px -22px rgba(60,45,25,0.4);
+
+    /* Densité */
+    --gap: 1.5rem;
+    --pad-section: clamp(3rem, 7vw, 7rem);
+    --maxw: 1280px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--f-body);
+    background: var(--beige-bg);
+    color: var(--texte);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  #root { min-height: 100vh; display: flex; flex-direction: column; }
+
+  h1,h2,h3,h4 { font-family: var(--f-display); font-weight: 300; line-height: 1.1; color: var(--noir); }
+  button { font-family: var(--f-body); cursor: pointer; border: none; background: none; color: inherit; }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+  input, select, textarea { font-family: var(--f-body); font-size: 1rem; }
+
+  ::selection { background: var(--beige-deep); color: var(--noir); }
+
+  /* Utilitaires de marque */
+  .eyebrow {
+    font-family: var(--f-display);
+    text-transform: uppercase;
+    letter-spacing: var(--ls-mid);
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--or);
+  }
+  .wide { letter-spacing: var(--ls-wide); text-transform: uppercase; }
+
+  /* Boutons */
+  .btn {
+    font-family: var(--f-display);
+    text-transform: uppercase;
+    letter-spacing: var(--ls-mid);
+    font-size: 0.74rem;
+    font-weight: 400;
+    padding: 0.95em 1.9em;
+    border-radius: var(--r-sm);
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.6em;
+    transition: all .25s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-dark { background: var(--noir); color: var(--blanc); }
+  .btn-dark:hover { background: var(--noir-soft); transform: translateY(-1px); }
+  .btn-outline { background: transparent; color: var(--noir); box-shadow: inset 0 0 0 1px var(--noir); }
+  .btn-outline:hover { background: var(--noir); color: var(--blanc); }
+  .btn-light { background: var(--blanc); color: var(--noir); box-shadow: inset 0 0 0 1px var(--ligne); }
+  .btn-light:hover { background: var(--beige-soft); }
+  .btn-block { width: 100%; }
+
+  /* Scrollbar discret */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--beige-deep); border-radius: 999px; border: 3px solid var(--beige-bg); }
+
+  /* Placeholder image produit (photo à fournir) */
+  .ph {
+    position: relative;
+    background:
+      repeating-linear-gradient(135deg, rgba(176,141,87,0.05) 0 12px, rgba(176,141,87,0.10) 12px 24px),
+      linear-gradient(160deg, var(--beige-soft), var(--beige-deep));
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .ph span {
+    font-family: 'Courier New', monospace;
+    font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(54,48,42,0.55);
+    background: rgba(251,248,242,0.7);
+    padding: 4px 9px; border-radius: 999px;
+  }
+
+  @keyframes fadeUp { from { transform: translateY(16px);} to { transform:none;} }
+  .fade-up { animation: fadeUp .55s ease both; }
+  @media (prefers-reduced-motion: reduce) { .fade-up { animation: none; } }
+
+  /* Responsive helpers */
+  .container { width: 100%; max-width: var(--maxw); margin: 0 auto; padding-left: clamp(1.1rem, 4vw, 2.5rem); padding-right: clamp(1.1rem, 4vw, 2.5rem); }
+
+  /* ---- Tablette ---- */
+  @media (max-width: 980px) {
+    [data-hero-grid], [data-cc-grid], [data-loyal-grid], [data-inst-grid],
+    [data-pdp-grid], [data-checkout-grid], [data-auth-grid], [data-acc-grid] {
+      grid-template-columns: 1fr !important;
+    }
+    [data-shop-grid] { grid-template-columns: 1fr !important; }
+    [data-filters] { position: static !important; }
+    [data-gallery] { position: static !important; }
+    [data-checkout-grid] aside { position: static !important; }
+    [data-hero-grid] { min-height: auto !important; }
+    [data-footer-grid] { grid-template-columns: 1fr 1fr !important; }
+  }
+
+  /* ---- Mobile ---- */
+  @media (max-width: 680px) {
+    :root { --pad-section: 3.2rem; }
+    .hdr-nav { display: none !important; }
+    .hdr-burger { display: grid !important; place-items: center; }
+    .hdr-actions { flex: 0 0 auto !important; }
+    [data-footer-grid] { grid-template-columns: 1fr !important; gap: 1.8rem !important; }
+    [data-order-row] { grid-template-columns: auto 1fr !important; row-gap: 0.8rem !important; }
+    [data-order-row] > :nth-child(3), [data-order-row] > :nth-child(4) { grid-column: 2 !important; justify-self: start !important; }
+  }
+</style>
 </head>
 <body>
+  <div id="root"></div>
 
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="header-inner container">
-      <a href="index.html" class="logo">Emicil</a>
-      <nav class="main-nav">
-        <ul>
-          <li><a href="index.html" class="active">Accueil</a></li>
-          <li><a href="pages/shop.html">Boutique</a></li>
-          <li><a href="pages/about.html">À propos</a></li>
-          <li><a href="pages/contact.html">Contact</a></li>
-        </ul>
-      </nav>
-      <div class="header-actions">
-        <a href="pages/search.html" class="btn-icon" aria-label="Recherche">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </a>
-        <a href="pages/account.html" class="btn-icon" aria-label="Mon compte">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        </a>
-        <a href="pages/cart.html" class="btn-icon cart-icon" aria-label="Panier">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-          <span class="cart-count" id="cart-count">0</span>
-        </a>
-        <button class="menu-toggle" id="menu-toggle" aria-label="Menu">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
-    </div>
-  </header>
+  <template id="__bundler_thumbnail">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100" height="100" fill="#1d1a16"/>
+      <text x="50" y="48" font-family="Jost, Helvetica, Arial, sans-serif" font-size="9" font-weight="300" letter-spacing="3.5" fill="#fbf8f2" text-anchor="middle" style="text-transform:uppercase">Emicils</text>
+      <text x="50" y="60" font-family="Jost, Helvetica, Arial, sans-serif" font-size="3.6" letter-spacing="3" fill="#b08d57" text-anchor="middle" style="text-transform:uppercase">Lash Artist</text>
+    </svg>
+  </template>
 
-  <main>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-content">
-        <h1>Bienvenue chez Emicil</h1>
-        <p>Découvrez notre collection exclusive</p>
-        <a href="pages/shop.html" class="btn btn-primary">Voir la boutique</a>
-      </div>
-    </section>
-
-    <!-- CATEGORIES -->
-    <section class="categories section">
-      <div class="container">
-        <h2 class="section-title">Nos catégories</h2>
-        <div class="categories-grid" id="categories-grid">
-          <!-- Injecté par JS -->
-        </div>
-      </div>
-    </section>
-
-    <!-- PRODUITS EN VEDETTE -->
-    <section class="featured section">
-      <div class="container">
-        <h2 class="section-title">Produits en vedette</h2>
-        <div class="products-grid" id="featured-products">
-          <!-- Injecté par JS -->
-        </div>
-        <div class="section-footer">
-          <a href="pages/shop.html" class="btn btn-outline">Voir tout</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- BANNIÈRE PROMO -->
-    <section class="promo-banner">
-      <div class="promo-inner container">
-        <div class="promo-text">
-          <h2>Offre spéciale</h2>
-          <p>Profitez de nos meilleures offres du moment</p>
-          <a href="pages/shop.html" class="btn btn-light">En profiter</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- NOUVEAUTÉS -->
-    <section class="new-arrivals section">
-      <div class="container">
-        <h2 class="section-title">Nouveautés</h2>
-        <div class="products-grid" id="new-arrivals">
-          <!-- Injecté par JS -->
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <div class="footer-inner container">
-      <div class="footer-brand">
-        <a href="index.html" class="logo">Emicil</a>
-        <p>Votre boutique en ligne de confiance.</p>
-      </div>
-      <div class="footer-links">
-        <h4>Navigation</h4>
-        <ul>
-          <li><a href="index.html">Accueil</a></li>
-          <li><a href="pages/shop.html">Boutique</a></li>
-          <li><a href="pages/about.html">À propos</a></li>
-          <li><a href="pages/contact.html">Contact</a></li>
-        </ul>
-      </div>
-      <div class="footer-links">
-        <h4>Informations</h4>
-        <ul>
-          <li><a href="pages/legal.html">Mentions légales</a></li>
-          <li><a href="pages/privacy.html">Confidentialité</a></li>
-          <li><a href="pages/shipping.html">Livraison</a></li>
-          <li><a href="pages/returns.html">Retours</a></li>
-        </ul>
-      </div>
-      <div class="footer-newsletter">
-        <h4>Newsletter</h4>
-        <p>Recevez nos offres exclusives</p>
-        <form class="newsletter-form" id="newsletter-form">
-          <input type="email" placeholder="Votre email" required />
-          <button type="submit" class="btn btn-primary">S'inscrire</button>
-        </form>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; <span id="year"></span> Emicil. Tous droits réservés.</p>
-    </div>
-  </footer>
-
-  <script src="js/data.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/home.js"></script>
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="components.jsx"></script>
+  <script type="text/babel" src="home.jsx"></script>
+  <script type="text/babel" src="shop.jsx"></script>
+  <script type="text/babel" src="checkout.jsx"></script>
+  <script type="text/babel" src="account.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="tweaks.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
 </body>
 </html>
