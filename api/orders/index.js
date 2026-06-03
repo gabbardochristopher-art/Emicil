@@ -77,6 +77,16 @@ module.exports = async function handler(req, res) {
     }]).select().single();
 
     if (error) return safeError(res, 500, 'Erreur lors de la création de la commande');
+
+    // Décrémente le stock de chaque produit commandé
+    await Promise.all(items.map(async (item) => {
+      const prod = productMap[String(item.id)];
+      if (!prod) return;
+      const qty       = parseInt(item.qty, 10) || 1;
+      const newStock  = Math.max(0, prod.stock - qty);
+      await supabase.from('products').update({ stock: newStock }).eq('id', parseInt(item.id, 10));
+    }));
+
     return res.status(201).json(data);
   }
 
