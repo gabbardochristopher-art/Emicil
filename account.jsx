@@ -155,18 +155,13 @@ function AuthScreen({ onLogin, go }) {
 }
 
 // ---------- Dashboard ----------
-function AccountPage({ user, onLogout, go }) {
-  const { PALIER_VALEUR } = window.DATA;
-  const [tab, setTab]         = useState("fidelite");
-  const [pts, setPts]         = useState(0);
+function AccountPage({ user, onLogout, go, points: pointsProp }) {
+  const [tab, setTab]               = useState("fidelite");
   const [realOrders, setRealOrders] = useState([]);
 
+  // Charge les commandes réelles
   useEffect(() => {
     if (!user) return;
-    // Charge les points réels
-    window.SUPABASE.from('profiles').select('points').eq('id', user.id).single()
-      .then(({ data }) => { if (data) setPts(data.points || 0); });
-    // Charge les commandes réelles
     window.SUPABASE.auth.getSession().then(({ data: { session } }) => {
       if (!session) return;
       fetch('/api/orders', { headers: { Authorization: `Bearer ${session.access_token}` } })
@@ -177,8 +172,10 @@ function AccountPage({ user, onLogout, go }) {
 
   if (!user) return <AuthScreen onLogin={() => {}} go={go} />;
 
-  const firstName = user.user_metadata?.firstName || user.email.split("@")[0];
-  const allOrders = realOrders;
+  // Les points viennent de app.jsx (mis à jour en temps réel via Supabase Realtime)
+  const pts        = pointsProp ?? 0;
+  const firstName  = user.user_metadata?.firstName || user.email.split("@")[0];
+  const allOrders  = realOrders;
   const seuil      = 1500;
   const prog       = Math.min(100, (pts / seuil) * 100);
   const eurosDispo = Math.floor(pts / 100) * 5;
