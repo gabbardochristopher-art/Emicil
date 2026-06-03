@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emicil — Panier</title>
+  <link rel="stylesheet" href="../css/reset.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/header.css" />
+  <link rel="stylesheet" href="../css/footer.css" />
+  <link rel="stylesheet" href="../css/cart.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner container">
+      <a href="../index.html" class="logo">Emicil</a>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html">Accueil</a></li>
+          <li><a href="shop.html">Boutique</a></li>
+          <li><a href="about.html">À propos</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <a href="search.html" class="btn-icon" aria-label="Recherche">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </a>
+        <a href="account.html" class="btn-icon" aria-label="Mon compte">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        <a href="cart.html" class="btn-icon cart-icon active" aria-label="Panier">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span class="cart-count" id="cart-count">0</span>
+        </a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-header">
+      <div class="container">
+        <h1>Mon panier</h1>
+        <nav class="breadcrumb">
+          <a href="../index.html">Accueil</a> / <span>Panier</span>
+        </nav>
+      </div>
+    </div>
+
+    <div class="cart-layout container">
+      <div class="cart-items-wrapper">
+        <div id="cart-items">
+          <!-- Injecté par JS -->
+        </div>
+        <div class="cart-empty hidden" id="cart-empty">
+          <p>Votre panier est vide.</p>
+          <a href="shop.html" class="btn btn-primary">Continuer les achats</a>
+        </div>
+      </div>
+
+      <aside class="cart-summary" id="cart-summary">
+        <h2>Récapitulatif</h2>
+        <div class="summary-row">
+          <span>Sous-total</span>
+          <span id="subtotal">0,00 €</span>
+        </div>
+        <div class="summary-row">
+          <span>Livraison</span>
+          <span id="shipping">Calculé à l'étape suivante</span>
+        </div>
+        <div class="summary-row promo-row">
+          <input type="text" id="promo-input" placeholder="Code promo" class="text-input" />
+          <button class="btn btn-outline" id="apply-promo">Appliquer</button>
+        </div>
+        <div class="summary-row total-row">
+          <span>Total</span>
+          <span id="total">0,00 €</span>
+        </div>
+        <a href="checkout.html" class="btn btn-primary btn-full" id="checkout-btn">Passer la commande</a>
+        <a href="shop.html" class="btn btn-outline btn-full">Continuer les achats</a>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner container">
+      <div class="footer-brand">
+        <a href="../index.html" class="logo">Emicil</a>
+        <p>Votre boutique en ligne de confiance.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="../index.html">Accueil</a></li>
+          <li><a href="shop.html">Boutique</a></li>
+          <li><a href="about.html">À propos</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Informations</h4>
+        <ul>
+          <li><a href="legal.html">Mentions légales</a></li>
+          <li><a href="privacy.html">Confidentialité</a></li>
+          <li><a href="shipping.html">Livraison</a></li>
+          <li><a href="returns.html">Retours</a></li>
+        </ul>
+      </div>
+      <div class="footer-newsletter">
+        <h4>Newsletter</h4>
+        <p>Recevez nos offres exclusives</p>
+        <form class="newsletter-form" id="newsletter-form">
+          <input type="email" placeholder="Votre email" required />
+          <button type="submit" class="btn btn-primary">S'inscrire</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="year"></span> Emicil. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/cart.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/cart-page.js"></script>
+</body>
+</html>

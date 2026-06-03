@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emicil Admin — Dashboard</title>
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body class="admin-dashboard-page">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-logo">Emicil</div>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="#" class="nav-link active" data-section="overview">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Tableau de bord
+        </a></li>
+        <li><a href="#" class="nav-link" data-section="products">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Produits
+        </a></li>
+        <li><a href="#" class="nav-link" data-section="settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Paramètres
+        </a></li>
+      </ul>
+    </nav>
+    <div class="sidebar-footer">
+      <span id="admin-email-display"></span>
+      <button id="logout-btn" class="btn-logout">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <h1 id="page-title">Tableau de bord</h1>
+      <a href="../index.html" target="_blank" class="btn-site">Voir le site →</a>
+    </header>
+
+    <!-- OVERVIEW -->
+    <section class="admin-section" id="section-overview">
+      <div class="stat-cards" id="stat-cards">
+        <div class="stat-card">
+          <span class="stat-value" id="stat-products">—</span>
+          <span class="stat-label">Produits</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="stat-featured">—</span>
+          <span class="stat-label">En vedette</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="stat-stock">—</span>
+          <span class="stat-label">En stock (total)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section class="admin-section hidden" id="section-products">
+      <div class="section-toolbar">
+        <input type="text" id="search-products" class="admin-search" placeholder="Rechercher un produit…" />
+        <button class="btn-admin btn-primary" id="btn-add-product">+ Ajouter un produit</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="admin-table" id="products-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>Catégorie</th>
+              <th>Prix</th>
+              <th>Stock</th>
+              <th>Vedette</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="products-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="admin-section hidden" id="section-settings">
+      <div class="settings-card">
+        <h2>Changer le mot de passe</h2>
+        <form id="password-form" novalidate>
+          <div class="form-group">
+            <label for="current-pw">Mot de passe actuel</label>
+            <input type="password" id="current-pw" required />
+          </div>
+          <div class="form-group">
+            <label for="new-pw">Nouveau mot de passe</label>
+            <input type="password" id="new-pw" required minlength="6" />
+          </div>
+          <div class="form-group">
+            <label for="confirm-pw">Confirmer le nouveau mot de passe</label>
+            <input type="password" id="confirm-pw" required />
+          </div>
+          <p class="error-msg hidden" id="pw-error"></p>
+          <p class="success-msg hidden" id="pw-success">Mot de passe mis à jour.</p>
+          <button type="submit" class="btn-admin btn-primary">Mettre à jour</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL PRODUIT -->
+  <div class="modal-overlay hidden" id="product-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">Nouveau produit</h2>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <form id="product-form" novalidate>
+        <input type="hidden" id="product-id" />
+        <div class="modal-grid">
+          <div class="form-group">
+            <label>Nom *</label>
+            <input type="text" id="p-name" required />
+          </div>
+          <div class="form-group">
+            <label>Catégorie</label>
+            <input type="text" id="p-category" />
+          </div>
+          <div class="form-group">
+            <label>Prix (€) *</label>
+            <input type="number" id="p-price" required min="0" step="0.01" />
+          </div>
+          <div class="form-group">
+            <label>Ancien prix (€)</label>
+            <input type="number" id="p-old-price" min="0" step="0.01" />
+          </div>
+          <div class="form-group">
+            <label>Stock</label>
+            <input type="number" id="p-stock" min="0" value="0" />
+          </div>
+          <div class="form-group">
+            <label>Badge</label>
+            <select id="p-badge">
+              <option value="">Aucun</option>
+              <option value="new">Nouveau</option>
+              <option value="sale">Soldes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>URL Image</label>
+            <input type="text" id="p-image" placeholder="https://…" />
+          </div>
+          <div class="form-group">
+            <label>Référence (SKU)</label>
+            <input type="text" id="p-sku" />
+          </div>
+          <div class="form-group form-group--full">
+            <label>Description</label>
+            <textarea id="p-description" rows="3"></textarea>
+          </div>
+          <div class="form-group form-group--checkboxes">
+            <label class="checkbox-label">
+              <input type="checkbox" id="p-featured" /> En vedette
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="p-new-arrival" /> Nouveauté
+            </label>
+          </div>
+        </div>
+        <p class="error-msg hidden" id="modal-error"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn-admin btn-outline" id="modal-cancel">Annuler</button>
+          <button type="submit" class="btn-admin btn-primary" id="modal-submit">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

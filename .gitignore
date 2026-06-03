@@ -1,0 +1,11 @@
+# Variables d'environnement — NE JAMAIS COMMITTER
+.env
+.env.local
+.env.*.local
+
+# Dépendances
+node_modules/
+
+# Système
+.DS_Store
+Thumbs.db

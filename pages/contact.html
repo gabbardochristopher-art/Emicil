@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emicil — Contact</title>
+  <link rel="stylesheet" href="../css/reset.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/header.css" />
+  <link rel="stylesheet" href="../css/footer.css" />
+  <link rel="stylesheet" href="../css/pages.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner container">
+      <a href="../index.html" class="logo">Emicil</a>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html">Accueil</a></li>
+          <li><a href="shop.html">Boutique</a></li>
+          <li><a href="about.html">À propos</a></li>
+          <li><a href="contact.html" class="active">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <a href="search.html" class="btn-icon" aria-label="Recherche">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </a>
+        <a href="account.html" class="btn-icon" aria-label="Mon compte">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        <a href="cart.html" class="btn-icon cart-icon" aria-label="Panier">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span class="cart-count" id="cart-count">0</span>
+        </a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-header">
+      <div class="container">
+        <h1>Contactez-nous</h1>
+        <nav class="breadcrumb">
+          <a href="../index.html">Accueil</a> / <span>Contact</span>
+        </nav>
+      </div>
+    </div>
+
+    <div class="contact-layout container section">
+      <div class="contact-info">
+        <h2>Nos coordonnées</h2>
+        <ul class="contact-details">
+          <li>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>50 avenue François Mitterand, 13170 Les Pennes-Mirabeau</span>
+          </li>
+          <li>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.67 3.47 2 2 0 0 1 3.64 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>06 69 25 62 12</span>
+          </li>
+          <li>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <span>contact@emicil.fr</span>
+          </li>
+        </ul>
+        <div class="opening-hours">
+          <h3>Horaires</h3>
+          <p>Lundi – Samedi : 10h – 20h</p>
+          <p>Dimanche : Fermé</p>
+        </div>
+      </div>
+
+      <div class="contact-form-wrapper">
+        <h2>Envoyez-nous un message</h2>
+        <form class="contact-form" id="contact-form" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="contact-name">Nom *</label>
+              <input type="text" id="contact-name" required class="text-input" />
+            </div>
+            <div class="form-group">
+              <label for="contact-email">Email *</label>
+              <input type="email" id="contact-email" required class="text-input" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="contact-subject">Sujet *</label>
+            <select id="contact-subject" required class="select-input">
+              <option value="">Choisir un sujet</option>
+              <option value="order">Suivi de commande</option>
+              <option value="return">Retour / Remboursement</option>
+              <option value="product">Question produit</option>
+              <option value="other">Autre</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="contact-message">Message *</label>
+            <textarea id="contact-message" required class="text-input" rows="6"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Envoyer le message</button>
+          <p class="form-success hidden" id="contact-success">Message envoyé ! Nous vous répondrons sous 24h.</p>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner container">
+      <div class="footer-brand">
+        <a href="../index.html" class="logo">Emicil</a>
+        <p>Votre boutique en ligne de confiance.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="../index.html">Accueil</a></li>
+          <li><a href="shop.html">Boutique</a></li>
+          <li><a href="about.html">À propos</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Informations</h4>
+        <ul>
+          <li><a href="legal.html">Mentions légales</a></li>
+          <li><a href="privacy.html">Confidentialité</a></li>
+          <li><a href="shipping.html">Livraison</a></li>
+          <li><a href="returns.html">Retours</a></li>
+        </ul>
+      </div>
+      <div class="footer-newsletter">
+        <h4>Newsletter</h4>
+        <p>Recevez nos offres exclusives</p>
+        <form class="newsletter-form" id="newsletter-form">
+          <input type="email" placeholder="Votre email" required />
+          <button type="submit" class="btn btn-primary">S'inscrire</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="year"></span> Emicil. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/cart.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/contact.js"></script>
+</body>
+</html>

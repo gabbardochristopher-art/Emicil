@@ -1,0 +1,103 @@
+.shop-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 40px;
+  padding-top: 48px;
+  padding-bottom: 80px;
+}
+
+/* SIDEBAR */
+.shop-sidebar { min-width: 0; }
+.filter-block { margin-bottom: 32px; }
+.filter-block h3 {
+  font-size: .85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+.filter-list { display: flex; flex-direction: column; gap: 8px; }
+.filter-list label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .9rem;
+  cursor: pointer;
+}
+.filter-list input[type="radio"],
+.filter-list input[type="checkbox"] { accent-color: var(--color-primary); }
+
+.price-range input[type="range"] {
+  width: 100%;
+  accent-color: var(--color-primary);
+  margin-bottom: 8px;
+}
+.price-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: .85rem;
+  color: var(--color-secondary);
+}
+
+/* TOOLBAR */
+.shop-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+.results-count { font-size: .9rem; color: var(--color-secondary); }
+.view-toggle { display: flex; gap: 4px; }
+.view-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-secondary);
+  transition: all var(--transition);
+}
+.view-btn.active, .view-btn:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+/* LIST VIEW */
+.products-grid.list-view { grid-template-columns: 1fr; }
+.products-grid.list-view .product-card {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+}
+.products-grid.list-view .product-card__image { aspect-ratio: auto; height: 200px; }
+
+/* PAGINATION */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 48px;
+}
+.pagination button {
+  min-width: 40px;
+  height: 40px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: .9rem;
+  transition: all var(--transition);
+}
+.pagination button:hover,
+.pagination button.active {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+}
+
+@media (max-width: 900px) {
+  .shop-layout { grid-template-columns: 1fr; }
+  .shop-sidebar { display: none; }
+}

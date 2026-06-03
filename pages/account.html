@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emicil — Mon compte</title>
+  <link rel="stylesheet" href="../css/reset.css" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/header.css" />
+  <link rel="stylesheet" href="../css/footer.css" />
+  <link rel="stylesheet" href="../css/account.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner container">
+      <a href="../index.html" class="logo">Emicil</a>
+      <nav class="main-nav">
+        <ul>
+          <li><a href="../index.html">Accueil</a></li>
+          <li><a href="shop.html">Boutique</a></li>
+          <li><a href="about.html">À propos</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <a href="search.html" class="btn-icon" aria-label="Recherche">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </a>
+        <a href="account.html" class="btn-icon active" aria-label="Mon compte">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        <a href="cart.html" class="btn-icon cart-icon" aria-label="Panier">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span class="cart-count" id="cart-count">0</span>
+        </a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-header">
+      <div class="container">
+        <h1>Mon compte</h1>
+      </div>
+    </div>
+
+    <div class="account-layout container">
+
+      <!-- FORMULAIRES LOGIN/REGISTER -->
+      <div class="auth-forms" id="auth-forms">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Se connecter</button>
+          <button class="auth-tab" data-tab="register">Créer un compte</button>
+        </div>
+
+        <!-- LOGIN -->
+        <form class="auth-form" id="login-form">
+          <div class="form-group">
+            <label for="login-email">Email *</label>
+            <input type="email" id="login-email" required class="text-input" />
+          </div>
+          <div class="form-group">
+            <label for="login-password">Mot de passe *</label>
+            <input type="password" id="login-password" required class="text-input" />
+          </div>
+          <div class="form-group form-row-inline">
+            <label class="checkbox-label">
+              <input type="checkbox" /> Se souvenir de moi
+            </label>
+            <a href="#" class="link">Mot de passe oublié ?</a>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Se connecter</button>
+        </form>
+
+        <!-- REGISTER -->
+        <form class="auth-form hidden" id="register-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reg-first-name">Prénom *</label>
+              <input type="text" id="reg-first-name" required class="text-input" />
+            </div>
+            <div class="form-group">
+              <label for="reg-last-name">Nom *</label>
+              <input type="text" id="reg-last-name" required class="text-input" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Email *</label>
+            <input type="email" id="reg-email" required class="text-input" />
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Mot de passe *</label>
+            <input type="password" id="reg-password" required class="text-input" minlength="8" />
+          </div>
+          <div class="form-group">
+            <label for="reg-password-confirm">Confirmer le mot de passe *</label>
+            <input type="password" id="reg-password-confirm" required class="text-input" />
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Créer mon compte</button>
+        </form>
+      </div>
+
+      <!-- DASHBOARD (affiché quand connecté) -->
+      <div class="account-dashboard hidden" id="account-dashboard">
+        <aside class="account-sidebar">
+          <nav class="account-nav">
+            <ul>
+              <li><a href="#" class="active" data-section="overview">Tableau de bord</a></li>
+              <li><a href="#" data-section="orders">Mes commandes</a></li>
+              <li><a href="#" data-section="addresses">Mes adresses</a></li>
+              <li><a href="#" data-section="profile">Mon profil</a></li>
+              <li><a href="#" id="logout-btn">Déconnexion</a></li>
+            </ul>
+          </nav>
+        </aside>
+        <div class="account-content">
+          <div class="account-section" id="section-overview">
+            <h2>Bienvenue, <span id="user-name"></span></h2>
+            <p>Gérez vos commandes, adresses et informations personnelles.</p>
+          </div>
+          <div class="account-section hidden" id="section-orders">
+            <h2>Mes commandes</h2>
+            <div id="orders-list"></div>
+          </div>
+          <div class="account-section hidden" id="section-addresses">
+            <h2>Mes adresses</h2>
+            <div id="addresses-list"></div>
+          </div>
+          <div class="account-section hidden" id="section-profile">
+            <h2>Mon profil</h2>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner container">
+      <div class="footer-brand">
+        <a href="../index.html" class="logo">Emicil</a>
+        <p>Votre boutique en ligne de confiance.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="../index.html">Accueil</a></li>
+          <li><a href="shop.html">Boutique</a></li>
+          <li><a href="about.html">À propos</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Informations</h4>
+        <ul>
+          <li><a href="legal.html">Mentions légales</a></li>
+          <li><a href="privacy.html">Confidentialité</a></li>
+          <li><a href="shipping.html">Livraison</a></li>
+          <li><a href="returns.html">Retours</a></li>
+        </ul>
+      </div>
+      <div class="footer-newsletter">
+        <h4>Newsletter</h4>
+        <p>Recevez nos offres exclusives</p>
+        <form class="newsletter-form" id="newsletter-form">
+          <input type="email" placeholder="Votre email" required />
+          <button type="submit" class="btn btn-primary">S'inscrire</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="year"></span> Emicil. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/cart.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/account.js"></script>
+</body>
+</html>
