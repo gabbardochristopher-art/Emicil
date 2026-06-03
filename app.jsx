@@ -119,12 +119,25 @@ function App() {
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [favs, setFavs] = useState([]);
+  const [user, setUser]       = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [toast, setToast] = useState("");
-  const [points, setPoints] = useState(window.DATA.COMPTE_DEMO.points);
+  const [toast, setToast]     = useState("");
+  const [points, setPoints]   = useState(window.DATA.COMPTE_DEMO.points);
   const [newOrders, setNewOrders] = useState([]);
-  const [, forceUpdate] = useState(0);
+  const [, forceUpdate]       = useState(0);
   const toastTimer = useRef(null);
+
+  // Auth Supabase — écoute la session
+  useEffect(() => {
+    window.SUPABASE.auth.getSession().then(({ data: { session } }) => {
+      if (session) { setUser(session.user); setLoggedIn(true); }
+    });
+    const { data: { subscription } } = window.SUPABASE.auth.onAuthStateChange((_event, session) => {
+      if (session) { setUser(session.user); setLoggedIn(true); }
+      else         { setUser(null); setLoggedIn(false); }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Charge les produits depuis Supabase via l'API
   useEffect(() => {
@@ -190,7 +203,7 @@ function App() {
   else if (route.page === "shop") content = <ShopPage go={go} onOpen={openProduct} onAdd={addToCart} favs={favs} onFav={toggleFav} initialCat={route.cat} />;
   else if (route.page === "product") content = <ProductPage p={route.product} go={go} onAdd={addToCart} favs={favs} onFav={toggleFav} onOpen={openProduct} />;
   else if (route.page === "checkout") content = <CheckoutPage items={cart} go={go} onDone={onCheckoutDone} compte={{ points }} />;
-  else if (route.page === "account") content = <AccountPage loggedIn={loggedIn} onLogin={() => { setLoggedIn(true); flash("Bienvenue, Léa !"); }} onLogout={() => setLoggedIn(false)} go={go} points={points} orders={newOrders} />;
+  else if (route.page === "account") content = <AccountPage user={user} onLogout={async () => { await window.SUPABASE.auth.signOut(); }} go={go} points={points} orders={newOrders} />;
 
   return (
     <>
