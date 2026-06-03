@@ -19,8 +19,6 @@ function Hero({ go }) {
           </p>
           <div style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
             <button className="btn btn-light" onClick={() => go("shop")}>Découvrir la boutique</button>
-            <button className="btn btn-outline" style={{ boxShadow: "inset 0 0 0 1px rgba(251,248,242,0.5)", color: "var(--blanc)" }}
-              onClick={() => go("shop", { cat: "cartes" })}>Réserver une pose</button>
           </div>
           <div style={{ display: "flex", gap: "2.2rem", marginTop: "3rem", flexWrap: "wrap" }}>
             {[["2 h", "Retrait en boutique"], ["4.9/5", "+1 200 avis clientes"], ["1 pt = 1 €", "Programme fidélité"]].map(([a,b]) => (
