@@ -1,5 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const { safeError } = require('./_lib/validate');
+const { sendEmail, welcomeEmail } = require('./_lib/email');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -28,6 +29,12 @@ module.exports = async function handler(req, res) {
       .upsert({ id: user.id, points: 0 }, { onConflict: 'id' })
       .select('points').single();
     profile = created;
+    // Envoi de l'email de bienvenue à la première connexion
+    await sendEmail({
+      to: user.email,
+      subject: 'Bienvenue chez Emicils !',
+      html: welcomeEmail({ prenom: user.user_metadata?.firstName || '' }),
+    });
   }
 
   return res.status(200).json({ points: profile?.points ?? 0 });

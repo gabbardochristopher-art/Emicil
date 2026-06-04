@@ -81,7 +81,7 @@
       <div class="table-wrapper">
         <table class="admin-table">
           <thead><tr>
-            <th>Nom</th><th>Email</th><th>Téléphone</th><th>Points</th><th>Confirmé</th><th>Inscrit le</th>
+            <th>Nom</th><th>Email</th><th>Téléphone</th><th>Points</th><th>Confirmé</th><th>Inscrit le</th><th>Activité</th>
           </tr></thead>
           <tbody id="clients-tbody"></tbody>
         </table>
@@ -326,6 +326,19 @@
           <button type="submit" class="btn-admin btn-primary" id="formation-modal-submit">Enregistrer</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL ACTIVITÉ CLIENT -->
+  <div class="modal-overlay hidden" id="activity-modal">
+    <div class="modal" style="max-width:680px;">
+      <div class="modal-header">
+        <h2 id="activity-modal-title">Activité client</h2>
+        <button class="modal-close" id="activity-modal-close">✕</button>
+      </div>
+      <div id="activity-modal-body" style="max-height:70vh;overflow-y:auto;padding:0 4px;">
+        <p style="color:#7b7f93;text-align:center;padding:24px">Chargement…</p>
+      </div>
     </div>
   </div>
 

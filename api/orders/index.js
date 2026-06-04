@@ -1,5 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const { safeError } = require('../_lib/validate');
+const { sendEmail, orderConfirmation } = require('../_lib/email');
 
 async function getUser(req) {
   const auth = (req.headers.authorization || '');
@@ -80,14 +81,29 @@ module.exports = async function handler(req, res) {
 
     if (error) return safeError(res, 500, 'Erreur lors de la création de la commande');
 
-    // Décrémente le stock de chaque produit commandé
-    await Promise.all(items.map(async (item) => {
-      const prod = productMap[String(item.id)];
-      if (!prod) return;
-      const qty       = parseInt(item.qty, 10) || 1;
-      const newStock  = Math.max(0, prod.stock - qty);
-      await supabase.from('products').update({ stock: newStock }).eq('id', parseInt(item.id, 10));
-    }));
+    // Décrémente le stock + envoie l'email de confirmation (en parallèle)
+    await Promise.all([
+      ...items.map(async (item) => {
+        const prod = productMap[String(item.id)];
+        if (!prod) return;
+        const qty      = parseInt(item.qty, 10) || 1;
+        const newStock = Math.max(0, prod.stock - qty);
+        await supabase.from('products').update({ stock: newStock }).eq('id', parseInt(item.id, 10));
+      }),
+      sendEmail({
+        to: user.email,
+        subject: `Votre commande Emicils — ${id}`,
+        html: orderConfirmation({
+          ref:       id,
+          items:     items,
+          total:     total,
+          shipping:  shippingCost,
+          mode:      shippingMode,
+          ptsGagnes: points_to_award,
+          prenom:    user.user_metadata?.firstName || '',
+        }),
+      }),
+    ]);
 
     return res.status(201).json(data);
   }

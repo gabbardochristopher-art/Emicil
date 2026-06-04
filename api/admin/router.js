@@ -170,5 +170,23 @@ module.exports = async function handler(req, res) {
     } catch { return safeError(res, 500, 'Erreur serveur'); }
   }
 
+  // ---- Activité client ----
+  if (route === 'client-activity') {
+    const { userId, userEmail } = req.query;
+    if (!userId && !userEmail) return res.status(400).json({ error: 'userId ou userEmail requis' });
+    try {
+      const [ordersRes, bookingsRes, profileRes] = await Promise.all([
+        userId ? supabase.from('orders').select('id,total,status,shipping_mode,points_to_award,created_at,items').eq('user_id', userId).order('created_at', { ascending: false }) : { data: [] },
+        userEmail ? supabase.from('formation_bookings').select('id,status,created_at,formations(titre,niveau,prix)').eq('user_email', userEmail).order('created_at', { ascending: false }) : { data: [] },
+        userId ? supabase.from('profiles').select('points').eq('id', userId).single() : { data: null },
+      ]);
+      return res.status(200).json({
+        orders:   ordersRes.data   || [],
+        bookings: bookingsRes.data || [],
+        points:   profileRes.data?.points || 0,
+      });
+    } catch { return safeError(res, 500, 'Erreur serveur'); }
+  }
+
   return res.status(404).json({ error: `Route inconnue : "${route}"` });
 };

@@ -93,6 +93,7 @@ function renderClients(list) {
       <td style="color:#b08d57;font-weight:600">${u.points} pts</td>
       <td><span class="badge badge-${u.confirmed ? 'oui' : 'non'}">${u.confirmed ? '✓ Oui' : '✗ Non'}</span></td>
       <td style="color:#7b7f93">${new Date(u.createdAt).toLocaleDateString('fr-FR')}</td>
+      <td><button class="btn-action btn-edit" data-user-id="${esc(u.id)}" data-user-email="${esc(u.email)}" data-user-name="${esc(u.firstName)}">Activité</button></td>
     </tr>`).join('');
 }
 
@@ -549,6 +550,74 @@ document.querySelectorAll('.booking-filter').forEach(btn => {
     bookingFilter = btn.dataset.filter;
     renderBookings();
   });
+});
+
+// =========================================================
+//  ACTIVITÉ FIDÉLITÉ CLIENT
+// =========================================================
+const activityModal    = document.getElementById('activity-modal');
+const activityModalBody = document.getElementById('activity-modal-body');
+
+document.getElementById('activity-modal-close')?.addEventListener('click', () => activityModal.classList.add('hidden'));
+activityModal?.addEventListener('click', e => { if (e.target === activityModal) activityModal.classList.add('hidden'); });
+
+document.getElementById('clients-tbody')?.addEventListener('click', async e => {
+  const btn = e.target.closest('[data-user-id]');
+  if (!btn) return;
+  const userId    = btn.dataset.userId;
+  const userEmail = btn.dataset.userEmail;
+  const userName  = btn.dataset.userName || userEmail;
+  document.getElementById('activity-modal-title').textContent = `Activité — ${esc(userName)}`;
+  activityModalBody.innerHTML = '<p style="color:#7b7f93;text-align:center;padding:24px">Chargement…</p>';
+  activityModal.classList.remove('hidden');
+
+  const res = await fetch(`${API}/admin/client-activity?userId=${encodeURIComponent(userId)}&userEmail=${encodeURIComponent(userEmail)}`, { headers: headers() });
+  if (!res.ok) { activityModalBody.innerHTML = '<p style="color:red;padding:16px">Erreur lors du chargement.</p>'; return; }
+  const { orders, bookings, points } = await res.json();
+
+  const STATUS_O = { pending: '⏳ En attente', validated: '✓ Validée', refused: '✗ Refusée' };
+  const STATUS_B = { pending: '⏳ En attente', confirmed: '✓ Confirmée', cancelled: '✗ Annulée' };
+  const MODE     = { collect: 'Click & Collect', relais: 'Point relais', domicile: 'Domicile' };
+
+  activityModalBody.innerHTML = `
+    <!-- Points -->
+    <div style="background:#1a1d27;border-radius:8px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="color:#7b7f93;font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;">Points fidélité</span>
+      <span style="color:#b08d57;font-size:1.4rem;font-weight:600;">${points} pts</span>
+    </div>
+
+    <!-- Commandes -->
+    <h3 style="font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;color:#7b7f93;margin:0 0 10px;">Commandes (${orders.length})</h3>
+    ${orders.length ? `
+    <table class="admin-table" style="margin-bottom:24px;">
+      <thead><tr><th>Réf.</th><th>Date</th><th>Mode</th><th>Total</th><th>Points</th><th>Statut</th></tr></thead>
+      <tbody>${orders.map(o => `
+        <tr>
+          <td><strong>${esc(o.id)}</strong></td>
+          <td style="color:#7b7f93">${new Date(o.created_at).toLocaleDateString('fr-FR')}</td>
+          <td>${MODE[o.shipping_mode] || esc(o.shipping_mode)}</td>
+          <td>${Number(o.total).toFixed(2)} €</td>
+          <td style="color:#b08d57">+${o.points_to_award} pts</td>
+          <td><span class="badge badge-${o.status === 'pending' ? 'new' : o.status === 'validated' ? 'oui' : 'non'}">${STATUS_O[o.status] || o.status}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>` : '<p style="color:#7b7f93;font-size:.85rem;margin-bottom:20px;">Aucune commande.</p>'}
+
+    <!-- Réservations formations -->
+    <h3 style="font-size:.85rem;text-transform:uppercase;letter-spacing:.1em;color:#7b7f93;margin:0 0 10px;">Réservations formations (${bookings.length})</h3>
+    ${bookings.length ? `
+    <table class="admin-table">
+      <thead><tr><th>Formation</th><th>Niveau</th><th>Date</th><th>Statut</th></tr></thead>
+      <tbody>${bookings.map(b => `
+        <tr>
+          <td><strong>${esc(b.formations?.titre || '—')}</strong></td>
+          <td style="color:#7b7f93">${esc(b.formations?.niveau || '—')}</td>
+          <td style="color:#7b7f93">${new Date(b.created_at).toLocaleDateString('fr-FR')}</td>
+          <td><span class="badge badge-${b.status === 'pending' ? 'new' : b.status === 'confirmed' ? 'oui' : 'non'}">${STATUS_B[b.status] || b.status}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>` : '<p style="color:#7b7f93;font-size:.85rem;">Aucune réservation de formation.</p>'}
+  `;
 });
 
 // =========================================================

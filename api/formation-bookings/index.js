@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const { sendEmail, bookingConfirmation } = require('../_lib/email');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -24,5 +25,22 @@ module.exports = async function handler(req, res) {
   }]).select().single();
 
   if (error) return res.status(500).json({ error: error.message });
+
+  // Récupère le titre de la formation pour l'email
+  const { data: formation } = await supabase
+    .from('formations').select('titre, niveau, prix').eq('id', parseInt(formation_id)).single();
+
+  await sendEmail({
+    to: user_email.trim(),
+    subject: `Votre demande d'inscription — ${formation?.titre || 'Formation Emicils'}`,
+    html: bookingConfirmation({
+      formationTitre: formation?.titre || '',
+      niveau:         formation?.niveau || '',
+      prix:           formation?.prix || '',
+      prenom:         user_name?.trim().split(' ')[0] || '',
+      email:          user_email.trim(),
+    }),
+  });
+
   return res.status(201).json(data);
 };
