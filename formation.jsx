@@ -82,11 +82,11 @@ function FormationPage({ go }) {
   React.useEffect(() => {
     fetch('/api/formations')
       .then(r => r.ok ? r.json() : [])
-      .then(data => setFormations(data.length ? data : FORMATIONS_FALLBACK))
+      .then(data => setFormations(data))
       .catch(() => setFormations(FORMATIONS_FALLBACK));
   }, []);
 
-  const liste = formations || FORMATIONS_FALLBACK;
+  const liste = formations || [];
 
   const NIVEAU_COLOR = {
     "Débutant":     { bg: "var(--or-soft)",   c: "var(--or)" },
