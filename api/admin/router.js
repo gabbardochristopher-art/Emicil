@@ -1,5 +1,6 @@
 // ==========================================================================
-//  EMICILS — Admin router
+//  EMICILS — Admin router (via vercel.json rewrite → /api/admin/router)
+//  Reçoit adminPath=orders, adminPath=formations/5, etc.
 // ==========================================================================
 
 const bcrypt           = require('bcryptjs');
@@ -15,22 +16,26 @@ module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const raw      = req.query.slug;
-  const segments = Array.isArray(raw) ? raw : (raw ? [raw] : []);
-  const route    = segments[0];
+  // adminPath vient du rewrite vercel.json : /api/admin/orders → adminPath=orders
+  const rawPath  = req.query.adminPath || '';
+  const segments = rawPath.split('/').filter(Boolean);
+  const route    = segments[0] || '';
   const id       = segments[1] || null;
+
+  // login géré par login.js dédié — ne devrait pas arriver ici
+  if (route === 'login') return safeError(res, 404, 'Utiliser /api/admin/login');
 
   const admin = requireAdmin(req, res);
   if (!admin) return;
 
   const supabase = db();
 
-  // ---- Verify (fallback) ----
+  // ---- Verify ----
   if (route === 'verify') {
     return res.status(200).json({ valid: true, email: admin.email });
   }
 
-  // ---- Users (fallback) ----
+  // ---- Users ----
   if (route === 'users') {
     try {
       const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
@@ -47,7 +52,7 @@ module.exports = async function handler(req, res) {
         confirmed: !!u.email_confirmed_at,
         createdAt: u.created_at,
       })));
-    } catch (err) { return safeError(res, 500, 'Erreur serveur'); }
+    } catch (err) { return safeError(res, 500, err.message); }
   }
 
   // ---- Update password ----
@@ -165,5 +170,5 @@ module.exports = async function handler(req, res) {
     } catch { return safeError(res, 500, 'Erreur serveur'); }
   }
 
-  return res.status(404).json({ error: 'Route non trouvée', debug: { route, id, raw_slug: raw, url: req.url } });
+  return res.status(404).json({ error: `Route inconnue : "${route}"` });
 };
