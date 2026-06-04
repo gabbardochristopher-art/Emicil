@@ -1,5 +1,5 @@
 // =========================================================
-//  ADMIN DASHBOARD
+//  ADMIN DASHBOARD — v2 formations
 // =========================================================
 
 const token = sessionStorage.getItem('admin_token');
