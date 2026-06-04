@@ -2,12 +2,6 @@
 // EMICILS — Page Formation
 // ==========================================================================
 
-const FORMATIONS_FALLBACK = [
-  { id: null, titre: "Formation Pose Classique",  duree: "1 jour · 7 h",   niveau: "Débutant",      prix: 290, description: "Apprenez les bases de la pose cil à cil : préparation, isolation, collage, séchage. Vous repartez avec votre kit de démarrage.",       points: ["Anatomie de l'œil & sécurité","Choix des cils & colle","Technique d'isolation","Pose sur mannequin + modèle réel"] },
-  { id: null, titre: "Formation Volume Russe",    duree: "2 jours · 14 h", niveau: "Intermédiaire", prix: 490, description: "Maîtrisez la confection de bouquets volume et méga-volume. Prérequis : maîtrise de la pose classique.",                              points: ["Confection des bouquets 2D à 10D","Courbures & longueurs adaptées","Gestion du temps en cabine","Suivi clientèle & remplissage"] },
-  { id: null, titre: "Formation Rehaussement & Teinture", duree: "1 jour · 6 h", niveau: "Tous niveaux", prix: 250, description: "Lash lift + teinture : tout pour sublimer le cil naturel sans extensions. Technique rapide et rentable.", points: ["Bâtonnets & colle lash lift","Application de la teinture","Timing & neutralisation","Protocole client & contre-indications"] },
-  { id: null, titre: "Perfectionnement & Business", duree: "1 jour · 7 h", niveau: "Avancé",       prix: 320, description: "Affinez votre technique, optimisez votre cabine et développez votre clientèle. Coaching personnalisé.",                             points: ["Correction des erreurs courantes","Tarification & positionnement","Réseaux sociaux & avant/après","Fidélisation & panier moyen"] },
-];
 
 function BookingModal({ formation, onClose }) {
   const [form, setForm]       = React.useState({ name: "", email: "", phone: "", message: "" });
@@ -83,7 +77,7 @@ function FormationPage({ go }) {
     fetch('/api/formations')
       .then(r => r.ok ? r.json() : [])
       .then(data => setFormations(data))
-      .catch(() => setFormations(FORMATIONS_FALLBACK));
+      .catch(() => setFormations([]));
   }, []);
 
   const liste = formations || [];
