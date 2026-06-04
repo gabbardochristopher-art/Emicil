@@ -250,12 +250,25 @@ function AccountPage({ user, onLogout, go, points: pointsProp }) {
           <div style={{ gridColumn: "1 / -1", background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-lg)", padding: "1.4rem 1.6rem" }}>
             <h3 style={{ fontSize: "1.05rem", marginBottom: "1rem" }}>Activité fidélité</h3>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              {[["Commande EMI-2418","22 mai 2026","+64"],["Parrainage — Sofia","14 mai 2026","+50"],["Commande EMI-2390","6 mai 2026","+37"],["Anniversaire 🎂","2 mai 2026","+100"]].map(([t,d,v],i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.8rem 0", borderTop: i ? "1px solid var(--ligne)" : "none" }}>
-                  <div><div style={{ fontSize: "0.9rem" }}>{t}</div><div style={{ fontSize: "0.74rem", color: "var(--texte-doux)" }}>{d}</div></div>
-                  <span style={{ fontFamily: "var(--f-display)", color: "var(--or)" }}>{v} pts</span>
-                </div>
-              ))}
+              {realOrders.length === 0 && (
+                <p style={{ fontSize: "0.88rem", color: "var(--texte-doux)" }}>Aucune activité pour le moment.</p>
+              )}
+              {realOrders.map((o, i) => {
+                const dateStr = o.created_at ? new Date(o.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
+                const pts = o.points_to_award || 0;
+                const validated = o.status === "validated" || o.status === "shipped";
+                return (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.8rem 0", borderTop: i ? "1px solid var(--ligne)" : "none" }}>
+                    <div>
+                      <div style={{ fontSize: "0.9rem" }}>Commande {o.id}</div>
+                      <div style={{ fontSize: "0.74rem", color: "var(--texte-doux)" }}>{dateStr}</div>
+                    </div>
+                    <span style={{ fontFamily: "var(--f-display)", color: validated ? "var(--or)" : "var(--texte-doux)" }}>
+                      {validated ? `+${pts}` : `(${pts} en attente)`} pts
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
