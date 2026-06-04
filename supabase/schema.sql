@@ -121,6 +121,11 @@ CREATE TABLE IF NOT EXISTS formation_bookings (
 
 ALTER TABLE formation_bookings ENABLE ROW LEVEL SECURITY;
 
+-- Tout le monde peut créer une réservation (formulaire public)
+DROP POLICY IF EXISTS "Insert public formation_bookings" ON formation_bookings;
+CREATE POLICY "Insert public formation_bookings"
+  ON formation_bookings FOR INSERT WITH CHECK (true);
+
 -- Seed initial : 4 formations par défaut
 INSERT INTO formations (titre, duree, niveau, prix, description, points, places_max) VALUES
   ('Formation Pose Classique',  '1 jour · 7 h',  'Débutant',      290, 'Apprenez les bases de la pose cil à cil : préparation, isolation, collage, séchage. Vous repartez avec votre kit de démarrage.',
