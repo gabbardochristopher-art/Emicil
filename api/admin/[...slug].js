@@ -1,6 +1,5 @@
 // ==========================================================================
-//  EMICILS — Admin router (toutes les routes /api/admin/* en une fonction)
-//  Vercel Hobby : max 12 fonctions serverless
+//  EMICILS — Admin router
 // ==========================================================================
 
 const bcrypt           = require('bcryptjs');
@@ -16,27 +15,27 @@ module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const segments = Array.isArray(req.query.path) ? req.query.path : (req.query.path ? [req.query.path] : []);
+  const raw      = req.query.slug;
+  const segments = Array.isArray(raw) ? raw : (raw ? [raw] : []);
   const route    = segments[0];
   const id       = segments[1] || null;
 
-  // login et verify sont gérés par leurs fichiers dédiés
   const admin = requireAdmin(req, res);
   if (!admin) return;
 
   const supabase = db();
 
-  // ---- Verify (fallback au cas où le fichier dédié ne matche pas) ----
+  // ---- Verify (fallback) ----
   if (route === 'verify') {
     return res.status(200).json({ valid: true, email: admin.email });
   }
 
-  // ---- Users ----
+  // ---- Users (fallback) ----
   if (route === 'users') {
-    if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
     try {
-      const { data: { users }, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
       if (error) return res.status(500).json({ error: error.message });
+      const users = data?.users || [];
       const { data: profiles } = await supabase.from('profiles').select('id, points');
       const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
       return res.status(200).json(users.map(u => ({
@@ -110,14 +109,11 @@ module.exports = async function handler(req, res) {
           if (!body.titre?.trim()) return res.status(400).json({ error: 'Le titre est requis' });
           if (body.prix === undefined || isNaN(parseFloat(body.prix))) return res.status(400).json({ error: 'Prix invalide' });
           const { data, error } = await supabase.from('formations').insert([{
-            titre:       body.titre.trim(),
-            duree:       body.duree?.trim() || '',
-            niveau:      body.niveau?.trim() || 'Tous niveaux',
-            prix:        parseFloat(body.prix),
+            titre: body.titre.trim(), duree: body.duree?.trim() || '',
+            niveau: body.niveau?.trim() || 'Tous niveaux', prix: parseFloat(body.prix),
             description: body.description?.trim() || '',
-            points:      Array.isArray(body.points) ? body.points : [],
-            places_max:  parseInt(body.places_max) || 4,
-            actif:       body.actif !== false,
+            points: Array.isArray(body.points) ? body.points : [],
+            places_max: parseInt(body.places_max) || 4, actif: body.actif !== false,
           }]).select().single();
           if (error) return res.status(500).json({ error: error.message });
           return res.status(201).json(data);
@@ -169,5 +165,5 @@ module.exports = async function handler(req, res) {
     } catch { return safeError(res, 500, 'Erreur serveur'); }
   }
 
-  return res.status(404).json({ error: 'Route non trouvée' });
+  return res.status(404).json({ error: 'Route non trouvée', debug: { route, id, raw_slug: raw, url: req.url } });
 };
