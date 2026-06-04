@@ -33,16 +33,17 @@ const headers = () => ({ 'Content-Type': 'application/json', Authorization: `Bea
 const navLinks   = document.querySelectorAll('.nav-link');
 const sections   = document.querySelectorAll('.admin-section');
 const pageTitle  = document.getElementById('page-title');
-const TITLES = { overview: 'Tableau de bord', clients: 'Clients', products: 'Produits', orders: 'Commandes', settings: 'Paramètres' };
+const TITLES = { overview: 'Tableau de bord', clients: 'Clients', products: 'Produits', orders: 'Commandes', formations: 'Formations', settings: 'Paramètres' };
 
 function showSection(name) {
   navLinks.forEach(l  => l.classList.toggle('active', l.dataset.section === name));
   sections.forEach(s  => s.classList.toggle('hidden', s.id !== `section-${name}`));
   pageTitle.textContent = TITLES[name] || name;
-  if (name === 'overview') loadStats();
-  if (name === 'clients')  loadClients();
-  if (name === 'products') loadProducts();
-  if (name === 'orders')   loadOrders();
+  if (name === 'overview')   loadStats();
+  if (name === 'clients')    loadClients();
+  if (name === 'products')   loadProducts();
+  if (name === 'orders')     loadOrders();
+  if (name === 'formations') loadFormations();
 }
 
 navLinks.forEach(link => link.addEventListener('click', e => { e.preventDefault(); showSection(link.dataset.section); }));
@@ -317,6 +318,203 @@ async function deleteProduct(id) {
   if (res.ok) loadProducts();
   else alert('Erreur lors de la suppression.');
 }
+
+// =========================================================
+//  FORMATIONS
+// =========================================================
+let allFormations = [];
+
+async function loadFormations() {
+  const tbody = document.getElementById('formations-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Chargement…</td></tr>';
+  const res = await fetch(`${API}/admin/formations`, { headers: headers() });
+  if (!res.ok) { tbody.innerHTML = '<tr><td colspan="8" style="color:red;padding:16px">Erreur.</td></tr>'; return; }
+  allFormations = await res.json();
+  renderFormations();
+  loadBookings();
+}
+
+function renderFormations() {
+  const tbody = document.getElementById('formations-tbody');
+  if (!allFormations.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Aucune formation. Ajoutez-en une !</td></tr>';
+    return;
+  }
+  tbody.innerHTML = allFormations.map(f => `
+    <tr>
+      <td style="color:#7b7f93">#${f.id}</td>
+      <td><strong>${f.titre}</strong></td>
+      <td>${f.niveau || '—'}</td>
+      <td>${formatPrice(f.prix)}</td>
+      <td style="color:#7b7f93">${f.duree || '—'}</td>
+      <td>${f.places_max}</td>
+      <td><span class="badge badge-${f.actif ? 'oui' : 'non'}">${f.actif ? '✓ Oui' : '✗ Non'}</span></td>
+      <td>
+        <button class="btn-action btn-edit" onclick="openFormationEdit(${f.id})">Modifier</button>
+        <button class="btn-action btn-delete" onclick="deleteFormation(${f.id})">Supprimer</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ---- Modal formation ----
+const formationModal      = document.getElementById('formation-modal');
+const formationForm       = document.getElementById('formation-form');
+const formationModalError = document.getElementById('formation-modal-error');
+
+function openFormationModal(title) {
+  document.getElementById('formation-modal-title').textContent = title;
+  formationModalError.classList.add('hidden');
+  formationModal.classList.remove('hidden');
+}
+function closeFormationModal() { formationModal.classList.add('hidden'); formationForm.reset(); }
+
+document.getElementById('formation-modal-close').addEventListener('click', closeFormationModal);
+document.getElementById('formation-modal-cancel').addEventListener('click', closeFormationModal);
+formationModal.addEventListener('click', e => { if (e.target === formationModal) closeFormationModal(); });
+
+document.getElementById('btn-add-formation').addEventListener('click', () => {
+  document.getElementById('f-id').value = '';
+  document.getElementById('f-actif').checked = true;
+  openFormationModal('Nouvelle formation');
+});
+
+function openFormationEdit(id) {
+  const f = allFormations.find(f => f.id === id);
+  if (!f) return;
+  document.getElementById('f-id').value          = f.id;
+  document.getElementById('f-titre').value        = f.titre || '';
+  document.getElementById('f-duree').value        = f.duree || '';
+  document.getElementById('f-niveau').value       = f.niveau || 'Tous niveaux';
+  document.getElementById('f-prix').value         = f.prix || '';
+  document.getElementById('f-places').value       = f.places_max || 4;
+  document.getElementById('f-description').value  = f.description || '';
+  document.getElementById('f-points').value       = (f.points || []).join('\n');
+  document.getElementById('f-actif').checked      = !!f.actif;
+  openFormationModal('Modifier la formation');
+}
+
+formationForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const id        = document.getElementById('f-id').value;
+  const submitBtn = document.getElementById('formation-modal-submit');
+  submitBtn.textContent = 'Enregistrement…';
+  submitBtn.disabled    = true;
+
+  const pointsRaw = document.getElementById('f-points').value.trim();
+  const points    = pointsRaw ? pointsRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+
+  const body = {
+    titre:       document.getElementById('f-titre').value.trim(),
+    duree:       document.getElementById('f-duree').value.trim(),
+    niveau:      document.getElementById('f-niveau').value,
+    prix:        parseFloat(document.getElementById('f-prix').value),
+    places_max:  parseInt(document.getElementById('f-places').value) || 4,
+    description: document.getElementById('f-description').value.trim(),
+    points,
+    actif:       document.getElementById('f-actif').checked,
+  };
+
+  const url    = id ? `${API}/admin/formations/${id}` : `${API}/admin/formations`;
+  const method = id ? 'PUT' : 'POST';
+  const res    = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });
+  const data   = await res.json();
+
+  submitBtn.textContent = 'Enregistrer';
+  submitBtn.disabled    = false;
+
+  if (!res.ok) {
+    formationModalError.textContent = data.error || 'Erreur';
+    formationModalError.classList.remove('hidden');
+    return;
+  }
+  closeFormationModal();
+  loadFormations();
+});
+
+async function deleteFormation(id) {
+  if (!confirm('Supprimer cette formation ? Les réservations associées seront aussi supprimées.')) return;
+  const res = await fetch(`${API}/admin/formations/${id}`, { method: 'DELETE', headers: headers() });
+  if (res.ok) loadFormations();
+  else alert('Erreur lors de la suppression.');
+}
+
+// ---- Sous-onglets formations / réservations ----
+document.querySelectorAll('.formation-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.formation-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const isBookings = btn.dataset.tab === 'bookings';
+    document.getElementById('formations-list-view').classList.toggle('hidden', isBookings);
+    document.getElementById('btn-add-formation').style.display = isBookings ? 'none' : '';
+    document.getElementById('formations-bookings-view').classList.toggle('hidden', !isBookings);
+  });
+});
+
+// =========================================================
+//  RÉSERVATIONS FORMATIONS
+// =========================================================
+let allBookings   = [];
+let bookingFilter = 'pending';
+
+async function loadBookings() {
+  const tbody = document.getElementById('bookings-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Chargement…</td></tr>';
+  const res = await fetch(`${API}/admin/formation-bookings`, { headers: headers() });
+  if (!res.ok) { tbody.innerHTML = '<tr><td colspan="8" style="color:red;padding:16px">Erreur.</td></tr>'; return; }
+  allBookings = await res.json();
+
+  const pending = allBookings.filter(b => b.status === 'pending').length;
+  const badge   = document.getElementById('bookings-badge');
+  if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
+
+  renderBookings();
+}
+
+function renderBookings() {
+  const tbody = document.getElementById('bookings-tbody');
+  const list  = bookingFilter === 'all' ? allBookings : allBookings.filter(b => b.status === bookingFilter);
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Aucune réservation.</td></tr>`;
+    return;
+  }
+  const STATUS = { pending: '⏳ En attente', confirmed: '✓ Confirmée', cancelled: '✗ Annulée' };
+  tbody.innerHTML = list.map(b => `
+    <tr>
+      <td><strong>${b.formations?.titre || '—'}</strong></td>
+      <td>${b.user_name || '—'}</td>
+      <td>${b.user_email}</td>
+      <td>${b.user_phone || '—'}</td>
+      <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#7b7f93">${b.message || '—'}</td>
+      <td><span class="badge badge-${b.status === 'pending' ? 'new' : b.status === 'confirmed' ? 'oui' : 'non'}">${STATUS[b.status] || b.status}</span></td>
+      <td style="color:#7b7f93">${new Date(b.created_at).toLocaleDateString('fr-FR')}</td>
+      <td>
+        ${b.status === 'pending' ? `
+          <button class="btn-action btn-edit"   onclick="updateBooking(${b.id},'confirmed')">Confirmer</button>
+          <button class="btn-action btn-delete" onclick="updateBooking(${b.id},'cancelled')">Annuler</button>
+        ` : '—'}
+      </td>
+    </tr>`).join('');
+}
+
+async function updateBooking(id, status) {
+  const label = status === 'confirmed' ? 'Confirmer' : 'Annuler';
+  if (!confirm(`${label} cette réservation ?`)) return;
+  const res = await fetch(`${API}/admin/formation-bookings/${id}`, {
+    method: 'PUT', headers: headers(), body: JSON.stringify({ status })
+  });
+  if (res.ok) loadBookings();
+  else alert('Erreur lors du traitement.');
+}
+
+document.querySelectorAll('.booking-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.booking-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    bookingFilter = btn.dataset.filter;
+    renderBookings();
+  });
+});
 
 // =========================================================
 //  SETTINGS — changement de mot de passe

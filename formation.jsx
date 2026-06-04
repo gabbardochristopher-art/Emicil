@@ -2,41 +2,91 @@
 // EMICILS — Page Formation
 // ==========================================================================
 
+const FORMATIONS_FALLBACK = [
+  { id: null, titre: "Formation Pose Classique",  duree: "1 jour · 7 h",   niveau: "Débutant",      prix: 290, description: "Apprenez les bases de la pose cil à cil : préparation, isolation, collage, séchage. Vous repartez avec votre kit de démarrage.",       points: ["Anatomie de l'œil & sécurité","Choix des cils & colle","Technique d'isolation","Pose sur mannequin + modèle réel"] },
+  { id: null, titre: "Formation Volume Russe",    duree: "2 jours · 14 h", niveau: "Intermédiaire", prix: 490, description: "Maîtrisez la confection de bouquets volume et méga-volume. Prérequis : maîtrise de la pose classique.",                              points: ["Confection des bouquets 2D à 10D","Courbures & longueurs adaptées","Gestion du temps en cabine","Suivi clientèle & remplissage"] },
+  { id: null, titre: "Formation Rehaussement & Teinture", duree: "1 jour · 6 h", niveau: "Tous niveaux", prix: 250, description: "Lash lift + teinture : tout pour sublimer le cil naturel sans extensions. Technique rapide et rentable.", points: ["Bâtonnets & colle lash lift","Application de la teinture","Timing & neutralisation","Protocole client & contre-indications"] },
+  { id: null, titre: "Perfectionnement & Business", duree: "1 jour · 7 h", niveau: "Avancé",       prix: 320, description: "Affinez votre technique, optimisez votre cabine et développez votre clientèle. Coaching personnalisé.",                             points: ["Correction des erreurs courantes","Tarification & positionnement","Réseaux sociaux & avant/après","Fidélisation & panier moyen"] },
+];
+
+function BookingModal({ formation, onClose }) {
+  const [form, setForm]       = React.useState({ name: "", email: "", phone: "", message: "" });
+  const [sending, setSending] = React.useState(false);
+  const [done, setDone]       = React.useState(false);
+  const [error, setError]     = React.useState(null);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.email.trim()) { setError("L'email est requis."); return; }
+    setSending(true); setError(null);
+    try {
+      const res = await fetch('/api/formation-bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formation_id: formation.id, user_email: form.email, user_name: form.name, user_phone: form.phone, message: form.message }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Erreur, réessayez.'); setSending(false); return; }
+      setDone(true);
+    } catch { setError('Erreur de connexion.'); }
+    setSending(false);
+  }
+
+  const inp = { border: "1px solid var(--ligne)", borderRadius: "var(--r-sm)", padding: "0.7rem 0.85rem", background: "var(--beige-bg)", color: "var(--texte)", width: "100%", font: "inherit" };
+  const lbl = { display: "block", fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--texte-doux)", marginBottom: 5 };
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(29,26,22,0.55)", backdropFilter: "blur(3px)", zIndex: 200 }} />
+      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 201,
+        background: "var(--blanc)", borderRadius: "var(--r-lg)", padding: "2rem", width: "min(480px,94vw)", maxHeight: "90vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.4rem" }}>
+          <div>
+            <p style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--or)", marginBottom: 4 }}>S'inscrire</p>
+            <h2 style={{ fontSize: "1.2rem", fontWeight: 400 }}>{formation.titre}</h2>
+          </div>
+          <button onClick={onClose} style={{ color: "var(--texte-doux)", marginLeft: 12 }}><Ico.close width={20} height={20} /></button>
+        </div>
+
+        {done ? (
+          <div style={{ textAlign: "center", padding: "1.5rem 0" }}>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--or)", color: "var(--blanc)", display: "grid", placeItems: "center", margin: "0 auto 1.2rem" }}>
+              <Ico.check width={26} height={26} />
+            </div>
+            <p style={{ fontFamily: "var(--f-display)", fontSize: "1.1rem", marginBottom: "0.5rem" }}>Demande envoyée !</p>
+            <p style={{ color: "var(--texte-doux)", fontSize: "0.88rem" }}>Nous vous contacterons sous 24 h pour confirmer votre inscription.</p>
+            <button className="btn btn-dark" style={{ marginTop: "1.4rem" }} onClick={onClose}>Fermer</button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}>
+            <label><span style={lbl}>Prénom & Nom</span><input style={inp} value={form.name} onChange={e => setForm(v => ({...v, name: e.target.value}))} placeholder="Marie Dupont" /></label>
+            <label><span style={lbl}>Email *</span><input style={inp} type="email" required value={form.email} onChange={e => setForm(v => ({...v, email: e.target.value}))} placeholder="marie@exemple.fr" /></label>
+            <label><span style={lbl}>Téléphone</span><input style={inp} type="tel" value={form.phone} onChange={e => setForm(v => ({...v, phone: e.target.value}))} placeholder="06 12 34 56 78" /></label>
+            <label><span style={lbl}>Message (facultatif)</span><textarea style={{...inp, resize: "vertical"}} rows={3} value={form.message} onChange={e => setForm(v => ({...v, message: e.target.value}))} placeholder="Questions, disponibilités…" /></label>
+            {error && <p style={{ color: "#c0392b", fontSize: "0.82rem" }}>{error}</p>}
+            <button className="btn btn-dark btn-block" type="submit" disabled={sending} style={{ height: 48, opacity: sending ? 0.6 : 1 }}>
+              {sending ? "Envoi…" : "Envoyer ma demande"}
+              <Ico.arrow width={15} height={15} />
+            </button>
+          </form>
+        )}
+      </div>
+    </>
+  );
+}
+
 function FormationPage({ go }) {
-  const formations = [
-    {
-      titre: "Formation Pose Classique",
-      duree: "1 jour · 7 h",
-      niveau: "Débutant",
-      prix: 290,
-      desc: "Apprenez les bases de la pose cil à cil : préparation, isolation, collage, séchage. Vous repartez avec votre kit de démarrage.",
-      points: ["Anatomie de l'œil & sécurité", "Choix des cils & colle", "Technique d'isolation", "Pose sur mannequin + modèle réel"],
-    },
-    {
-      titre: "Formation Volume Russe",
-      duree: "2 jours · 14 h",
-      niveau: "Intermédiaire",
-      prix: 490,
-      desc: "Maîtrisez la confection de bouquets volume et méga-volume. Prérequis : maîtrise de la pose classique.",
-      points: ["Confection des bouquets 2D à 10D", "Courbures & longueurs adaptées", "Gestion du temps en cabine", "Suivi clientèle & remplissage"],
-    },
-    {
-      titre: "Formation Rehaussement & Teinture",
-      duree: "1 jour · 6 h",
-      niveau: "Tous niveaux",
-      prix: 250,
-      desc: "Lash lift + teinture : tout pour sublimer le cil naturel sans extensions. Technique rapide et rentable.",
-      points: ["Bâtonnets & colle lash lift", "Application de la teinture", "Timing & neutralisation", "Protocole client & contre-indications"],
-    },
-    {
-      titre: "Perfectionnement & Business",
-      duree: "1 jour · 7 h",
-      niveau: "Avancé",
-      prix: 320,
-      desc: "Affinez votre technique, optimisez votre cabine et développez votre clientèle. Coaching personnalisé.",
-      points: ["Correction des erreurs courantes", "Tarification & positionnement", "Réseaux sociaux & avant/après", "Fidélisation & panier moyen"],
-    },
-  ];
+  const [formations, setFormations] = React.useState(null);
+  const [booking, setBooking]       = React.useState(null);
+
+  React.useEffect(() => {
+    fetch('/api/formations')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setFormations(data.length ? data : FORMATIONS_FALLBACK))
+      .catch(() => setFormations(FORMATIONS_FALLBACK));
+  }, []);
+
+  const liste = formations || FORMATIONS_FALLBACK;
 
   const NIVEAU_COLOR = {
     "Débutant":     { bg: "var(--or-soft)",   c: "var(--or)" },
@@ -47,6 +97,7 @@ function FormationPage({ go }) {
 
   return (
     <div>
+      {booking && <BookingModal formation={booking} onClose={() => setBooking(null)} />}
       {/* Hero */}
       <section style={{ background: "var(--noir)", color: "var(--blanc)", padding: "clamp(3rem,7vw,6rem) 0" }}>
         <div className="container" style={{ maxWidth: 780, textAlign: "center" }}>
@@ -72,8 +123,11 @@ function FormationPage({ go }) {
 
       {/* Grille formations */}
       <section className="container" style={{ paddingTop: "var(--pad-section)", paddingBottom: "var(--pad-section)" }}>
+        {formations === null && (
+          <div style={{ textAlign: "center", padding: "3rem 0", color: "var(--texte-doux)" }}>Chargement…</div>
+        )}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.6rem" }}>
-          {formations.map((f, i) => {
+          {liste.map((f, i) => {
             const niv = NIVEAU_COLOR[f.niveau] || NIVEAU_COLOR["Tous niveaux"];
             return (
               <div key={i} className="fade-up" style={{ background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-lg)",
@@ -91,11 +145,11 @@ function FormationPage({ go }) {
 
                 <div>
                   <h3 style={{ fontSize: "1.15rem", fontWeight: 400, marginBottom: "0.5rem" }}>{f.titre}</h3>
-                  <p style={{ fontSize: "0.86rem", color: "var(--texte-doux)", lineHeight: 1.65 }}>{f.desc}</p>
+                  <p style={{ fontSize: "0.86rem", color: "var(--texte-doux)", lineHeight: 1.65 }}>{f.description || f.desc}</p>
                 </div>
 
                 <ul style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
-                  {f.points.map((pt, j) => (
+                  {(f.points || []).map((pt, j) => (
                     <li key={j} style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: "0.83rem", color: "var(--texte)" }}>
                       <Ico.check width={14} height={14} style={{ color: "var(--or)", flexShrink: 0, marginTop: 2 }} />
                       {pt}
@@ -107,7 +161,7 @@ function FormationPage({ go }) {
                   display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Price value={f.prix} size="1.3rem" />
                   <button className="btn btn-dark" style={{ padding: "0.7em 1.4em" }}
-                    onClick={() => go("contact")}>
+                    onClick={() => f.id ? setBooking(f) : go("contact")}>
                     S'inscrire
                   </button>
                 </div>

@@ -85,6 +85,55 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
 -- =====================================================
+--  TABLE : formations
+-- =====================================================
+CREATE TABLE IF NOT EXISTS formations (
+  id          SERIAL PRIMARY KEY,
+  titre       TEXT NOT NULL,
+  duree       TEXT DEFAULT '',
+  niveau      TEXT DEFAULT 'Tous niveaux',
+  prix        NUMERIC(10,2) NOT NULL DEFAULT 0,
+  description TEXT DEFAULT '',
+  points      JSONB DEFAULT '[]',
+  places_max  INTEGER DEFAULT 4,
+  actif       BOOLEAN DEFAULT true,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE formations ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Lecture publique formations" ON formations;
+CREATE POLICY "Lecture publique formations" ON formations FOR SELECT USING (true);
+
+-- =====================================================
+--  TABLE : formation_bookings (réservations)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS formation_bookings (
+  id            SERIAL PRIMARY KEY,
+  formation_id  INTEGER REFERENCES formations(id) ON DELETE CASCADE,
+  user_id       UUID REFERENCES auth.users(id),
+  user_email    TEXT NOT NULL,
+  user_name     TEXT DEFAULT '',
+  user_phone    TEXT DEFAULT '',
+  message       TEXT DEFAULT '',
+  status        TEXT DEFAULT 'pending',
+  created_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE formation_bookings ENABLE ROW LEVEL SECURITY;
+
+-- Seed initial : 4 formations par défaut
+INSERT INTO formations (titre, duree, niveau, prix, description, points, places_max) VALUES
+  ('Formation Pose Classique',  '1 jour · 7 h',  'Débutant',      290, 'Apprenez les bases de la pose cil à cil : préparation, isolation, collage, séchage. Vous repartez avec votre kit de démarrage.',
+    '["Anatomie de l''œil & sécurité","Choix des cils & colle","Technique d''isolation","Pose sur mannequin + modèle réel"]', 4),
+  ('Formation Volume Russe',    '2 jours · 14 h','Intermédiaire', 490, 'Maîtrisez la confection de bouquets volume et méga-volume. Prérequis : maîtrise de la pose classique.',
+    '["Confection des bouquets 2D à 10D","Courbures & longueurs adaptées","Gestion du temps en cabine","Suivi clientèle & remplissage"]', 4),
+  ('Formation Rehaussement & Teinture','1 jour · 6 h','Tous niveaux',250,'Lash lift + teinture : tout pour sublimer le cil naturel sans extensions. Technique rapide et rentable.',
+    '["Bâtonnets & colle lash lift","Application de la teinture","Timing & neutralisation","Protocole client & contre-indications"]', 4),
+  ('Perfectionnement & Business','1 jour · 7 h','Avancé',        320, 'Affinez votre technique, optimisez votre cabine et développez votre clientèle. Coaching personnalisé.',
+    '["Correction des erreurs courantes","Tarification & positionnement","Réseaux sociaux & avant/après","Fidélisation & panier moyen"]', 4)
+ON CONFLICT DO NOTHING;
+
+-- =====================================================
 --  PREMIER ADMIN
 --  Exécutez le script : node scripts/create-admin.js
 --  OU insérez manuellement un hash bcrypt ici :
