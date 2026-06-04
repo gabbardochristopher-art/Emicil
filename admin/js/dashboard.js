@@ -2,6 +2,10 @@
 //  ADMIN DASHBOARD — v2 formations
 // =========================================================
 
+function esc(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 const token = sessionStorage.getItem('admin_token');
 if (!token) window.location.replace('index.html');
 
@@ -79,9 +83,9 @@ function renderClients(list) {
   }
   tbody.innerHTML = list.map(u => `
     <tr>
-      <td><strong>${u.firstName || '—'} ${u.lastName || ''}</strong></td>
-      <td>${u.email}</td>
-      <td>${u.phone || '—'}</td>
+      <td><strong>${esc(u.firstName) || '—'} ${esc(u.lastName)}</strong></td>
+      <td>${esc(u.email)}</td>
+      <td>${esc(u.phone) || '—'}</td>
       <td style="color:#b08d57;font-weight:600">${u.points} pts</td>
       <td><span class="badge badge-${u.confirmed ? 'oui' : 'non'}">${u.confirmed ? '✓ Oui' : '✗ Non'}</span></td>
       <td style="color:#7b7f93">${new Date(u.createdAt).toLocaleDateString('fr-FR')}</td>
@@ -143,17 +147,17 @@ function renderOrders() {
   const MODE   = { collect: 'Click & Collect', relais: 'Point relais', domicile: 'Domicile' };
   tbody.innerHTML = list.map(o => `
     <tr>
-      <td><strong>${o.id}</strong></td>
-      <td>${o.user_name || o.user_email}</td>
+      <td><strong>${esc(o.id)}</strong></td>
+      <td>${esc(o.user_name || o.user_email)}</td>
       <td>${new Date(o.created_at).toLocaleDateString('fr-FR')}</td>
-      <td>${MODE[o.shipping_mode] || o.shipping_mode}</td>
+      <td>${MODE[o.shipping_mode] || esc(o.shipping_mode)}</td>
       <td>${Number(o.total).toFixed(2)} €</td>
       <td style="color:#b08d57">${o.points_to_award} pts</td>
       <td><span class="badge badge-${o.status === 'pending' ? 'new' : o.status === 'validated' ? 'oui' : 'non'}">${STATUS[o.status]}</span></td>
       <td>
         ${o.status === 'pending' ? `
-          <button class="btn-action btn-edit"   onclick="processOrder('${o.id}','validated')">Valider</button>
-          <button class="btn-action btn-delete" onclick="processOrder('${o.id}','refused')">Refuser</button>
+          <button class="btn-action btn-edit"   data-id="${esc(o.id)}" data-action="validated">Valider</button>
+          <button class="btn-action btn-delete" data-id="${esc(o.id)}" data-action="refused">Refuser</button>
         ` : '—'}
       </td>
     </tr>`).join('');
@@ -168,6 +172,11 @@ async function processOrder(id, status) {
   if (res.ok) { loadOrders(); loadStats(); }
   else alert('Erreur lors du traitement.');
 }
+
+document.getElementById('orders-tbody').addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (btn) processOrder(btn.dataset.id, btn.dataset.action);
+});
 
 document.querySelectorAll('.order-filter').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -220,7 +229,7 @@ function formatPrice(price) {
 }
 
 // Recherche
-document.getElementById('search-products').addEventListener('input', e => {
+document.getElementById('search-products')?.addEventListener('input', e => {
   const q = e.target.value.toLowerCase();
   renderTable(allProducts.filter(p => p.name.toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q)));
 });
@@ -331,7 +340,6 @@ async function loadFormations() {
   if (!res.ok) { tbody.innerHTML = '<tr><td colspan="8" style="color:red;padding:16px">Erreur.</td></tr>'; return; }
   allFormations = await res.json();
   renderFormations();
-  loadBookings();
 }
 
 function renderFormations() {
@@ -343,15 +351,15 @@ function renderFormations() {
   tbody.innerHTML = allFormations.map(f => `
     <tr>
       <td style="color:#7b7f93">#${f.id}</td>
-      <td><strong>${f.titre}</strong></td>
-      <td>${f.niveau || '—'}</td>
+      <td><strong>${esc(f.titre)}</strong></td>
+      <td>${esc(f.niveau) || '—'}</td>
       <td>${formatPrice(f.prix)}</td>
-      <td style="color:#7b7f93">${f.duree || '—'}</td>
+      <td style="color:#7b7f93">${esc(f.duree) || '—'}</td>
       <td>${f.places_max}</td>
       <td><span class="badge badge-${f.actif ? 'oui' : 'non'}">${f.actif ? '✓ Oui' : '✗ Non'}</span></td>
       <td>
-        <button class="btn-action btn-edit" onclick="openFormationEdit(${f.id})">Modifier</button>
-        <button class="btn-action btn-delete" onclick="deleteFormation(${f.id})">Supprimer</button>
+        <button class="btn-action btn-edit"   data-id="${f.id}" data-formation-action="edit">Modifier</button>
+        <button class="btn-action btn-delete" data-id="${f.id}" data-formation-action="delete">Supprimer</button>
       </td>
     </tr>`).join('');
 }
@@ -438,6 +446,15 @@ async function deleteFormation(id) {
   else alert('Erreur lors de la suppression.');
 }
 
+// ---- Event délégué formations (remplace les onclick inline) ----
+document.getElementById('formations-tbody').addEventListener('click', e => {
+  const btn = e.target.closest('[data-formation-action]');
+  if (!btn) return;
+  const id = parseInt(btn.dataset.id);
+  if (btn.dataset.formationAction === 'edit')   openFormationEdit(id);
+  if (btn.dataset.formationAction === 'delete') deleteFormation(id);
+});
+
 // ---- Sous-onglets formations / réservations ----
 document.querySelectorAll('.formation-tab').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -447,6 +464,7 @@ document.querySelectorAll('.formation-tab').forEach(btn => {
     document.getElementById('formations-list-view').classList.toggle('hidden', isBookings);
     document.getElementById('btn-add-formation').style.display = isBookings ? 'none' : '';
     document.getElementById('formations-bookings-view').classList.toggle('hidden', !isBookings);
+    if (isBookings) loadBookings();
   });
 });
 
@@ -481,17 +499,17 @@ function renderBookings() {
   const STATUS = { pending: '⏳ En attente', confirmed: '✓ Confirmée', cancelled: '✗ Annulée' };
   tbody.innerHTML = list.map(b => `
     <tr>
-      <td><strong>${b.formations?.titre || '—'}</strong></td>
-      <td>${b.user_name || '—'}</td>
-      <td>${b.user_email}</td>
-      <td>${b.user_phone || '—'}</td>
-      <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#7b7f93">${b.message || '—'}</td>
-      <td><span class="badge badge-${b.status === 'pending' ? 'new' : b.status === 'confirmed' ? 'oui' : 'non'}">${STATUS[b.status] || b.status}</span></td>
+      <td><strong>${esc(b.formations?.titre) || '—'}</strong></td>
+      <td>${esc(b.user_name) || '—'}</td>
+      <td>${esc(b.user_email)}</td>
+      <td>${esc(b.user_phone) || '—'}</td>
+      <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#7b7f93">${esc(b.message) || '—'}</td>
+      <td><span class="badge badge-${b.status === 'pending' ? 'new' : b.status === 'confirmed' ? 'oui' : 'non'}">${STATUS[b.status] || esc(b.status)}</span></td>
       <td style="color:#7b7f93">${new Date(b.created_at).toLocaleDateString('fr-FR')}</td>
       <td>
         ${b.status === 'pending' ? `
-          <button class="btn-action btn-edit"   onclick="updateBooking(${b.id},'confirmed')">Confirmer</button>
-          <button class="btn-action btn-delete" onclick="updateBooking(${b.id},'cancelled')">Annuler</button>
+          <button class="btn-action btn-edit"   data-id="${b.id}" data-booking-action="confirmed">Confirmer</button>
+          <button class="btn-action btn-delete" data-id="${b.id}" data-booking-action="cancelled">Annuler</button>
         ` : '—'}
       </td>
     </tr>`).join('');
@@ -506,6 +524,11 @@ async function updateBooking(id, status) {
   if (res.ok) loadBookings();
   else alert('Erreur lors du traitement.');
 }
+
+document.getElementById('bookings-tbody').addEventListener('click', e => {
+  const btn = e.target.closest('[data-booking-action]');
+  if (btn) updateBooking(btn.dataset.id, btn.dataset.bookingAction);
+});
 
 document.querySelectorAll('.booking-filter').forEach(btn => {
   btn.addEventListener('click', () => {

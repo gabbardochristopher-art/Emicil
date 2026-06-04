@@ -20,14 +20,13 @@ module.exports = async function handler(req, res) {
   const route    = segments[0];
   const id       = segments[1] || null;
 
-  // ---- Toutes les routes nécessitent un token admin ----
-  // (login est géré par api/admin/login.js dédié)
+  // login et verify sont gérés par leurs fichiers dédiés
   const admin = requireAdmin(req, res);
   if (!admin) return;
 
   const supabase = db();
 
-  // ---- Verify ----
+  // ---- Verify (fallback au cas où le fichier dédié ne matche pas) ----
   if (route === 'verify') {
     return res.status(200).json({ valid: true, email: admin.email });
   }
@@ -49,7 +48,7 @@ module.exports = async function handler(req, res) {
         confirmed: !!u.email_confirmed_at,
         createdAt: u.created_at,
       })));
-    } catch (err) { return res.status(500).json({ error: err.message }); }
+    } catch (err) { return safeError(res, 500, 'Erreur serveur'); }
   }
 
   // ---- Update password ----
@@ -72,95 +71,102 @@ module.exports = async function handler(req, res) {
 
   // ---- Orders ----
   if (route === 'orders') {
-    if (!id) {
-      // GET /api/admin/orders
-      if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
-      const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
-      if (error) return res.status(500).json({ error: error.message });
-      return res.status(200).json(data);
-    } else {
-      // PUT /api/admin/orders/:id
-      if (req.method !== 'PUT') return safeError(res, 405, 'Méthode non autorisée');
-      const { status } = req.body || {};
-      if (!['validated', 'refused'].includes(status)) return res.status(400).json({ error: 'Statut invalide' });
-      const { data: order, error: fetchErr } = await supabase.from('orders').select('*').eq('id', id).single();
-      if (fetchErr || !order) return res.status(404).json({ error: 'Commande introuvable' });
-      if (order.status !== 'pending') return res.status(400).json({ error: 'Commande déjà traitée' });
-      const { error: updateErr } = await supabase.from('orders').update({ status }).eq('id', id);
-      if (updateErr) return res.status(500).json({ error: updateErr.message });
-      if (status === 'validated' && order.user_id && order.points_to_award > 0) {
-        const { data: profile } = await supabase.from('profiles').select('points').eq('id', order.user_id).single();
-        const newPts = (profile?.points || 0) + order.points_to_award;
-        await supabase.from('profiles').upsert({ id: order.user_id, points: newPts }, { onConflict: 'id' });
+    try {
+      if (!id) {
+        if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
+        const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (error) return res.status(500).json({ error: error.message });
+        return res.status(200).json(data);
+      } else {
+        if (req.method !== 'PUT') return safeError(res, 405, 'Méthode non autorisée');
+        const { status } = req.body || {};
+        if (!['validated', 'refused'].includes(status)) return res.status(400).json({ error: 'Statut invalide' });
+        const { data: order, error: fetchErr } = await supabase.from('orders').select('*').eq('id', id).single();
+        if (fetchErr || !order) return res.status(404).json({ error: 'Commande introuvable' });
+        if (order.status !== 'pending') return res.status(400).json({ error: 'Commande déjà traitée' });
+        const { error: updateErr } = await supabase.from('orders').update({ status }).eq('id', id);
+        if (updateErr) return res.status(500).json({ error: updateErr.message });
+        if (status === 'validated' && order.user_id && order.points_to_award > 0) {
+          const { data: profile } = await supabase.from('profiles').select('points').eq('id', order.user_id).single();
+          const newPts = (profile?.points || 0) + order.points_to_award;
+          await supabase.from('profiles').upsert({ id: order.user_id, points: newPts }, { onConflict: 'id' });
+        }
+        return res.status(200).json({ success: true, status });
       }
-      return res.status(200).json({ success: true, status });
-    }
+    } catch { return safeError(res, 500, 'Erreur serveur'); }
   }
 
   // ---- Formations ----
   if (route === 'formations') {
-    if (!id) {
-      if (req.method === 'GET') {
-        const { data, error } = await supabase.from('formations').select('*').order('id');
-        if (error) return res.status(500).json({ error: error.message });
-        return res.status(200).json(data);
+    try {
+      if (!id) {
+        if (req.method === 'GET') {
+          const { data, error } = await supabase.from('formations').select('*').order('id');
+          if (error) return res.status(500).json({ error: error.message });
+          return res.status(200).json(data);
+        }
+        if (req.method === 'POST') {
+          const body = req.body || {};
+          if (!body.titre?.trim()) return res.status(400).json({ error: 'Le titre est requis' });
+          if (body.prix === undefined || isNaN(parseFloat(body.prix))) return res.status(400).json({ error: 'Prix invalide' });
+          const { data, error } = await supabase.from('formations').insert([{
+            titre:       body.titre.trim(),
+            duree:       body.duree?.trim() || '',
+            niveau:      body.niveau?.trim() || 'Tous niveaux',
+            prix:        parseFloat(body.prix),
+            description: body.description?.trim() || '',
+            points:      Array.isArray(body.points) ? body.points : [],
+            places_max:  parseInt(body.places_max) || 4,
+            actif:       body.actif !== false,
+          }]).select().single();
+          if (error) return res.status(500).json({ error: error.message });
+          return res.status(201).json(data);
+        }
+        return safeError(res, 405, 'Méthode non autorisée');
+      } else {
+        if (req.method === 'PUT') {
+          const body = req.body || {};
+          const updates = {};
+          if (body.titre       !== undefined) updates.titre       = body.titre.trim();
+          if (body.duree       !== undefined) updates.duree       = body.duree.trim();
+          if (body.niveau      !== undefined) updates.niveau      = body.niveau.trim();
+          if (body.prix        !== undefined) updates.prix        = parseFloat(body.prix);
+          if (body.description !== undefined) updates.description = body.description.trim();
+          if (body.points      !== undefined) updates.points      = Array.isArray(body.points) ? body.points : [];
+          if (body.places_max  !== undefined) updates.places_max  = parseInt(body.places_max) || 4;
+          if (body.actif       !== undefined) updates.actif       = !!body.actif;
+          const { data, error } = await supabase.from('formations').update(updates).eq('id', id).select().single();
+          if (error) return res.status(500).json({ error: error.message });
+          return res.status(200).json(data);
+        }
+        if (req.method === 'DELETE') {
+          const { error } = await supabase.from('formations').delete().eq('id', id);
+          if (error) return res.status(500).json({ error: error.message });
+          return res.status(200).json({ success: true });
+        }
+        return safeError(res, 405, 'Méthode non autorisée');
       }
-      if (req.method === 'POST') {
-        const body = req.body || {};
-        if (!body.titre?.trim()) return res.status(400).json({ error: 'Le titre est requis' });
-        if (body.prix === undefined || isNaN(parseFloat(body.prix))) return res.status(400).json({ error: 'Prix invalide' });
-        const { data, error } = await supabase.from('formations').insert([{
-          titre: body.titre.trim(), duree: body.duree?.trim() || '',
-          niveau: body.niveau?.trim() || 'Tous niveaux', prix: parseFloat(body.prix),
-          description: body.description?.trim() || '',
-          points: Array.isArray(body.points) ? body.points : [],
-          places_max: parseInt(body.places_max) || 4, actif: body.actif !== false,
-        }]).select().single();
-        if (error) return res.status(500).json({ error: error.message });
-        return res.status(201).json(data);
-      }
-      return safeError(res, 405, 'Méthode non autorisée');
-    } else {
-      if (req.method === 'PUT') {
-        const body = req.body || {};
-        const updates = {};
-        if (body.titre       !== undefined) updates.titre       = body.titre.trim();
-        if (body.duree       !== undefined) updates.duree       = body.duree.trim();
-        if (body.niveau      !== undefined) updates.niveau      = body.niveau.trim();
-        if (body.prix        !== undefined) updates.prix        = parseFloat(body.prix);
-        if (body.description !== undefined) updates.description = body.description.trim();
-        if (body.points      !== undefined) updates.points      = Array.isArray(body.points) ? body.points : [];
-        if (body.places_max  !== undefined) updates.places_max  = parseInt(body.places_max) || 4;
-        if (body.actif       !== undefined) updates.actif       = !!body.actif;
-        const { data, error } = await supabase.from('formations').update(updates).eq('id', id).select().single();
-        if (error) return res.status(500).json({ error: error.message });
-        return res.status(200).json(data);
-      }
-      if (req.method === 'DELETE') {
-        const { error } = await supabase.from('formations').delete().eq('id', id);
-        if (error) return res.status(500).json({ error: error.message });
-        return res.status(200).json({ success: true });
-      }
-      return safeError(res, 405, 'Méthode non autorisée');
-    }
+    } catch { return safeError(res, 500, 'Erreur serveur'); }
   }
 
   // ---- Formation bookings ----
   if (route === 'formation-bookings') {
-    if (!id) {
-      if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
-      const { data, error } = await supabase
-        .from('formation_bookings').select('*, formations(titre)').order('created_at', { ascending: false });
-      if (error) return res.status(500).json({ error: error.message });
-      return res.status(200).json(data);
-    } else {
-      if (req.method !== 'PUT') return safeError(res, 405, 'Méthode non autorisée');
-      const { status } = req.body || {};
-      if (!['pending', 'confirmed', 'cancelled'].includes(status)) return res.status(400).json({ error: 'Statut invalide' });
-      const { data, error } = await supabase.from('formation_bookings').update({ status }).eq('id', id).select().single();
-      if (error) return res.status(500).json({ error: error.message });
-      return res.status(200).json(data);
-    }
+    try {
+      if (!id) {
+        if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
+        const { data, error } = await supabase
+          .from('formation_bookings').select('*, formations(titre)').order('created_at', { ascending: false });
+        if (error) return res.status(500).json({ error: error.message });
+        return res.status(200).json(data);
+      } else {
+        if (req.method !== 'PUT') return safeError(res, 405, 'Méthode non autorisée');
+        const { status } = req.body || {};
+        if (!['confirmed', 'cancelled'].includes(status)) return res.status(400).json({ error: 'Statut invalide' });
+        const { data, error } = await supabase.from('formation_bookings').update({ status }).eq('id', id).select().single();
+        if (error) return res.status(500).json({ error: error.message });
+        return res.status(200).json(data);
+      }
+    } catch { return safeError(res, 500, 'Erreur serveur'); }
   }
 
   return res.status(404).json({ error: 'Route non trouvée' });
