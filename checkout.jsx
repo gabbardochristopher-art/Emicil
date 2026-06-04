@@ -129,8 +129,7 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
   const relaisList = ["Tabac de la Pinède — 0,3 km", "Carrefour City Plan-de-Campagne — 1,1 km", "Relais Presse Centre — 1,8 km"];
   const creneaux  = ["Aujourd'hui · 16 h 00", "Aujourd'hui · 18 h 30", "Demain · 10 h 00", "Demain · 14 h 00"];
 
-  async function next() {
-    if (step < 3) { setStep(step + 1); return; }
+  async function saveOrder() {
     setSaving(true);
     try {
       const { data: { session } } = await window.SUPABASE.auth.getSession();
@@ -150,6 +149,11 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
     setStep(4);
     onDone && onDone({ total, ptsGagnes, mode });
     window.scrollTo(0, 0);
+  }
+
+  async function next() {
+    if (step < 3) { setStep(step + 1); return; }
+    await saveOrder();
   }
 
   const oosItems = items.filter(i => {
@@ -367,14 +371,9 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
                 </label>
               )}
 
-              {/* Formulaire carte */}
+              {/* Formulaire Stripe Elements */}
               {payMethod === "card" && (
-                <div style={{ background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-md)", padding: "1.4rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.9rem" }}>
-                  <Field label="Numéro de carte" ph="0000 0000 0000 0000" full />
-                  <Field label="Expiration" ph="MM / AA" />
-                  <Field label="CVC" ph="123" />
-                  <Field label="Nom sur la carte" ph="Prénom NOM" full />
-                </div>
+                <StripePaymentForm total={total} onSuccess={saveOrder} />
               )}
 
               {/* Paiement en magasin */}
@@ -394,7 +393,7 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
 
               <p style={{ fontSize: "0.78rem", color: "var(--texte-doux)", marginTop: "1rem", display: "flex", alignItems: "center", gap: 6 }}>
                 <Ico.check width={14} height={14} style={{ color: "var(--or)" }} />
-                {payMethod === "store" ? "Commande réservée — paiement à l'institut" : "Paiement en ligne sécurisé (intégration Stripe à venir)"}
+                {payMethod === "store" ? "Commande réservée — paiement à l'institut" : "Paiement sécurisé par Stripe · SSL"}
               </p>
             </div>
           )}
@@ -430,13 +429,114 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
               <Ico.sparkle width={14} height={14} /> +{ptsGagnes} points fidélité
             </div>
           </div>
-          <button className="btn btn-dark btn-block" style={{ height: 50, marginTop: "1.4rem" }} onClick={next}>
-            {step < 3 ? "Continuer" : payMethod === "store" ? `Réserver — payer en magasin` : `Payer ${euro(total)}`}
-            <Ico.arrow width={15} height={15} />
-          </button>
+          {!(step === 3 && payMethod === "card") && (
+            <button className="btn btn-dark btn-block" style={{ height: 50, marginTop: "1.4rem" }} onClick={next}>
+              {step < 3 ? "Continuer" : `Réserver — payer en magasin`}
+              <Ico.arrow width={15} height={15} />
+            </button>
+          )}
           {step > 1 && <button className="btn btn-light btn-block" style={{ marginTop: "0.6rem" }} onClick={() => setStep(step - 1)}>Retour</button>}
         </aside>
       </div>
+    </div>
+  );
+}
+
+// ---------- Stripe Elements ----------
+function StripePaymentForm({ total, onSuccess }) {
+  const [clientSecret, setClientSecret] = React.useState(null);
+  const [stripeObj, setStripeObj]       = React.useState(null);
+  const [elementsObj, setElementsObj]   = React.useState(null);
+  const [paying, setPaying]             = React.useState(false);
+  const [error, setError]               = React.useState(null);
+  const mountRef = React.useRef(null);
+
+  React.useEffect(() => {
+    fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: total }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d.error) { setError(d.error); return; }
+        setClientSecret(d.clientSecret);
+      })
+      .catch(() => setError('Impossible de charger le paiement. Vérifiez votre connexion.'));
+  }, [total]);
+
+  React.useEffect(() => {
+    if (!clientSecret || !window.Stripe || !mountRef.current) return;
+    const s = window.Stripe(window.STRIPE_PK);
+    const el = s.elements({
+      clientSecret,
+      appearance: {
+        theme: 'flat',
+        variables: {
+          colorPrimary: '#b08d57',
+          colorBackground: '#fbf8f2',
+          colorText: '#34302a',
+          colorDanger: '#c0392b',
+          borderRadius: '8px',
+          fontFamily: "'Jost', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+          fontSizeBase: '15px',
+        },
+        rules: {
+          '.Input': { border: '1px solid #e3d8c5', padding: '0.7rem 0.85rem' },
+          '.Input:focus': { border: '1px solid #b08d57', boxShadow: 'none' },
+          '.Label': { fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#8c8175' },
+        },
+      },
+    });
+    const pe = el.create('payment');
+    pe.mount(mountRef.current);
+    setStripeObj(s);
+    setElementsObj(el);
+    return () => { try { pe.unmount(); } catch (_) {} };
+  }, [clientSecret]);
+
+  async function handlePay(e) {
+    e.preventDefault();
+    if (!stripeObj || !elementsObj) return;
+    setPaying(true);
+    setError(null);
+    const { error: stripeErr } = await stripeObj.confirmPayment({
+      elements: elementsObj,
+      redirect: 'if_required',
+    });
+    if (stripeErr) {
+      setError(stripeErr.message);
+      setPaying(false);
+    } else {
+      await onSuccess();
+    }
+  }
+
+  if (error && !clientSecret) return (
+    <div style={{ background: '#fff2f2', border: '1px solid #f5c6cb', borderRadius: 'var(--r-md)', padding: '1.2rem', fontSize: '0.88rem', color: '#c0392b' }}>
+      {error}
+    </div>
+  );
+
+  if (!clientSecret) return (
+    <div style={{ background: 'var(--blanc)', border: '1px solid var(--ligne)', borderRadius: 'var(--r-md)', padding: '1.4rem', color: 'var(--texte-doux)', fontSize: '0.9rem' }}>
+      Chargement du formulaire de paiement…
+    </div>
+  );
+
+  return (
+    <div style={{ background: 'var(--blanc)', border: '1px solid var(--ligne)', borderRadius: 'var(--r-md)', padding: '1.4rem' }}>
+      <div ref={mountRef} />
+      {error && <p style={{ color: '#c0392b', fontSize: '0.82rem', marginTop: '0.8rem' }}>{error}</p>}
+      <button
+        className="btn btn-dark btn-block"
+        style={{ height: 50, marginTop: '1.2rem', opacity: (!stripeObj || paying) ? 0.6 : 1 }}
+        onClick={handlePay}
+        disabled={!stripeObj || paying}
+      >
+        {paying ? 'Traitement en cours…' : `Payer ${euro(total)}`}
+        <Ico.arrow width={15} height={15} />
+      </button>
     </div>
   );
 }

@@ -3,3 +3,6 @@ window.SUPABASE = supabase.createClient(
   'https://mspqucufnwgvjytwsnfp.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zcHF1Y3Vmbndndmp5dHdzbmZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTQ2MjUsImV4cCI6MjA5NjA3MDYyNX0.2MMTMTWRPJEwqbZ_8Z6LXeIMmKBphA6ek1N78qmjWs4'
 );
+
+// Clé publique Stripe (safe côté navigateur — remplacer par votre clé pk_live_ en production)
+window.STRIPE_PK = 'pk_test_REMPLACER_PAR_VOTRE_CLE_PUBLIQUE';
