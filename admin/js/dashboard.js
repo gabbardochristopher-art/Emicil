@@ -68,7 +68,11 @@ async function loadClients() {
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#7b7f93;padding:28px">Chargement…</td></tr>';
 
   const res = await fetch(`${API}/admin/users`, { headers: headers() });
-  if (!res.ok) { tbody.innerHTML = '<tr><td colspan="6" style="color:red;padding:16px">Erreur.</td></tr>'; return; }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    tbody.innerHTML = `<tr><td colspan="6" style="color:red;padding:16px">Erreur ${res.status} : ${err.error || res.statusText}</td></tr>`;
+    return;
+  }
 
   allClients = await res.json();
   document.getElementById('clients-count').textContent = `${allClients.length} client(s) inscrit(s)`;
@@ -131,7 +135,11 @@ async function loadOrders() {
   const tbody = document.getElementById('orders-tbody');
   tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Chargement…</td></tr>';
   const res = await fetch(`${API}/admin/orders`, { headers: headers() });
-  if (!res.ok) { tbody.innerHTML = '<tr><td colspan="8" style="color:red;padding:16px">Erreur.</td></tr>'; return; }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    tbody.innerHTML = `<tr><td colspan="8" style="color:red;padding:16px">Erreur ${res.status} : ${err.error || res.statusText}</td></tr>`;
+    return;
+  }
   allOrders = await res.json();
   renderOrders();
 }
@@ -337,7 +345,11 @@ async function loadFormations() {
   const tbody = document.getElementById('formations-tbody');
   tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Chargement…</td></tr>';
   const res = await fetch(`${API}/admin/formations`, { headers: headers() });
-  if (!res.ok) { tbody.innerHTML = '<tr><td colspan="8" style="color:red;padding:16px">Erreur.</td></tr>'; return; }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    tbody.innerHTML = `<tr><td colspan="8" style="color:red;padding:16px">Erreur ${res.status} : ${err.error || res.statusText}</td></tr>`;
+    return;
+  }
   allFormations = await res.json();
   renderFormations();
 }
