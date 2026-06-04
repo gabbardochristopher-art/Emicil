@@ -173,7 +173,7 @@ async function processOrder(id, status) {
   else alert('Erreur lors du traitement.');
 }
 
-document.getElementById('orders-tbody').addEventListener('click', e => {
+document.getElementById('orders-tbody')?.addEventListener('click', e => {
   const btn = e.target.closest('[data-action]');
   if (btn) processOrder(btn.dataset.id, btn.dataset.action);
 });
@@ -447,7 +447,7 @@ async function deleteFormation(id) {
 }
 
 // ---- Event délégué formations (remplace les onclick inline) ----
-document.getElementById('formations-tbody').addEventListener('click', e => {
+document.getElementById('formations-tbody')?.addEventListener('click', e => {
   const btn = e.target.closest('[data-formation-action]');
   if (!btn) return;
   const id = parseInt(btn.dataset.id);
@@ -525,7 +525,7 @@ async function updateBooking(id, status) {
   else alert('Erreur lors du traitement.');
 }
 
-document.getElementById('bookings-tbody').addEventListener('click', e => {
+document.getElementById('bookings-tbody')?.addEventListener('click', e => {
   const btn = e.target.closest('[data-booking-action]');
   if (btn) updateBooking(btn.dataset.id, btn.dataset.bookingAction);
 });

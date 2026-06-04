@@ -6,9 +6,11 @@ async function getUser(req) {
   if (!auth.startsWith('Bearer ')) return null;
   const token = auth.slice(7);
   if (!token || token.length > 2048) return null;
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-  const { data: { user } } = await supabase.auth.getUser(token);
-  return user || null;
+  try {
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const { data } = await supabase.auth.getUser(token);
+    return data?.user || null;
+  } catch { return null; }
 }
 
 module.exports = async function handler(req, res) {

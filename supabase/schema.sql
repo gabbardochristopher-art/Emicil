@@ -85,6 +85,30 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
 -- =====================================================
+--  TABLE : orders (commandes clients)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS orders (
+  id             TEXT PRIMARY KEY,
+  user_id        UUID REFERENCES auth.users(id),
+  user_email     TEXT NOT NULL DEFAULT '',
+  user_name      TEXT DEFAULT '',
+  items          JSONB NOT NULL DEFAULT '[]',
+  total          NUMERIC(10,2) NOT NULL DEFAULT 0,
+  shipping_cost  NUMERIC(10,2) DEFAULT 0,
+  shipping_mode  TEXT DEFAULT 'collect',
+  payment_method TEXT DEFAULT 'card',
+  status         TEXT DEFAULT 'pending',
+  points_to_award INTEGER DEFAULT 0,
+  created_at     TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Lecture commandes propres" ON orders;
+CREATE POLICY "Lecture commandes propres"
+  ON orders FOR SELECT USING (auth.uid() = user_id);
+
+-- =====================================================
 --  TABLE : formations
 -- =====================================================
 CREATE TABLE IF NOT EXISTS formations (

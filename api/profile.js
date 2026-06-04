@@ -11,8 +11,12 @@ module.exports = async function handler(req, res) {
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
   // Vérifie le token Supabase et récupère l'utilisateur
-  const { data: { user }, error } = await supabase.auth.getUser(auth.slice(7));
-  if (error || !user) return safeError(res, 401, 'Session invalide');
+  let user;
+  try {
+    const { data } = await supabase.auth.getUser(auth.slice(7));
+    user = data?.user;
+  } catch { return safeError(res, 401, 'Session invalide'); }
+  if (!user) return safeError(res, 401, 'Session invalide');
 
   // Récupère le profil — crée-le s'il n'existe pas encore
   let { data: profile } = await supabase
