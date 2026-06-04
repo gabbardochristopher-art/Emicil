@@ -263,26 +263,35 @@ function AccountPage({ user, onLogout, go, points: pointsProp }) {
 
       {tab === "commandes" && (
         <div className="fade-up" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          {allOrders.map((o, i) => (
-            <div key={i} style={{ background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-md)", padding: "1.3rem 1.5rem",
-              display: "grid", gridTemplateColumns: "auto 1fr auto auto", gap: "1.2rem", alignItems: "center" }} data-order-row>
-              <div style={{ width: 46, height: 46, borderRadius: "50%", background: "var(--beige-bg2)", display: "grid", placeItems: "center", color: "var(--or)" }}>
-                {o.mode && o.mode.includes("Collect") ? <Ico.store width={20} height={20} /> : o.mode === "Domicile" ? <Ico.truck width={20} height={20} /> : <Ico.box width={20} height={20} />}
-              </div>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontFamily: "var(--f-display)", fontSize: "1rem" }}>{o.id}</span>
-                  <span style={{ fontSize: "0.68rem", padding: "2px 8px", borderRadius: 999, background: "var(--or-soft)", color: "var(--or)", letterSpacing: "0.06em" }}>{o.statut}</span>
+          {allOrders.length === 0 && <p style={{ color: "var(--texte-doux)", fontSize: "0.9rem" }}>Aucune commande pour le moment.</p>}
+          {allOrders.map((o, i) => {
+            const STATUS_LABEL = { pending: "En attente", validated: "Validée", refused: "Refusée", shipped: "Expédiée" };
+            const MODE_LABEL   = { collect: "Click & Collect", relais: "Point relais", domicile: "Domicile" };
+            const nbArticles   = Array.isArray(o.items) ? o.items.reduce((s, x) => s + (x.qty || 1), 0) : 0;
+            const dateStr      = o.created_at ? new Date(o.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
+            const statutLabel  = STATUS_LABEL[o.status] || o.status || "";
+            const modeLabel    = MODE_LABEL[o.shipping_mode] || o.shipping_mode || "";
+            return (
+              <div key={i} style={{ background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-md)", padding: "1.3rem 1.5rem",
+                display: "grid", gridTemplateColumns: "auto 1fr auto auto", gap: "1.2rem", alignItems: "center" }} data-order-row>
+                <div style={{ width: 46, height: 46, borderRadius: "50%", background: "var(--beige-bg2)", display: "grid", placeItems: "center", color: "var(--or)" }}>
+                  {o.shipping_mode === "collect" ? <Ico.store width={20} height={20} /> : o.shipping_mode === "domicile" ? <Ico.truck width={20} height={20} /> : <Ico.box width={20} height={20} />}
                 </div>
-                <div style={{ fontSize: "0.78rem", color: "var(--texte-doux)", marginTop: 2 }}>{o.date} · {o.articles} article{o.articles>1?"s":""} · {o.mode}</div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: "var(--f-display)", fontSize: "1rem" }}>{o.id}</span>
+                    <span style={{ fontSize: "0.68rem", padding: "2px 8px", borderRadius: 999, background: "var(--or-soft)", color: "var(--or)", letterSpacing: "0.06em" }}>{statutLabel}</span>
+                  </div>
+                  <div style={{ fontSize: "0.78rem", color: "var(--texte-doux)", marginTop: 2 }}>{dateStr} · {nbArticles} article{nbArticles > 1 ? "s" : ""} · {modeLabel}</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <Price value={o.total} />
+                  <div style={{ fontSize: "0.72rem", color: "var(--or)" }}>+{o.points_to_award || 0} pts</div>
+                </div>
+                <button className="btn btn-light" style={{ padding: "0.55em 1.1em" }}>Détails</button>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <Price value={o.total} />
-                <div style={{ fontSize: "0.72rem", color: "var(--or)" }}>+{o.pts} pts</div>
-              </div>
-              <button className="btn btn-light" style={{ padding: "0.55em 1.1em" }}>Détails</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

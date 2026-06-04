@@ -155,7 +155,7 @@ function FormationPage({ go }) {
                   display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Price value={f.prix} size="1.3rem" />
                   <button className="btn btn-dark" style={{ padding: "0.7em 1.4em" }}
-                    onClick={() => f.id ? setBooking(f) : go("contact")}>
+                    onClick={() => setBooking(f)}>
                     S'inscrire
                   </button>
                 </div>
@@ -178,7 +178,7 @@ function FormationPage({ go }) {
               Appelez le <strong>06 69 25 62 12</strong> ou écrivez-nous.
             </p>
           </div>
-          <button className="btn btn-dark" onClick={() => go("contact")}>
+          <button className="btn btn-dark" onClick={() => window.open("tel:0669256212")}>
             Nous contacter <Ico.arrow width={15} height={15} />
           </button>
         </div>

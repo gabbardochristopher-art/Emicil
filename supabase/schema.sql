@@ -163,6 +163,17 @@ INSERT INTO formations (titre, duree, niveau, prix, description, points, places_
 ON CONFLICT DO NOTHING;
 
 -- =====================================================
+--  TABLE : rate_limits (anti-brute-force login admin)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS rate_limits (
+  id            SERIAL PRIMARY KEY,
+  identifier    TEXT NOT NULL,
+  attempted_at  TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_rate_limits_identifier ON rate_limits (identifier);
+CREATE INDEX IF NOT EXISTS idx_rate_limits_attempted_at ON rate_limits (attempted_at);
+
+-- =====================================================
 --  PREMIER ADMIN
 --  Exécutez le script : node scripts/create-admin.js
 --  OU insérez manuellement un hash bcrypt ici :

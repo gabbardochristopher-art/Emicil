@@ -66,16 +66,20 @@ module.exports = async function handler(req, res) {
     const points_to_award = Math.round(recalcTotal);
     const id             = 'EMI-' + Date.now().toString(36).toUpperCase();
 
+    const ALLOWED_PAYMENT = ['card', 'store'];
+    const paymentMethod = ALLOWED_PAYMENT.includes(body.payment_method) ? body.payment_method : 'card';
+
     const { data, error } = await supabase.from('orders').insert([{
       id,
-      user_id:       user.id,
-      user_email:    user.email,
-      user_name:     `${user.user_metadata?.firstName || ''} ${user.user_metadata?.lastName || ''}`.trim(),
+      user_id:        user.id,
+      user_email:     user.email,
+      user_name:      `${user.user_metadata?.firstName || ''} ${user.user_metadata?.lastName || ''}`.trim(),
       items,
       total,
-      shipping_cost: shippingCost,
-      shipping_mode: shippingMode,
-      status:        'pending',
+      shipping_cost:  shippingCost,
+      shipping_mode:  shippingMode,
+      payment_method: paymentMethod,
+      status:         'pending',
       points_to_award,
     }]).select().single();
 

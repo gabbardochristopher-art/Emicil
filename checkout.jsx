@@ -116,6 +116,7 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
   const [creneau, setCreneau] = useState("Aujourd'hui · 16 h 00");
   const [orderId, setOrderId]     = useState(null);
   const [saving, setSaving]       = useState(false);
+  const [saveError, setSaveError] = useState(null);
   const [payMethod, setPayMethod] = useState("card"); // "card" | "store"
 
   const sousTotal  = items.reduce((s, i) => s + i.price * i.qty, 0);
@@ -131,6 +132,7 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
 
   async function saveOrder() {
     setSaving(true);
+    setSaveError(null);
     try {
       const { data: { session } } = await window.SUPABASE.auth.getSession();
       const token = session?.access_token;
@@ -143,12 +145,15 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
         }),
       });
       const data = await res.json();
+      if (!res.ok) { setSaveError(data.error || 'Erreur lors de la commande. Réessayez.'); setSaving(false); return; }
       setOrderId(data.id || null);
-    } catch (e) {}
+      setStep(4);
+      onDone && onDone({ total, ptsGagnes, mode });
+      window.scrollTo(0, 0);
+    } catch (e) {
+      setSaveError('Erreur de connexion. Vérifiez votre réseau et réessayez.');
+    }
     setSaving(false);
-    setStep(4);
-    onDone && onDone({ total, ptsGagnes, mode });
-    window.scrollTo(0, 0);
   }
 
   async function next() {
@@ -312,11 +317,11 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
           {step === 2 && (
             <div className="fade-up">
               <h2 style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>Vos coordonnées</h2>
-              <p style={{ fontSize: "0.85rem", color: "var(--texte-doux)", marginBottom: "1.6rem" }}>Connectée en tant que <strong>{COMPTE_DEMO.email}</strong></p>
+              <p style={{ fontSize: "0.85rem", color: "var(--texte-doux)", marginBottom: "1.6rem" }}>Connecté en tant que <strong>{user?.email}</strong></p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.9rem", background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-md)", padding: "1.4rem" }}>
-                <Field label="Prénom" value={COMPTE_DEMO.prenom} />
-                <Field label="Nom" value={COMPTE_DEMO.nom} />
-                <Field label="E-mail" value={COMPTE_DEMO.email} full />
+                <Field label="Prénom" value={user?.user_metadata?.firstName || ""} />
+                <Field label="Nom" value={user?.user_metadata?.lastName || ""} />
+                <Field label="E-mail" value={user?.email || ""} full />
                 <Field label="Téléphone" ph="06 12 34 56 78" full />
               </div>
               <label style={{ display: "flex", alignItems: "center", gap: 10, marginTop: "1.2rem", fontSize: "0.88rem", color: "var(--texte-doux)" }}>
@@ -395,6 +400,7 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
                 <Ico.check width={14} height={14} style={{ color: "var(--or)" }} />
                 {payMethod === "store" ? "Commande réservée — paiement à l'institut" : "Paiement sécurisé par Stripe · SSL"}
               </p>
+              {saveError && <p style={{ color: "#c0392b", fontSize: "0.82rem", marginTop: "0.8rem", padding: "0.7rem 1rem", background: "#fff2f2", borderRadius: "var(--r-sm)", border: "1px solid #f5c6cb" }}>{saveError}</p>}
             </div>
           )}
         </div>

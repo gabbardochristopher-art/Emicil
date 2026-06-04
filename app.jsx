@@ -124,7 +124,7 @@ function App() {
   const [loggedIn, setLoggedIn]   = useState(false);
   const [toast, setToast]         = useState("");
   const [points, setPoints]       = useState(0);
-  const [newOrders, setNewOrders] = useState([]);
+  const [newOrders] = useState([]);
   const [, forceUpdate]           = useState(0);
   const toastTimer = useRef(null);
 
@@ -261,11 +261,7 @@ function App() {
   function toggleFav(id) { setFavs(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]); }
 
   function openProduct(p) { go("product", { product: p }); }
-  function onCheckoutDone({ total, ptsGagnes, mode }) {
-    // Points crédités uniquement après validation admin (Supabase Realtime)
-    const ref = "EMI-" + Math.floor(2420 + Math.random() * 80);
-    setNewOrders(o => [{ id: ref, date: "3 juin 2026", total, statut: mode === "collect" ? "En préparation" : "Confirmée",
-      mode: mode === "collect" ? "Click & Collect" : mode === "relais" ? "Point relais" : "Domicile", articles: cart.reduce((s,i)=>s+i.qty,0), pts: ptsGagnes }, ...o]);
+  function onCheckoutDone() {
     setCart([]);
   }
 
