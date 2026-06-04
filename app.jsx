@@ -41,7 +41,7 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
           ))}
         </nav>
 
-        <button onClick={() => go("home")} aria-label="Emicils" style={{ flexShrink: 0 }}><Logo size={30} /></button>
+        <button onClick={() => go("home")} aria-label="Emicils" style={{ flexShrink: 0 }}><Logo size={42} /></button>
 
         <div className="hdr-actions" style={{ display: "flex", gap: "0.4rem", alignItems: "center", flex: 1, justifyContent: "flex-end" }}>
           <button onClick={() => go("shop")} aria-label="Rechercher" style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: "var(--noir)" }}><Ico.search width={20} height={20} /></button>
