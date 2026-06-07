@@ -37,7 +37,7 @@ const headers = () => ({ 'Content-Type': 'application/json', Authorization: `Bea
 const navLinks   = document.querySelectorAll('.nav-link');
 const sections   = document.querySelectorAll('.admin-section');
 const pageTitle  = document.getElementById('page-title');
-const TITLES = { overview: 'Tableau de bord', clients: 'Clients', products: 'Produits', orders: 'Commandes', formations: 'Formations', settings: 'Paramètres' };
+const TITLES = { overview: 'Tableau de bord', clients: 'Clients', products: 'Produits', orders: 'Commandes', formations: 'Formations', reviews: 'Avis', settings: 'Paramètres' };
 
 function showSection(name) {
   navLinks.forEach(l  => l.classList.toggle('active', l.dataset.section === name));
@@ -48,6 +48,7 @@ function showSection(name) {
   if (name === 'products')   loadProducts();
   if (name === 'orders')     loadOrders();
   if (name === 'formations') loadFormations();
+  if (name === 'reviews')    loadReviews();
 }
 
 navLinks.forEach(link => link.addEventListener('click', e => { e.preventDefault(); showSection(link.dataset.section); }));
@@ -575,6 +576,82 @@ document.querySelectorAll('.booking-filter').forEach(btn => {
     btn.classList.add('active');
     bookingFilter = btn.dataset.filter;
     renderBookings();
+  });
+});
+
+// =========================================================
+//  AVIS PRODUITS (modération)
+// =========================================================
+let allReviews   = [];
+let reviewFilter = 'pending';
+
+function renderStars(rating) {
+  return [1,2,3,4,5].map(i =>
+    `<span style="color:${i <= rating ? '#b08d57' : '#ddcdb2'}">★</span>`
+  ).join('');
+}
+
+async function loadReviews() {
+  const tbody = document.getElementById('reviews-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#7b7f93;padding:28px">Chargement…</td></tr>';
+  const res = await fetch(`${API}/admin/reviews`, { headers: headers() });
+  if (!res.ok) { tbody.innerHTML = '<tr><td colspan="7" style="color:red;padding:16px">Erreur.</td></tr>'; return; }
+  allReviews = await res.json();
+
+  const pending = allReviews.filter(r => r.status === 'pending').length;
+  const badge   = document.getElementById('reviews-badge');
+  if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
+
+  renderReviews();
+}
+
+function renderReviews() {
+  const tbody = document.getElementById('reviews-tbody');
+  const list  = reviewFilter === 'all' ? allReviews : allReviews.filter(r => r.status === reviewFilter);
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#7b7f93;padding:28px">Aucun avis.</td></tr>`;
+    return;
+  }
+  const STATUS = { pending: '⏳ En attente', approved: '✓ Publié', rejected: '✗ Refusé' };
+  tbody.innerHTML = list.map(r => `
+    <tr>
+      <td><strong>${esc(r.products?.name) || '—'}</strong></td>
+      <td>${esc(r.user_name) || '—'}</td>
+      <td style="white-space:nowrap">${renderStars(r.rating)}</td>
+      <td style="max-width:280px;color:#7b7f93">${esc(r.comment)}</td>
+      <td style="color:#7b7f93">${new Date(r.created_at).toLocaleDateString('fr-FR')}</td>
+      <td><span class="badge badge-${r.status === 'pending' ? 'new' : r.status === 'approved' ? 'oui' : 'non'}">${STATUS[r.status] || esc(r.status)}</span></td>
+      <td>
+        ${r.status === 'pending' ? `
+          <button class="btn-action btn-edit"   data-id="${r.id}" data-review-action="approved">Publier</button>
+          <button class="btn-action btn-delete" data-id="${r.id}" data-review-action="rejected">Refuser</button>
+        ` : '—'}
+      </td>
+    </tr>`).join('');
+}
+
+async function updateReview(id, status) {
+  const label = status === 'approved' ? 'Publier' : 'Refuser';
+  if (!confirm(`${label} cet avis ?`)) return;
+  const res = await fetch(`${API}/admin/reviews/${id}`, {
+    method: 'PUT', headers: headers(), body: JSON.stringify({ status })
+  });
+  if (res.ok) loadReviews();
+  else alert('Erreur lors du traitement.');
+}
+
+document.getElementById('reviews-tbody')?.addEventListener('click', e => {
+  const btn = e.target.closest('[data-review-action]');
+  if (btn) updateReview(btn.dataset.id, btn.dataset.reviewAction);
+});
+
+document.querySelectorAll('.review-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.review-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    reviewFilter = btn.dataset.filter;
+    renderReviews();
   });
 });
 

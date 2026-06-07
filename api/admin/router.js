@@ -170,6 +170,26 @@ module.exports = async function handler(req, res) {
     } catch { return safeError(res, 500, 'Erreur serveur'); }
   }
 
+  // ---- Avis (modération) ----
+  if (route === 'reviews') {
+    try {
+      if (!id) {
+        if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
+        const { data, error } = await supabase
+          .from('reviews').select('*, products(name)').order('created_at', { ascending: false });
+        if (error) return res.status(500).json({ error: error.message });
+        return res.status(200).json(data);
+      } else {
+        if (req.method !== 'PUT') return safeError(res, 405, 'Méthode non autorisée');
+        const { status } = req.body || {};
+        if (!['approved', 'rejected'].includes(status)) return res.status(400).json({ error: 'Statut invalide' });
+        const { data, error } = await supabase.from('reviews').update({ status }).eq('id', id).select('*, products(name)').single();
+        if (error) return res.status(500).json({ error: error.message });
+        return res.status(200).json(data);
+      }
+    } catch { return safeError(res, 500, 'Erreur serveur'); }
+  }
+
   // ---- Activité client ----
   if (route === 'client-activity') {
     const { userId, userEmail } = req.query;

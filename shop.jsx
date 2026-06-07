@@ -105,7 +105,110 @@ function ShopPage({ go, onOpen, onAdd, favs, onFav, initialCat, initialQuery }) 
 }
 
 // ---------- Fiche produit ----------
-function ProductPage({ p, go, onAdd, favs, onFav, onOpen }) {
+function ReviewsBlock({ p, user, go }) {
+  const [reviews, setReviews] = useState(null);
+  const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [status, setStatus] = useState(null);
+
+  useEffect(() => {
+    setReviews(null);
+    fetch(`/api/reviews?product_id=${p.id}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(setReviews)
+      .catch(() => setReviews([]));
+  }, [p.id]);
+
+  const list = reviews || [];
+  const avgNote = list.length ? list.reduce((s, r) => s + r.rating, 0) / list.length : 0;
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!comment.trim()) return;
+    setStatus("sending");
+    try {
+      const { data: { session } } = await window.SUPABASE.auth.getSession();
+      const token = session?.access_token;
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ product_id: p.id, rating, comment: comment.trim() }),
+      });
+      if (res.ok) { setStatus("sent"); setComment(""); }
+      else { const err = await res.json().catch(() => ({})); setStatus(err.error || "Erreur lors de l'envoi."); }
+    } catch { setStatus("Erreur lors de l'envoi."); }
+  }
+
+  return (
+    <div style={{ marginTop: "var(--pad-section)" }}>
+      <SectionHead eyebrow="Avis clients" title="Ce qu'en pensent nos clientes" />
+
+      {list.length > 0 && (
+        <div style={{ marginBottom: "1.8rem" }}>
+          <Stars note={avgNote} size={18} showNum count={list.length} />
+        </div>
+      )}
+
+      {reviews === null ? (
+        <p style={{ color: "var(--texte-doux)", fontSize: "0.9rem" }}>Chargement des avis…</p>
+      ) : list.length === 0 ? (
+        <p style={{ color: "var(--texte-doux)", fontSize: "0.9rem", marginBottom: "2rem" }}>
+          Aucun avis pour ce produit pour le moment. Soyez la première à partager votre expérience !
+        </p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem", marginBottom: "2.4rem", maxWidth: 640 }}>
+          {list.map(r => (
+            <div key={r.id} style={{ borderBottom: "1px solid var(--ligne)", paddingBottom: "1.1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.4rem" }}>
+                <strong style={{ fontFamily: "var(--f-display)", fontSize: "0.92rem", fontWeight: 500 }}>{r.user_name || "Cliente Emicils"}</strong>
+                <span style={{ fontSize: "0.76rem", color: "var(--texte-doux)" }}>{new Date(r.created_at).toLocaleDateString('fr-FR')}</span>
+              </div>
+              <Stars note={r.rating} size={14} />
+              <p style={{ margin: "0.5rem 0 0", color: "var(--texte-doux)", fontSize: "0.9rem", lineHeight: 1.6 }}>{r.comment}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ background: "var(--beige-bg2)", border: "1px solid var(--ligne)", borderRadius: "var(--r-lg)", padding: "clamp(1.4rem,3vw,2rem)", maxWidth: 560 }}>
+        <div style={{ fontFamily: "var(--f-display)", fontSize: "1rem", marginBottom: "1.1rem" }}>Donner mon avis</div>
+        {!user ? (
+          <p style={{ fontSize: "0.88rem", color: "var(--texte-doux)" }}>
+            <button onClick={() => go("account")} style={{ color: "var(--or)", textDecoration: "underline" }}>Connectez-vous</button> à votre compte pour laisser un avis sur ce produit.
+          </p>
+        ) : status === "sent" ? (
+          <p style={{ fontSize: "0.9rem", color: "var(--texte)", display: "flex", alignItems: "center", gap: 8 }}>
+            <Ico.check width={17} height={17} style={{ color: "var(--or)", flexShrink: 0 }} />
+            Merci ! Votre avis a bien été envoyé et sera publié après validation par l'équipe.
+          </p>
+        ) : (
+          <form onSubmit={submit}>
+            <div style={{ display: "flex", gap: 4, marginBottom: "1rem" }}>
+              {[1,2,3,4,5].map(i => (
+                <button key={i} type="button" onClick={() => setRating(i)}
+                  onMouseEnter={() => setHoverRating(i)} onMouseLeave={() => setHoverRating(0)} aria-label={`${i} étoiles`}>
+                  <Ico.star width={24} height={24} style={{ color: i <= (hoverRating || rating) ? "var(--or)" : "var(--beige-deep)" }} />
+                </button>
+              ))}
+            </div>
+            <textarea value={comment} onChange={e => setComment(e.target.value)} required maxLength={1000} rows={4}
+              placeholder="Partagez votre expérience avec ce produit…"
+              style={{ width: "100%", padding: "0.8rem 1rem", borderRadius: "var(--r-sm)", border: "1px solid var(--ligne)", fontFamily: "inherit", fontSize: "0.9rem", resize: "vertical", marginBottom: "0.9rem", background: "var(--blanc)" }} />
+            {typeof status === "string" && status !== "sending" && (
+              <p style={{ fontSize: "0.82rem", color: "#b04a3a", marginBottom: "0.8rem" }}>{status}</p>
+            )}
+            <button className="btn btn-dark" type="submit" disabled={status === "sending" || !comment.trim()}>
+              {status === "sending" ? "Envoi…" : "Envoyer mon avis"}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ProductPage({ p, go, onAdd, favs, onFav, onOpen, user }) {
   const { PRODUCTS } = window.DATA;
   const [qty, setQty] = useState(1);
   const [opts, setOpts] = useState(() => {
@@ -212,6 +315,8 @@ function ProductPage({ p, go, onAdd, favs, onFav, onOpen }) {
           </div>
         </div>
       </div>
+
+      <ReviewsBlock p={p} user={user} go={go} />
 
       {/* Suggestions */}
       {related.length > 0 && (

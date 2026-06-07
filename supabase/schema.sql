@@ -154,6 +154,33 @@ DROP POLICY IF EXISTS "Insert public formation_bookings" ON formation_bookings;
 CREATE POLICY "Insert public formation_bookings"
   ON formation_bookings FOR INSERT WITH CHECK (true);
 
+-- =====================================================
+--  TABLE : reviews (avis clients sur les produits)
+--  Modération obligatoire : un avis n'est visible publiquement
+--  qu'une fois passé en statut "approved" depuis l'admin.
+-- =====================================================
+CREATE TABLE IF NOT EXISTS reviews (
+  id          SERIAL PRIMARY KEY,
+  product_id  INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  user_id     UUID REFERENCES auth.users(id),
+  user_name   TEXT DEFAULT '',
+  rating      INTEGER NOT NULL DEFAULT 5,
+  comment     TEXT DEFAULT '',
+  status      TEXT NOT NULL DEFAULT 'pending',   -- 'pending' | 'approved' | 'rejected'
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+
+-- Seuls les avis validés sont visibles publiquement (lecture directe Supabase)
+DROP POLICY IF EXISTS "Lecture avis publiés" ON reviews;
+CREATE POLICY "Lecture avis publiés"
+  ON reviews FOR SELECT USING (status = 'approved');
+
+-- Écritures (création + modération) via service_role uniquement (API backend)
+CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews (product_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_status  ON reviews (status);
+
 -- Seed initial : 4 formations par défaut
 INSERT INTO formations (titre, duree, niveau, prix, description, points, places_max) VALUES
   ('Formation Pose Classique',  '1 jour · 7 h',  'Débutant',      290, 'Apprenez les bases de la pose cil à cil : préparation, isolation, collage, séchage. Vous repartez avec votre kit de démarrage.',
