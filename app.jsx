@@ -179,7 +179,11 @@ function Footer({ go }) {
         </div>
         <div style={{ borderTop: "1px solid rgba(251,248,242,0.14)", marginTop: "2.5rem", paddingTop: "1.6rem", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "0.8rem", fontSize: "0.76rem" }}>
           <span>© 2026 Emicils · Institut de beauté</span>
-          <span style={{ display: "flex", gap: "1.4rem" }}><button style={{ color: "inherit" }}>Mentions légales</button><button style={{ color: "inherit" }}>CGV</button><button style={{ color: "inherit" }}>Confidentialité</button></span>
+          <span style={{ display: "flex", gap: "1.4rem" }}>
+            <button onClick={() => go("legal", { section: "mentions" })} style={{ color: "inherit" }}>Mentions légales</button>
+            <button onClick={() => go("legal", { section: "cgv" })} style={{ color: "inherit" }}>CGV</button>
+            <button onClick={() => go("legal", { section: "confidentialite" })} style={{ color: "inherit" }}>Confidentialité</button>
+          </span>
         </div>
       </div>
     </footer>
@@ -355,6 +359,7 @@ function App() {
   else if (route.page === "checkout") content = <CheckoutPage items={cart} go={go} onDone={onCheckoutDone} compte={{ points }} user={user} />;
   else if (route.page === "formation") content = <FormationPage go={go} />;
   else if (route.page === "account") content = <AccountPage user={user} onLogout={async () => { await window.SUPABASE.auth.signOut(); }} go={go} points={points} orders={newOrders} />;
+  else if (route.page === "legal") content = <LegalPage go={go} section={route.section} />;
 
   return (
     <>
