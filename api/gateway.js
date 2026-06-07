@@ -588,11 +588,9 @@ module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  if (req.query.__debug === '1') {
-    return res.status(200).json({ url: req.url, query: req.query });
-  }
-
-  const segments = Array.isArray(req.query.route) ? req.query.route : (req.query.route ? [req.query.route] : []);
+  // apiPath vient du rewrite vercel.json : /api/categories → apiPath=categories, /api/admin/orders/5 → apiPath=admin/orders/5
+  const rawPath  = req.query.apiPath || '';
+  const segments = rawPath.split('/').filter(Boolean);
   const [base, sub] = segments;
   const supabase = db();
 
