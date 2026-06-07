@@ -6,10 +6,47 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
   const { CATEGORIES } = window.DATA;
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const searchInputRef = useRef(null);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     window.addEventListener("scroll", onScroll); return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const t = setTimeout(() => searchInputRef.current?.focus(), 60);
+    const onKey = (e) => { if (e.key === "Escape") closeSearch(); };
+    window.addEventListener("keydown", onKey);
+    return () => { clearTimeout(t); window.removeEventListener("keydown", onKey); };
+  }, [searchOpen]);
+
+  function closeSearch() { setSearchOpen(false); setQuery(""); }
+
+  function runSearch(q) {
+    const term = q.trim();
+    if (!term) return;
+    closeSearch();
+    go("shop", { q: term });
+  }
+
+  function openResult(p) {
+    closeSearch();
+    go("product", { product: p });
+  }
+
+  const searchResults = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return [];
+    const { PRODUCTS } = window.DATA;
+    return PRODUCTS.filter(p =>
+      p.name.toLowerCase().includes(term) ||
+      (p.line || "").toLowerCase().includes(term) ||
+      (p.desc || "").toLowerCase().includes(term)
+    ).slice(0, 6);
+  }, [query]);
 
   const nav = [["home","Accueil"], ...CATEGORIES.map(c => ["cat:"+c.id, c.label]), ["formation","Formation"], ["account","Fidélité"]];
 
@@ -44,12 +81,55 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
         <button onClick={() => go("home")} aria-label="Emicils" style={{ flexShrink: 0 }}><Logo size={42} /></button>
 
         <div className="hdr-actions" style={{ display: "flex", gap: "0.4rem", alignItems: "center", flex: 1, justifyContent: "flex-end" }}>
-          <button onClick={() => go("shop")} aria-label="Rechercher" style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: "var(--noir)" }}><Ico.search width={20} height={20} /></button>
+          <button onClick={() => setSearchOpen(v => !v)} aria-label="Rechercher" aria-expanded={searchOpen} style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: searchOpen ? "var(--or)" : "var(--noir)" }}>{searchOpen ? <Ico.close width={20} height={20} /> : <Ico.search width={20} height={20} />}</button>
           <button onClick={() => go("account")} aria-label="Compte" style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: loggedIn ? "var(--or)" : "var(--noir)" }}><Ico.user width={20} height={20} /></button>
           <button onClick={onCart} aria-label="Panier" style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: "var(--noir)", position: "relative" }}>
             <Ico.cart width={20} height={20} />
             {cartCount > 0 && <span style={{ position: "absolute", top: 4, right: 2, background: "var(--or)", color: "var(--blanc)", borderRadius: "50%", minWidth: 17, height: 17, fontSize: "0.62rem", display: "grid", placeItems: "center", padding: "0 4px" }}>{cartCount}</span>}
           </button>
+        </div>
+      </div>
+
+      {/* Recherche */}
+      <div onClick={closeSearch} style={{ position: "fixed", inset: 0, background: "rgba(29,26,22,0.45)", zIndex: 97,
+        opacity: searchOpen ? 1 : 0, pointerEvents: searchOpen ? "auto" : "none", transition: "opacity .25s" }} />
+      <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "var(--beige-bg)", borderBottom: "1px solid var(--ligne)",
+        boxShadow: "0 24px 60px -24px rgba(29,26,22,0.4)", zIndex: 98, transformOrigin: "top",
+        transform: searchOpen ? "scaleY(1)" : "scaleY(0.96)", opacity: searchOpen ? 1 : 0, pointerEvents: searchOpen ? "auto" : "none", transition: "all .22s ease" }}>
+        <div className="container" style={{ padding: "1.6rem 0 2rem" }}>
+          <form onSubmit={(e) => { e.preventDefault(); runSearch(query); }} style={{ display: "flex", alignItems: "center", gap: "0.9rem",
+            borderBottom: "1px solid var(--ligne)", paddingBottom: "1rem" }}>
+            <Ico.search width={20} height={20} style={{ color: "var(--texte-doux)", flexShrink: 0 }} />
+            <input ref={searchInputRef} value={query} onChange={e => setQuery(e.target.value)} type="text"
+              placeholder="Rechercher un produit, une marque, une catégorie…"
+              style={{ flex: 1, fontSize: "1.05rem", fontFamily: "var(--f-display)", letterSpacing: "0.01em", color: "var(--noir)", background: "transparent" }} />
+            <button type="button" onClick={closeSearch} aria-label="Fermer la recherche" style={{ color: "var(--texte-doux)", flexShrink: 0 }}><Ico.close width={20} height={20} /></button>
+          </form>
+
+          {query.trim() !== "" && (
+            searchResults.length > 0 ? (
+              <div style={{ marginTop: "1.2rem", display: "flex", flexDirection: "column", gap: 2 }}>
+                {searchResults.map(p => (
+                  <button key={p.id} onClick={() => openResult(p)} style={{ display: "flex", alignItems: "center", gap: "1rem", textAlign: "left",
+                    padding: "0.6rem 0.5rem", borderRadius: "var(--r-sm)", transition: "background .15s" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "var(--beige-soft)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <Photo cat={p.cat} ratio="1 / 1" radius="var(--r-sm)" style={{ width: 50, flexShrink: 0 }} label="" />
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: "block", fontFamily: "var(--f-display)", fontSize: "0.92rem" }}>{p.name}</span>
+                      {p.line && <span style={{ fontSize: "0.78rem", color: "var(--texte-doux)" }}>{p.line}</span>}
+                    </span>
+                    <Price value={p.price} />
+                  </button>
+                ))}
+                <button onClick={() => runSearch(query)} style={{ textAlign: "left", padding: "0.9rem 0.5rem 0.2rem", marginTop: 4, fontSize: "0.78rem",
+                  color: "var(--or)", fontFamily: "var(--f-display)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                  Voir tous les résultats pour « {query.trim()} »
+                </button>
+              </div>
+            ) : (
+              <div style={{ padding: "1.6rem 0.5rem", color: "var(--texte-doux)", fontSize: "0.9rem" }}>Aucun produit ne correspond à « {query.trim()} ».</div>
+            )
+          )}
         </div>
       </div>
 
@@ -269,7 +349,7 @@ function App() {
 
   let content;
   if (route.page === "home") content = <HomePage go={go} onOpen={openProduct} onAdd={addToCart} favs={favs} onFav={toggleFav} />;
-  else if (route.page === "shop") content = <ShopPage go={go} onOpen={openProduct} onAdd={addToCart} favs={favs} onFav={toggleFav} initialCat={route.cat} />;
+  else if (route.page === "shop") content = <ShopPage go={go} onOpen={openProduct} onAdd={addToCart} favs={favs} onFav={toggleFav} initialCat={route.cat} initialQuery={route.q} />;
   else if (route.page === "product") content = <ProductPage p={route.product} go={go} onAdd={addToCart} favs={favs} onFav={toggleFav} onOpen={openProduct} />;
   else if (route.page === "checkout") content = <CheckoutPage items={cart} go={go} onDone={onCheckoutDone} compte={{ points }} user={user} />;
   else if (route.page === "formation") content = <FormationPage go={go} />;

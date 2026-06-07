@@ -2,23 +2,27 @@
 // EMICILS — Boutique (catalogue + filtres) & fiche produit
 // ==========================================================================
 
-function ShopPage({ go, onOpen, onAdd, favs, onFav, initialCat }) {
+function ShopPage({ go, onOpen, onAdd, favs, onFav, initialCat, initialQuery }) {
   const { PRODUCTS, CATEGORIES } = window.DATA;
   const [cat, setCat] = useState(initialCat || "tous");
   const [tri, setTri] = useState("populaires");
   const [collectOnly, setCollectOnly] = useState(false);
   const [maxPrix, setMaxPrix] = useState(80);
+  const [q, setQ] = useState(initialQuery || "");
 
   useEffect(() => { if (initialCat) setCat(initialCat); }, [initialCat]);
+  useEffect(() => { setQ(initialQuery || ""); }, [initialQuery]);
 
   const filtered = useMemo(() => {
-    let l = PRODUCTS.filter(p => (cat === "tous" || p.cat === cat) && p.price <= maxPrix && (!collectOnly || p.boutique));
+    const term = q.trim().toLowerCase();
+    let l = PRODUCTS.filter(p => (cat === "tous" || p.cat === cat) && p.price <= maxPrix && (!collectOnly || p.boutique)
+      && (!term || p.name.toLowerCase().includes(term) || (p.line || "").toLowerCase().includes(term) || (p.desc || "").toLowerCase().includes(term)));
     if (tri === "prix-asc") l = [...l].sort((a,b) => a.price - b.price);
     else if (tri === "prix-desc") l = [...l].sort((a,b) => b.price - a.price);
     else if (tri === "note") l = [...l].sort((a,b) => b.note - a.note);
     else l = [...l].sort((a,b) => (b.best?1:0) - (a.best?1:0) || b.avis - a.avis);
     return l;
-  }, [cat, tri, collectOnly, maxPrix]);
+  }, [cat, tri, collectOnly, maxPrix, q]);
 
   const cats = [{ id: "tous", label: "Tout le catalogue", count: PRODUCTS.length }, ...CATEGORIES];
 
@@ -27,8 +31,14 @@ function ShopPage({ go, onOpen, onAdd, favs, onFav, initialCat }) {
       <div style={{ marginBottom: "2.4rem" }}>
         <div className="eyebrow">Boutique Emicils</div>
         <h1 style={{ fontSize: "clamp(2rem,4vw,3rem)", marginTop: "0.6rem" }}>
-          {cat === "tous" ? "Tout le catalogue" : CATEGORIES.find(c => c.id === cat)?.label}
+          {q.trim() ? `Résultats pour « ${q.trim()} »` : (cat === "tous" ? "Tout le catalogue" : CATEGORIES.find(c => c.id === cat)?.label)}
         </h1>
+        {q.trim() !== "" && (
+          <button onClick={() => { setQ(""); go("shop", { cat }); }} style={{ marginTop: "0.8rem", display: "inline-flex", alignItems: "center", gap: 6,
+            fontSize: "0.82rem", color: "var(--texte-doux)" }}>
+            <Ico.close width={14} height={14} /> Effacer la recherche
+          </button>
+        )}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: "clamp(1.5rem,3vw,3rem)", alignItems: "start" }} data-shop-grid>
