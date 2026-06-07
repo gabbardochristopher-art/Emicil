@@ -280,6 +280,7 @@ function App() {
         badge: p.badge || null,
         stock: p.stock || 0,
         image: p.image || '',
+        options: (p.options && Object.keys(p.options).length) ? p.options : null,
       };
     }
 

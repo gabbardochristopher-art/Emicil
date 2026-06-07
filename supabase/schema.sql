@@ -30,8 +30,12 @@ CREATE TABLE IF NOT EXISTS products (
   sizes       JSONB DEFAULT '[]',
   colors      JSONB DEFAULT '[]',
   sku         TEXT DEFAULT '',
+  options     JSONB DEFAULT '{}',             -- ex. { "Courbure": ["C","CC","D"], "Longueur": ["8mm","9mm"] }
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Pour une base déjà existante (la création ci-dessus ne modifie pas une table déjà créée) :
+ALTER TABLE products ADD COLUMN IF NOT EXISTS options JSONB DEFAULT '{}';
 
 -- =====================================================
 --  Row Level Security

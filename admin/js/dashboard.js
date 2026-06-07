@@ -250,13 +250,36 @@ const modal      = document.getElementById('product-modal');
 const form       = document.getElementById('product-form');
 const modalError = document.getElementById('modal-error');
 
+// Champs courbure/longueur — visibles uniquement pour la catégorie "Extensions de cil"
+const lashFieldsEls = [document.getElementById('p-lash-options'), document.getElementById('p-lash-options-2')];
+function toggleLashFields() {
+  const isLash = document.getElementById('p-category').value === 'extensions';
+  lashFieldsEls.forEach(el => el.classList.toggle('hidden', !isLash));
+}
+document.getElementById('p-category').addEventListener('change', toggleLashFields);
+
+function parseOptionList(value) {
+  return value.split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function buildOptions() {
+  if (document.getElementById('p-category').value !== 'extensions') return null;
+  const courbures = parseOptionList(document.getElementById('p-curvatures').value);
+  const longueurs = parseOptionList(document.getElementById('p-lengths').value);
+  const options = {};
+  if (courbures.length) options.Courbure = courbures;
+  if (longueurs.length) options.Longueur = longueurs;
+  return Object.keys(options).length ? options : null;
+}
+
 function openModal(title) {
   document.getElementById('modal-title').textContent = title;
   modalError.classList.add('hidden');
   modal.classList.remove('hidden');
+  toggleLashFields();
 }
 
-function closeModal() { modal.classList.add('hidden'); form.reset(); }
+function closeModal() { modal.classList.add('hidden'); form.reset(); toggleLashFields(); }
 
 document.getElementById('modal-close').addEventListener('click', closeModal);
 document.getElementById('modal-cancel').addEventListener('click', closeModal);
@@ -287,6 +310,8 @@ function openEdit(id) {
   document.getElementById('p-description').value   = p.description || '';
   document.getElementById('p-featured').checked    = !!p.featured;
   document.getElementById('p-new-arrival').checked = !!p.new_arrival;
+  document.getElementById('p-curvatures').value    = (p.options?.Courbure || []).join(', ');
+  document.getElementById('p-lengths').value       = (p.options?.Longueur || []).join(', ');
   openModal('Modifier le produit');
 }
 
@@ -310,6 +335,7 @@ form.addEventListener('submit', async e => {
     description: document.getElementById('p-description').value.trim(),
     featured:    document.getElementById('p-featured').checked,
     new_arrival: document.getElementById('p-new-arrival').checked,
+    options:     buildOptions(),
   };
 
   const url    = id ? `${API}/products/${id}` : `${API}/products`;

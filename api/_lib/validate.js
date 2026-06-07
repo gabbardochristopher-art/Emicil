@@ -27,9 +27,23 @@ function password(val) {
   return s.length >= 6 ? s : null;
 }
 
+// Sanitise un objet d'options produit, ex. { Courbure: ["C","CC"], Longueur: ["8mm","9mm"] }
+// — clés et valeurs limitées en taille/nombre pour éviter tout abus.
+function productOptions(val) {
+  if (!val || typeof val !== 'object' || Array.isArray(val)) return null;
+  const out = {};
+  for (const [key, list] of Object.entries(val)) {
+    const k = str(key, 60);
+    if (!k || !Array.isArray(list)) continue;
+    const vals = list.map(v => str(v, 40)).filter(Boolean).slice(0, 30);
+    if (vals.length) out[k] = vals;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
 // Renvoie toujours une erreur générique pour ne pas révéler d'infos
 function safeError(res, status, msg) {
   return res.status(status).json({ error: msg });
 }
 
-module.exports = { str, email, price, int, password, safeError };
+module.exports = { str, email, price, int, password, productOptions, safeError };

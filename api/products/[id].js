@@ -1,6 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const { requireAdmin } = require('../_lib/auth');
-const { str, price, int, safeError } = require('../_lib/validate');
+const { str, price, int, productOptions, safeError } = require('../_lib/validate');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -46,6 +46,7 @@ module.exports = async function handler(req, res) {
       description: str(body.description, 2000),
       featured:    !!body.featured,
       new_arrival: !!body.new_arrival,
+      options:     productOptions(body.options),
     }).eq('id', idNum).select().single();
 
     if (error) return safeError(res, 500, 'Erreur lors de la mise à jour');
