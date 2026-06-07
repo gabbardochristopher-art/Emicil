@@ -181,6 +181,16 @@ async function handleOrders(req, res, supabase) {
     const shippingCost  = parseFloat(body.shipping_cost) || 0;
     if (shippingCost < 0 || shippingCost > 50) return safeError(res, 400, 'Frais de livraison invalides');
 
+    let shippingAddress = null;
+    if (shippingMode === 'domicile') {
+      const addr       = body.shipping_address || {};
+      const adresse    = str(addr.adresse, 200);
+      const codePostal = str(addr.codePostal, 10);
+      const ville      = str(addr.ville, 100);
+      if (!adresse || !codePostal || !ville) return safeError(res, 400, 'Adresse de livraison incomplète');
+      shippingAddress = { adresse, codePostal, ville };
+    }
+
     const total           = Math.round((recalcTotal + shippingCost) * 100) / 100;
     const points_to_award = Math.round(recalcTotal);
     const id              = 'EMI-' + Date.now().toString(36).toUpperCase();
@@ -197,6 +207,7 @@ async function handleOrders(req, res, supabase) {
       total,
       shipping_cost:  shippingCost,
       shipping_mode:  shippingMode,
+      shipping_address: shippingAddress,
       payment_method: paymentMethod,
       status:         'pending',
       points_to_award,
@@ -568,7 +579,7 @@ async function handleAdmin(req, res, supabase, segments) {
     if (!userId && !userEmail) return res.status(400).json({ error: 'userId ou userEmail requis' });
     try {
       const [ordersRes, bookingsRes, profileRes] = await Promise.all([
-        userId ? supabase.from('orders').select('id,total,status,shipping_mode,points_to_award,created_at,items').eq('user_id', userId).order('created_at', { ascending: false }) : { data: [] },
+        userId ? supabase.from('orders').select('id,total,status,shipping_mode,shipping_address,points_to_award,created_at,items').eq('user_id', userId).order('created_at', { ascending: false }) : { data: [] },
         userEmail ? supabase.from('formation_bookings').select('id,status,created_at,formations(titre,niveau,prix)').eq('user_email', userEmail).order('created_at', { ascending: false }) : { data: [] },
         userId ? supabase.from('profiles').select('points').eq('id', userId).single() : { data: null },
       ]);

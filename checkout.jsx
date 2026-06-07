@@ -113,6 +113,10 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
   const [mode, setMode]     = useState("collect");
   const [usePts, setUsePts] = useState(false);
   const [relais, setRelais] = useState(0);
+  const [adresse, setAdresse]       = useState("");
+  const [codePostal, setCodePostal] = useState("");
+  const [ville, setVille]           = useState("");
+  const [addrError, setAddrError]   = useState(false);
   const [creneau, setCreneau] = useState("Aujourd'hui · 16 h 00");
   const [orderId, setOrderId]     = useState(null);
   const [saving, setSaving]       = useState(false);
@@ -142,6 +146,7 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
         body: JSON.stringify({
           items: items.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty, opts: i.opts })),
           total, shipping_cost: livraison, shipping_mode: mode, payment_method: payMethod,
+          ...(mode === "domicile" ? { shipping_address: { adresse, codePostal, ville } } : {}),
         }),
       });
       const data = await res.json();
@@ -157,6 +162,11 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
   }
 
   async function next() {
+    if (step === 1 && mode === "domicile" && (!adresse.trim() || !codePostal.trim() || !ville.trim())) {
+      setAddrError(true);
+      return;
+    }
+    setAddrError(false);
     if (step < 3) { setStep(step + 1); return; }
     await saveOrder();
   }
@@ -311,9 +321,15 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
               )}
               {mode === "domicile" && (
                 <div style={{ marginTop: "1.6rem", background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-md)", padding: "1.4rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.9rem" }}>
-                  <Field label="Adresse" full ph="14 avenue de la Pinède" />
-                  <Field label="Code postal" ph="13170" />
-                  <Field label="Ville" ph="Les Pennes-Mirabeau" />
+                  <div style={{ gridColumn: "1 / -1", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--texte-doux)" }}>Adresse de livraison</div>
+                  <Field label="Adresse" full ph="14 avenue de la Pinède" value={adresse} onChange={e => { setAdresse(e.target.value); setAddrError(false); }} />
+                  <Field label="Code postal" ph="13170" value={codePostal} onChange={e => { setCodePostal(e.target.value); setAddrError(false); }} />
+                  <Field label="Ville" ph="Les Pennes-Mirabeau" value={ville} onChange={e => { setVille(e.target.value); setAddrError(false); }} />
+                  {addrError && (
+                    <p style={{ gridColumn: "1 / -1", margin: 0, fontSize: "0.8rem", color: "#c0392b", padding: "0.6rem 0.85rem", background: "#fff2f2", borderRadius: "var(--r-sm)", border: "1px solid #f5c6cb" }}>
+                      Merci de renseigner une adresse complète pour la livraison à domicile.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -557,11 +573,16 @@ function Row({ k, v, or }) {
   return <div style={{ display: "flex", justifyContent: "space-between", color: or ? "var(--or)" : "var(--texte-doux)" }}><span>{k}</span><span style={{ color: or ? "var(--or)" : "var(--texte)" }}>{v}</span></div>;
 }
 
-function Field({ label, ph, value, full }) {
+function Field({ label, ph, value, full, onChange }) {
+  const ctrl = typeof onChange === "function";
   return (
     <label style={{ display: "flex", flexDirection: "column", gap: 5, gridColumn: full ? "1 / -1" : "auto" }}>
       <span style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--texte-doux)" }}>{label}</span>
-      <input defaultValue={value} placeholder={ph} style={{ border: "1px solid var(--ligne)", borderRadius: "var(--r-sm)", padding: "0.7rem 0.85rem", background: "var(--beige-bg)", color: "var(--texte)" }} />
+      <input
+        {...(ctrl ? { value: value || "", onChange } : { defaultValue: value })}
+        placeholder={ph}
+        style={{ border: "1px solid var(--ligne)", borderRadius: "var(--r-sm)", padding: "0.7rem 0.85rem", background: "var(--beige-bg)", color: "var(--texte)" }}
+      />
     </label>
   );
 }

@@ -100,11 +100,14 @@ CREATE TABLE IF NOT EXISTS orders (
   total          NUMERIC(10,2) NOT NULL DEFAULT 0,
   shipping_cost  NUMERIC(10,2) DEFAULT 0,
   shipping_mode  TEXT DEFAULT 'collect',
+  shipping_address JSONB DEFAULT NULL,
   payment_method TEXT DEFAULT 'card',
   status         TEXT DEFAULT 'pending',
   points_to_award INTEGER DEFAULT 0,
   created_at     TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_address JSONB DEFAULT NULL;
 
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 

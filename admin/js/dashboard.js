@@ -160,7 +160,13 @@ function renderOrders() {
       <td><strong>${esc(o.id)}</strong></td>
       <td>${esc(o.user_name || o.user_email)}</td>
       <td>${new Date(o.created_at).toLocaleDateString('fr-FR')}</td>
-      <td>${MODE[o.shipping_mode] || esc(o.shipping_mode)}</td>
+      <td>
+        ${MODE[o.shipping_mode] || esc(o.shipping_mode)}
+        ${o.shipping_mode === 'domicile' && o.shipping_address ? `
+          <div style="font-size:.72rem;color:#7b7f93;margin-top:4px;line-height:1.4">
+            ${esc(o.shipping_address.adresse)}<br>${esc(o.shipping_address.codePostal)} ${esc(o.shipping_address.ville)}
+          </div>` : ''}
+      </td>
       <td>${Number(o.total).toFixed(2)} €</td>
       <td style="color:#b08d57">${o.points_to_award} pts</td>
       <td><span class="badge badge-${o.status === 'pending' ? 'new' : o.status === 'validated' ? 'oui' : 'non'}">${STATUS[o.status]}</span></td>
@@ -698,7 +704,13 @@ document.getElementById('clients-tbody')?.addEventListener('click', async e => {
         <tr>
           <td><strong>${esc(o.id)}</strong></td>
           <td style="color:#7b7f93">${new Date(o.created_at).toLocaleDateString('fr-FR')}</td>
-          <td>${MODE[o.shipping_mode] || esc(o.shipping_mode)}</td>
+          <td>
+            ${MODE[o.shipping_mode] || esc(o.shipping_mode)}
+            ${o.shipping_mode === 'domicile' && o.shipping_address ? `
+              <div style="font-size:.72rem;color:#7b7f93;margin-top:4px;line-height:1.4">
+                ${esc(o.shipping_address.adresse)}<br>${esc(o.shipping_address.codePostal)} ${esc(o.shipping_address.ville)}
+              </div>` : ''}
+          </td>
           <td>${Number(o.total).toFixed(2)} €</td>
           <td style="color:#b08d57">+${o.points_to_award} pts</td>
           <td><span class="badge badge-${o.status === 'pending' ? 'new' : o.status === 'validated' ? 'oui' : 'non'}">${STATUS_O[o.status] || o.status}</span></td>
