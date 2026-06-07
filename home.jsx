@@ -199,6 +199,51 @@ function InstitutBlock({ go }) {
   );
 }
 
+function SocialBlock() {
+  const SOCIALS = [
+    { ico: "instagram", label: "Instagram", href: "https://www.instagram.com/emi___cils/" },
+    { ico: "tiktok",    label: "TikTok",    href: "https://www.tiktok.com/@emicils" },
+  ];
+  return (
+    <section className="container" style={{ paddingTop: "var(--pad-section)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(1.4rem,3vw,2.4rem)" }} data-social-grid>
+        {/* Réseaux sociaux */}
+        <div style={{ background: "var(--beige-bg2)", border: "1px solid var(--ligne)", borderRadius: "var(--r-lg)",
+          padding: "clamp(2rem,4vw,2.8rem)", textAlign: "center", display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center" }}>
+          <div className="eyebrow">Suivez-nous</div>
+          <h3 style={{ fontSize: "clamp(1.3rem,2.6vw,1.8rem)", margin: "0.8rem 0 1.6rem" }}>Retrouvez-nous sur les réseaux</h3>
+          <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
+            {SOCIALS.map(s => (
+              <a key={s.ico} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+                style={{ width: 56, height: 56, borderRadius: "50%", display: "grid", placeItems: "center",
+                  background: "var(--blanc)", border: "1px solid var(--ligne)", color: "var(--noir)", transition: "all .2s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--or)"; e.currentTarget.style.color = "var(--or)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--ligne)"; e.currentTarget.style.color = "var(--noir)"; }}>
+                {Ico[s.ico]({ width: 23, height: 23 })}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Planity */}
+        <div style={{ background: "var(--noir)", color: "var(--blanc)", borderRadius: "var(--r-lg)",
+          padding: "clamp(2rem,4vw,2.8rem)", textAlign: "center", display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center" }}>
+          <div className="eyebrow" style={{ color: "var(--or)" }}>Prise de rendez-vous</div>
+          <h3 style={{ color: "var(--blanc)", fontSize: "clamp(1.3rem,2.6vw,1.8rem)", margin: "0.8rem 0 1.6rem", maxWidth: 380 }}>
+            Pour toutes nos prestations en boutique, retrouvez-nous sur Planity.
+          </h3>
+          <a href="https://www.planity.com/emicils-13240-septemes-les-vallons-58l" target="_blank" rel="noopener noreferrer"
+            className="btn btn-light" aria-label="Réserver sur Planity">
+            <Ico.calendar width={16} height={16} /> Réserver sur Planity
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HomePage(props) {
   return (
     <div>
@@ -208,6 +253,7 @@ function HomePage(props) {
       <ClickCollectBlock {...props} />
       <LoyaltyTeaser {...props} />
       <InstitutBlock {...props} />
+      <SocialBlock />
     </div>
   );
 }
