@@ -192,7 +192,6 @@ function InstitutBlock({ go }) {
               </div>
             ))}
           </div>
-          <button className="btn btn-outline" onClick={() => go("shop")}>Voir les prestations</button>
         </div>
       </div>
     </section>
