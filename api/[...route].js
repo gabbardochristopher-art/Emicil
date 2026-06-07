@@ -588,6 +588,10 @@ module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  if (req.query.__debug === '1') {
+    return res.status(200).json({ url: req.url, query: req.query });
+  }
+
   const segments = Array.isArray(req.query.route) ? req.query.route : (req.query.route ? [req.query.route] : []);
   const [base, sub] = segments;
   const supabase = db();
