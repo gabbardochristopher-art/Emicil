@@ -63,7 +63,7 @@ function badge(text) {
 // ---- Templates ----
 
 function orderConfirmation({ ref, items, total, shipping, mode, ptsGagnes, prenom }) {
-  const modeLabel = { collect: 'Retrait à l'institut', relais: 'Point relais', domicile: 'Livraison à domicile' }[mode] || mode;
+  const modeLabel = { collect: "Retrait à l'institut", relais: 'Point relais', domicile: 'Livraison à domicile' }[mode] || mode;
   const rows = (items || []).map(i =>
     row(`${i.name} × ${i.qty}`, `${(i.price * i.qty).toFixed(2)} €`)
   ).join('');
