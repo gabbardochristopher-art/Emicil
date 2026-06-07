@@ -20,7 +20,7 @@ function Field({ label, id, value, ph, full, type = "text", onChange, disabled }
 }
 
 // ---------- Écran connexion / inscription ----------
-function AuthScreen({ onLogin, go }) {
+function AuthScreen({ onLogin, go, notice }) {
   const [mode, setMode]       = useState("login");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg]         = useState(null); // { type, text }
@@ -98,6 +98,12 @@ function AuthScreen({ onLogin, go }) {
 
         {/* Formulaire */}
         <div style={{ background: "var(--blanc)", padding: "clamp(2rem,4vw,3rem)" }}>
+          {notice && (
+            <div style={{ fontSize: "0.85rem", padding: "0.85rem 1.1rem", borderRadius: "var(--r-sm)",
+              background: "var(--or-soft)", color: "var(--texte)", border: "1px solid var(--ligne)", marginBottom: "1.6rem" }}>
+              {notice}
+            </div>
+          )}
           <div style={{ display: "flex", gap: 0, marginBottom: "1.8rem", borderBottom: "1px solid var(--ligne)" }}>
             {[["login","Se connecter"],["signup","Créer un compte"]].map(([id,l]) => (
               <button key={id} onClick={() => { setMode(id); setMsg(null); }}
@@ -340,4 +346,4 @@ function AccountPage({ user, onLogout, go, points: pointsProp }) {
   );
 }
 
-Object.assign(window, { AccountPage, Field });
+Object.assign(window, { AccountPage, AuthScreen, Field });

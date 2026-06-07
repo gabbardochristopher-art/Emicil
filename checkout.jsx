@@ -161,6 +161,12 @@ function CheckoutPage({ items, go, onDone, compte, user }) {
     await saveOrder();
   }
 
+  // Un compte est requis pour commander (suivi de commande + points fidélité)
+  if (!user) {
+    return <AuthScreen onLogin={() => {}} go={go}
+      notice="Connectez-vous ou créez un compte pour finaliser votre achat — c'est ce qui nous permet de suivre votre commande et de créditer vos points fidélité." />;
+  }
+
   const oosItems = items.filter(i => {
     const prod = (window.DATA.PRODUCTS || []).find(p => String(p.id) === String(i.id));
     return prod && prod.stock === 0;
