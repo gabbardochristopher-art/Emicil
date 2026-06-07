@@ -294,6 +294,22 @@ function App() {
       });
     }
 
+    // Étoiles + nb d'avis affichés = vraie moyenne des avis publiés (pas de valeur figée en base)
+    function loadReviewStats() {
+      fetch('/api/reviews?summary=1')
+        .then(r => r.ok ? r.json() : null)
+        .then(stats => {
+          if (!stats) return;
+          window.DATA.PRODUCTS = window.DATA.PRODUCTS.map(p => ({
+            ...p,
+            note: stats[p.id]?.note || 0,
+            avis: stats[p.id]?.avis || 0,
+          }));
+          forceUpdate(n => n + 1);
+        })
+        .catch(() => {});
+    }
+
     // Chargement initial
     fetch('/api/products')
       .then(r => r.ok ? r.json() : null)
@@ -302,6 +318,7 @@ function App() {
           window.DATA.PRODUCTS = data.map(mapProduct);
           refreshCounts();
           forceUpdate(n => n + 1);
+          loadReviewStats();
         }
       })
       .catch(() => {});
@@ -326,7 +343,16 @@ function App() {
       })
       .subscribe();
 
-    return () => window.SUPABASE.removeChannel(channel);
+    // Recalcule étoiles/avis dès qu'un avis est ajouté ou modéré (validé/refusé)
+    const reviewsChannel = window.SUPABASE
+      .channel('reviews-stats-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, () => loadReviewStats())
+      .subscribe();
+
+    return () => {
+      window.SUPABASE.removeChannel(channel);
+      window.SUPABASE.removeChannel(reviewsChannel);
+    };
   }, []);
 
   function go(page, params = {}) { setRoute({ page, ...params }); window.scrollTo(0, 0); }

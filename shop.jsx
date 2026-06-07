@@ -250,9 +250,11 @@ function ProductPage({ p, go, onAdd, favs, onFav, onOpen, user }) {
           </div>
           <span style={{ fontSize: "0.72rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--texte-doux)" }}>{p.line}</span>
           <h1 style={{ fontSize: "clamp(1.8rem,3.6vw,2.6rem)", margin: "0.4rem 0 0.8rem" }}>{p.name}</h1>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.4rem" }}>
-            <Stars note={p.note} size={15} showNum count={p.avis} />
-          </div>
+          {p.avis > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.4rem" }}>
+              <Stars note={p.note} size={15} showNum count={p.avis} />
+            </div>
+          )}
           <Price value={p.price} size="1.9rem" />
           <p style={{ color: "var(--texte-doux)", margin: "1.4rem 0 1.8rem", maxWidth: 460 }}>{p.desc}</p>
 

@@ -19,6 +19,22 @@ module.exports = async function handler(req, res) {
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
   if (req.method === 'GET') {
+    if (req.query.summary) {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('product_id, rating')
+        .eq('status', 'approved');
+      if (error) return safeError(res, 500, 'Erreur serveur');
+      const sums = {};
+      (data || []).forEach(r => {
+        const s = sums[r.product_id] || (sums[r.product_id] = { total: 0, count: 0 });
+        s.total += r.rating; s.count += 1;
+      });
+      const stats = {};
+      Object.entries(sums).forEach(([id, s]) => { stats[id] = { note: +(s.total / s.count).toFixed(1), avis: s.count }; });
+      return res.status(200).json(stats);
+    }
+
     const productId = int(req.query.product_id, 1, 9999999);
     if (!productId) return safeError(res, 400, 'product_id requis');
     const { data, error } = await supabase
