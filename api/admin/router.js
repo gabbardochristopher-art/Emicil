@@ -22,8 +22,9 @@ module.exports = async function handler(req, res) {
   const route    = segments[0] || '';
   const id       = segments[1] || null;
 
-  // login géré par login.js dédié — ne devrait pas arriver ici
+  // login géré par login.js dédié (fonction serverless séparée) — ne devrait pas arriver ici
   if (route === 'login') return safeError(res, 404, 'Utiliser /api/admin/login');
+
 
   const admin = requireAdmin(req, res);
   if (!admin) return;
