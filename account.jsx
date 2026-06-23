@@ -56,6 +56,10 @@ function AuthScreen({ onLogin, go, notice }) {
         if (error) {
           if (error.message.includes("Email not confirmed"))
             throw new Error("Email non confirmé. Vérifiez votre boîte mail et cliquez sur le lien.");
+          if (error.message.toLowerCase().includes("banned"))
+            throw new Error("Ce compte a été bloqué. Merci d'en créer un nouveau ou de nous contacter.");
+          if (error.message.includes("Invalid login credentials"))
+            throw new Error("Ce compte n'existe plus ou les identifiants sont incorrects. Merci d'en créer un nouveau.");
           throw new Error("Email ou mot de passe incorrect.");
         }
         onLogin(data.user);
