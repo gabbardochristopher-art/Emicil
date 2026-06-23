@@ -79,7 +79,7 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
           ))}
         </nav>
 
-        <button onClick={() => go("home")} aria-label="Emicils" style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", zIndex: 1 }}><Logo size={36} /></button>
+        <button className="hdr-logo" onClick={() => go("home")} aria-label="Emicils" style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", zIndex: 1 }}><Logo size={36} /></button>
 
         <div className="hdr-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center", justifyContent: "flex-end", position: "relative", zIndex: 2 }}>
           <a href="https://www.planity.com/emicils-13240-septemes-les-vallons-58l" target="_blank" rel="noopener noreferrer"
