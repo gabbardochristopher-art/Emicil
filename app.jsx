@@ -68,7 +68,7 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
         Click & Collect gratuit en 2 h · Livraison offerte dès 49 €
       </div>
       <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, gap: "0.5rem", position: "relative" }}>
-        <button className="hdr-burger" onClick={() => setMenuOpen(true)} aria-label="Menu" style={{ display: "none", color: "var(--noir)" }}><Ico.menu width={24} height={24} /></button>
+        <button className="hdr-burger" onClick={() => setMenuOpen(true)} aria-label="Menu" style={{ display: "none", color: "var(--noir)", position: "relative", zIndex: 2 }}><Ico.menu width={24} height={24} /></button>
 
         <nav className="hdr-nav" style={{ display: "flex", gap: "1.6rem", flex: 1 }}>
           {[["home","Accueil"],["shop","Boutique"],["formation","Formation"],["account","Fidélité"],["galerie","Galerie"]].map(([k,l]) => (
@@ -79,9 +79,9 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
           ))}
         </nav>
 
-        <button onClick={() => go("home")} aria-label="Emicils" style={{ position: "absolute", left: "50%", transform: "translateX(-50%)" }}><Logo size={36} /></button>
+        <button onClick={() => go("home")} aria-label="Emicils" style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", zIndex: 1 }}><Logo size={36} /></button>
 
-        <div className="hdr-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center", justifyContent: "flex-end" }}>
+        <div className="hdr-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center", justifyContent: "flex-end", position: "relative", zIndex: 2 }}>
           <a href="https://www.planity.com/emicils-13240-septemes-les-vallons-58l" target="_blank" rel="noopener noreferrer"
             className="hdr-nav"
             style={{ fontFamily: "var(--f-display)", letterSpacing: "0.14em", textTransform: "uppercase", fontSize: "0.78rem",
