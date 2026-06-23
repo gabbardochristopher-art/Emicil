@@ -975,5 +975,43 @@ if (window.SUPABASE) {
     .subscribe();
 }
 
+// =========================================================
+//  POLLING FALLBACK (si Realtime pas activé sur une table)
+// =========================================================
+let lastOrderCount = -1, lastBookingCount = -1, lastReviewCount = -1, lastPopupCount = -1;
+
+async function pollNotifications() {
+  try {
+    const [ordRes, bookRes, revRes, popRes] = await Promise.all([
+      fetch(`${API}/admin/orders`, { headers: headers() }),
+      fetch(`${API}/admin/formation-bookings`, { headers: headers() }),
+      fetch(`${API}/admin/reviews`, { headers: headers() }),
+      fetch(`${API}/admin/popup-submissions`, { headers: headers() }),
+    ]);
+    const orders   = ordRes.ok   ? await ordRes.json()   : [];
+    const bookings = bookRes.ok  ? await bookRes.json()  : [];
+    const reviews  = revRes.ok   ? await revRes.json()    : [];
+    const popups   = popRes.ok   ? await popRes.json()    : [];
+
+    const pendingOrders   = orders.filter(o => o.status === 'pending').length;
+    const pendingBookings = bookings.filter(b => b.status === 'pending').length;
+    const pendingReviews  = reviews.filter(r => r.status === 'pending').length;
+    const newPopups       = popups.length;
+
+    if (lastOrderCount >= 0 && pendingOrders > lastOrderCount) showNotifDot('orders');
+    if (lastBookingCount >= 0 && pendingBookings > lastBookingCount) showNotifDot('formations');
+    if (lastReviewCount >= 0 && pendingReviews > lastReviewCount) showNotifDot('reviews');
+    if (lastPopupCount >= 0 && newPopups > lastPopupCount) showNotifDot('popup');
+
+    lastOrderCount   = pendingOrders;
+    lastBookingCount = pendingBookings;
+    lastReviewCount  = pendingReviews;
+    lastPopupCount   = newPopups;
+  } catch {}
+}
+
+pollNotifications();
+setInterval(pollNotifications, 30000);
+
 // Init
 showSection('overview');
