@@ -67,7 +67,7 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
         padding: "0.5rem", textTransform: "uppercase", fontFamily: "var(--f-display)" }}>
         Click & Collect gratuit en 2 h · Livraison offerte dès 49 €
       </div>
-      <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 76, gap: "1rem" }}>
+      <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, gap: "0.5rem" }}>
         <button className="hdr-burger" onClick={() => setMenuOpen(true)} aria-label="Menu" style={{ display: "none", color: "var(--noir)" }}><Ico.menu width={24} height={24} /></button>
 
         <nav className="hdr-nav" style={{ display: "flex", gap: "1.6rem", flex: 1 }}>
@@ -79,17 +79,17 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
           ))}
         </nav>
 
-        <button onClick={() => go("home")} aria-label="Emicils" style={{ flexShrink: 0 }}><Logo size={42} /></button>
+        <button onClick={() => go("home")} aria-label="Emicils" style={{ flexShrink: 0 }}><Logo size={36} /></button>
 
-        <div className="hdr-actions" style={{ display: "flex", gap: "0.6rem", alignItems: "center", flex: 1, justifyContent: "flex-end" }}>
+        <div className="hdr-actions" style={{ display: "flex", gap: "0.3rem", alignItems: "center", justifyContent: "flex-end" }}>
           <a href="https://www.planity.com/emicils-13240-septemes-les-vallons-58l" target="_blank" rel="noopener noreferrer"
             className="hdr-nav"
             style={{ fontFamily: "var(--f-display)", letterSpacing: "0.14em", textTransform: "uppercase", fontSize: "0.82rem",
               color: "var(--blanc)", background: "var(--noir)", padding: "0.75em 1.6em", borderRadius: "var(--r-sm)",
-              whiteSpace: "nowrap", flexShrink: 0, margin: "0 auto" }}>Prendre RDV</a>
-          <button onClick={() => setSearchOpen(v => !v)} aria-label="Rechercher" aria-expanded={searchOpen} style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: searchOpen ? "var(--or)" : "var(--noir)" }}>{searchOpen ? <Ico.close width={20} height={20} /> : <Ico.search width={20} height={20} />}</button>
-          <button onClick={() => go("account")} aria-label="Compte" style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: loggedIn ? "var(--or)" : "var(--noir)" }}><Ico.user width={20} height={20} /></button>
-          <button onClick={onCart} aria-label="Panier" style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: "var(--noir)", position: "relative" }}>
+              whiteSpace: "nowrap", flexShrink: 0, marginRight: "auto" }}>Prendre RDV</a>
+          <button onClick={() => setSearchOpen(v => !v)} aria-label="Rechercher" aria-expanded={searchOpen} style={{ width: 38, height: 38, borderRadius: "50%", display: "grid", placeItems: "center", color: searchOpen ? "var(--or)" : "var(--noir)", flexShrink: 0 }}>{searchOpen ? <Ico.close width={19} height={19} /> : <Ico.search width={19} height={19} />}</button>
+          <button onClick={() => go("account")} aria-label="Compte" style={{ width: 38, height: 38, borderRadius: "50%", display: "grid", placeItems: "center", color: loggedIn ? "var(--or)" : "var(--noir)", flexShrink: 0 }}><Ico.user width={19} height={19} /></button>
+          <button onClick={onCart} aria-label="Panier" style={{ width: 38, height: 38, borderRadius: "50%", display: "grid", placeItems: "center", color: "var(--noir)", position: "relative", flexShrink: 0 }}>
             <Ico.cart width={20} height={20} />
             {cartCount > 0 && <span style={{ position: "absolute", top: 4, right: 2, background: "var(--or)", color: "var(--blanc)", borderRadius: "50%", minWidth: 17, height: 17, fontSize: "0.62rem", display: "grid", placeItems: "center", padding: "0 4px" }}>{cartCount}</span>}
           </button>
