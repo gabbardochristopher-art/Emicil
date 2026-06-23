@@ -206,10 +206,10 @@ function AccountPage({ user, onLogout, go, points: pointsProp }) {
         <button onClick={onLogout} style={{ fontSize: "0.82rem", color: "var(--texte-doux)", borderBottom: "1px solid var(--ligne)", paddingBottom: 3 }}>Se déconnecter</button>
       </div>
 
-      <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid var(--ligne)", marginBottom: "2.2rem", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: "0.3rem", borderBottom: "1px solid var(--ligne)", marginBottom: "2.2rem", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
         {tabs.map(([id,l]) => (
-          <button key={id} onClick={() => setTab(id)} style={{ padding: "0.7rem 0", marginRight: "1.8rem", fontFamily: "var(--f-display)",
-            letterSpacing: "0.08em", textTransform: "uppercase", fontSize: "0.8rem",
+          <button key={id} onClick={() => setTab(id)} style={{ padding: "0.7rem 0.1rem", marginRight: "clamp(0.6rem, 2vw, 1.8rem)", fontFamily: "var(--f-display)",
+            letterSpacing: "0.06em", textTransform: "uppercase", fontSize: "clamp(0.68rem, 2vw, 0.8rem)", whiteSpace: "nowrap", flexShrink: 0,
             color: tab === id ? "var(--noir)" : "var(--texte-doux)",
             borderBottom: "2px solid " + (tab === id ? "var(--or)" : "transparent"), marginBottom: -1 }}>{l}</button>
         ))}

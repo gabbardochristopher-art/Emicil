@@ -35,14 +35,14 @@ function GaleriePage({ go }) {
       {lightbox !== null && lightboxPhoto && (
         <>
           <div onClick={() => setLightbox(null)} style={{ position: "fixed", inset: 0, background: "rgba(29,26,22,0.85)", zIndex: 200, cursor: "pointer" }} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 201, maxWidth: "90vw", maxHeight: "90vh" }}>
-            <img src={lightboxPhoto.url} alt={lightboxPhoto.legende || ""} style={{ maxWidth: "90vw", maxHeight: "85vh", objectFit: "contain", borderRadius: "var(--r-md)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 201, width: "94vw", maxWidth: 800, maxHeight: "90vh", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <img src={lightboxPhoto.url} alt={lightboxPhoto.legende || ""} style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: "var(--r-md)" }} />
             {lightboxPhoto.legende && (
               <p style={{ textAlign: "center", color: "var(--blanc)", fontFamily: "var(--f-display)", fontSize: "0.9rem", marginTop: "1rem" }}>{lightboxPhoto.legende}</p>
             )}
-            <button onClick={() => setLightbox(null)} style={{ position: "absolute", top: -40, right: 0, color: "var(--blanc)", fontSize: "1.4rem" }}>✕</button>
-            {lightbox > 0 && <button onClick={() => setLightbox(lightbox - 1)} style={{ position: "absolute", left: -50, top: "50%", transform: "translateY(-50%)", color: "var(--blanc)", fontSize: "2rem" }}>‹</button>}
-            {lightbox < lightboxPhotos.length - 1 && <button onClick={() => setLightbox(lightbox + 1)} style={{ position: "absolute", right: -50, top: "50%", transform: "translateY(-50%)", color: "var(--blanc)", fontSize: "2rem" }}>›</button>}
+            <button onClick={() => setLightbox(null)} style={{ position: "absolute", top: -36, right: 4, color: "var(--blanc)", fontSize: "1.4rem", zIndex: 1 }}>✕</button>
+            {lightbox > 0 && <button onClick={() => setLightbox(lightbox - 1)} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "var(--blanc)", fontSize: "2.2rem", background: "rgba(0,0,0,0.4)", borderRadius: "50%", width: 40, height: 40, display: "grid", placeItems: "center" }}>‹</button>}
+            {lightbox < lightboxPhotos.length - 1 && <button onClick={() => setLightbox(lightbox + 1)} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", color: "var(--blanc)", fontSize: "2.2rem", background: "rgba(0,0,0,0.4)", borderRadius: "50%", width: 40, height: 40, display: "grid", placeItems: "center" }}>›</button>}
           </div>
         </>
       )}
@@ -65,7 +65,7 @@ function GaleriePage({ go }) {
 
       {/* Filtres catégories */}
       <section className="container" style={{ paddingTop: "var(--pad-section)" }}>
-        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center", marginBottom: "2rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "nowrap", justifyContent: "flex-start", marginBottom: "2rem", overflowX: "auto", WebkitOverflowScrolling: "touch", paddingBottom: 6 }}>
           {GALERIE_CATEGORIES.map(c => (
             <button key={c.id} onClick={() => { setFilter(c.id); setLightbox(null); }}
               style={{
@@ -74,7 +74,7 @@ function GaleriePage({ go }) {
                 border: "1.5px solid " + (filter === c.id ? "var(--or)" : "var(--ligne)"),
                 background: filter === c.id ? "var(--or)" : "var(--blanc)",
                 color: filter === c.id ? "var(--blanc)" : "var(--texte-doux)",
-                transition: "all .2s", cursor: "pointer",
+                transition: "all .2s", cursor: "pointer", flexShrink: 0,
               }}>{c.label}</button>
           ))}
         </div>
@@ -85,7 +85,7 @@ function GaleriePage({ go }) {
             {photos.length === 0 ? "Les photos arrivent bientôt..." : "Aucune photo dans cette catégorie."}
           </p>
         )}
-        <div style={{ columns: "3 280px", gap: "1rem" }}>
+        <div className="galerie-masonry" style={{ columns: "3 280px", gap: "1rem" }}>
           {filtered.map((p, i) => (
             <div key={p.id || i} onClick={() => setLightbox(i)} style={{ breakInside: "avoid", marginBottom: "1rem", cursor: "pointer", borderRadius: "var(--r-md)", overflow: "hidden", position: "relative" }}
               onMouseEnter={e => e.currentTarget.querySelector('.galerie-overlay').style.opacity = 1}

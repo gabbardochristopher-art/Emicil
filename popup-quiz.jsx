@@ -185,7 +185,7 @@ function PopupQuiz({ onClose }) {
               }}>
                 Laissez-nous vos coordonnées pour recevoir des conseils personnalisés.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
                 <div>
                   <label style={labelStyle}>Prénom *</label>
                   <input value={form.prenom} onChange={e => setForm(f => ({ ...f, prenom: e.target.value }))}

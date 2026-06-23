@@ -148,6 +148,11 @@
     [data-footer-grid] { grid-template-columns: 1fr !important; gap: 1.8rem !important; }
     [data-order-row] { grid-template-columns: auto 1fr !important; row-gap: 0.8rem !important; }
     [data-order-row] > :nth-child(3), [data-order-row] > :nth-child(4) { grid-column: 2 !important; justify-self: start !important; }
+    .galerie-masonry { columns: 1 !important; }
+    [data-social-grid] { grid-template-columns: 1fr !important; }
+  }
+  @media (min-width: 681px) and (max-width: 980px) {
+    .galerie-masonry { columns: 2 !important; }
   }
 </style>
 </head>

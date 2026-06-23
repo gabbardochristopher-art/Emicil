@@ -42,7 +42,7 @@ function BookingModal({ formation, user, onClose }) {
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(29,26,22,0.55)", backdropFilter: "blur(3px)", zIndex: 200 }} />
       <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 201,
-        background: "var(--blanc)", borderRadius: "var(--r-lg)", padding: "2rem", width: "min(480px,94vw)", maxHeight: "90vh", overflowY: "auto" }}>
+        background: "var(--blanc)", borderRadius: "var(--r-lg)", padding: "clamp(1.2rem, 4vw, 2rem)", width: "min(480px,94vw)", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.4rem" }}>
           <div>
             <p style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--or)", marginBottom: 4 }}>S'inscrire</p>

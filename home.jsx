@@ -33,8 +33,8 @@ function Hero({ go }) {
           <img src="assets/salon_emicils_pro.jpg" alt="Salon Emicils" style={{
             width: "100%", aspectRatio: "4 / 5", objectFit: "cover", borderRadius: "var(--r-lg)",
             boxShadow: "0 40px 80px -40px rgba(0,0,0,0.6)" }} />
-          <div style={{ position: "absolute", bottom: -22, left: -22, background: "var(--blanc)", color: "var(--noir)",
-            borderRadius: "var(--r-md)", padding: "1rem 1.2rem", boxShadow: "var(--shadow)", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ position: "absolute", bottom: -14, left: "50%", transform: "translateX(-50%)", background: "var(--blanc)", color: "var(--noir)",
+            borderRadius: "var(--r-md)", padding: "0.8rem 1.1rem", boxShadow: "var(--shadow)", display: "flex", alignItems: "center", gap: 12, maxWidth: "90%", width: "max-content" }}>
             <div style={{ width: 42, height: 42, borderRadius: "50%", background: "var(--or-soft)", display: "grid", placeItems: "center", color: "var(--or)" }}>
               <Ico.store width={20} height={20} />
             </div>
