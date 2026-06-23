@@ -76,6 +76,9 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
                 color: route.page === (k === "shop" ? "shop" : k) ? "var(--noir)" : "var(--texte-doux)", paddingBottom: 3,
                 borderBottom: "1px solid " + (route.page === (k === "shop" ? "shop" : k) ? "var(--or)" : "transparent") }}>{l}</button>
           ))}
+          <a href="https://www.planity.com/emicils-13240-septemes-les-vallons-58l" target="_blank" rel="noopener noreferrer"
+            style={{ fontFamily: "var(--f-display)", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.74rem",
+              color: "var(--or)", paddingBottom: 3, borderBottom: "1px solid transparent", whiteSpace: "nowrap" }}>Prendre RDV</a>
         </nav>
 
         <button onClick={() => go("home")} aria-label="Emicils" style={{ flexShrink: 0 }}><Logo size={42} /></button>
@@ -145,6 +148,9 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
           <button key={k} onClick={() => handleNav(k)} style={{ textAlign: "left", padding: "0.9rem 0", borderBottom: "1px solid var(--ligne)",
             fontFamily: "var(--f-display)", letterSpacing: "0.08em", textTransform: "uppercase", fontSize: "0.85rem", color: "var(--texte)" }}>{l}</button>
         ))}
+        <a href="https://www.planity.com/emicils-13240-septemes-les-vallons-58l" target="_blank" rel="noopener noreferrer"
+          style={{ textAlign: "left", padding: "0.9rem 0", borderBottom: "1px solid var(--ligne)",
+            fontFamily: "var(--f-display)", letterSpacing: "0.08em", textTransform: "uppercase", fontSize: "0.85rem", color: "var(--or)" }}>Prendre RDV</a>
       </aside>
     </header>
   );
