@@ -588,13 +588,34 @@ function renderBookings() {
     return;
   }
   const STATUS = { pending: '⏳ En attente', confirmed: '✓ Confirmée', cancelled: '✗ Annulée' };
-  tbody.innerHTML = list.map(b => `
+
+  // Calcul places restantes par formation + date
+  const placesMap = {};
+  allBookings.filter(b => b.status !== 'cancelled').forEach(b => {
+    if (!b.date_choisie) return;
+    const key = `${b.formation_id}_${b.date_choisie}`;
+    placesMap[key] = (placesMap[key] || 0) + 1;
+  });
+  function getRemaining(b) {
+    if (!b.date_choisie) return null;
+    const formation = allFormations.find(f => f.id === b.formation_id);
+    const max  = formation?.places_max || 4;
+    const key  = `${b.formation_id}_${b.date_choisie}`;
+    return Math.max(0, max - (placesMap[key] || 0));
+  }
+
+  tbody.innerHTML = list.map(b => {
+    const remaining = getRemaining(b);
+    return `
     <tr>
       <td><strong>${esc(b.formations?.titre) || '—'}</strong></td>
       <td>${esc(b.user_name) || '—'}</td>
       <td>${esc(b.user_email)}</td>
       <td>${esc(b.user_phone) || '—'}</td>
-      <td style="color:#b08d57;font-weight:500">${esc(b.date_choisie) || '—'}</td>
+      <td>
+        <span style="color:#b08d57;font-weight:500">${esc(b.date_choisie) || '—'}</span>
+        ${remaining !== null ? `<div style="font-size:.72rem;color:${remaining === 0 ? '#ef4444' : '#7b7f93'};margin-top:2px">${remaining === 0 ? 'Complet' : remaining + ' place' + (remaining > 1 ? 's' : '') + ' restante' + (remaining > 1 ? 's' : '')}</div>` : ''}
+      </td>
       <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#7b7f93">${esc(b.message) || '—'}</td>
       <td><span class="badge badge-${b.status === 'pending' ? 'new' : b.status === 'confirmed' ? 'oui' : 'non'}">${STATUS[b.status] || esc(b.status)}</span></td>
       <td style="color:#7b7f93">${new Date(b.created_at).toLocaleDateString('fr-FR')}</td>
@@ -604,7 +625,8 @@ function renderBookings() {
           <button class="btn-action btn-delete" data-id="${b.id}" data-booking-action="cancelled">Annuler</button>
         ` : '—'}
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 async function updateBooking(id, status) {

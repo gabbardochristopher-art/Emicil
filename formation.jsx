@@ -5,7 +5,8 @@
 
 function BookingModal({ formation, onClose }) {
   const [form, setForm]       = React.useState({ name: "", email: "", phone: "", message: "", date: "" });
-  const dates = formation.dates || [];
+  const dates       = formation.dates || [];
+  const datePlaces  = formation.date_places || {};
   const [sending, setSending] = React.useState(false);
   const [done, setDone]       = React.useState(false);
   const [error, setError]     = React.useState(null);
@@ -62,7 +63,11 @@ function BookingModal({ formation, onClose }) {
                 <span style={lbl}>Date souhaitée</span>
                 <select style={inp} value={form.date} onChange={e => setForm(v => ({...v, date: e.target.value}))}>
                   <option value="">— Choisir une date —</option>
-                  {dates.map((d, i) => <option key={i} value={d}>{d}</option>)}
+                  {dates.map((d, i) => {
+                    const remaining = datePlaces[d] ?? 0;
+                    const full = remaining <= 0;
+                    return <option key={i} value={d} disabled={full}>{d} — {full ? "Complet" : `${remaining} place${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""}`}</option>;
+                  })}
                 </select>
               </label>
             )}

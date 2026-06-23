@@ -71,9 +71,24 @@ async function handlePaymentIntent(req, res) {
 // ---- Formations (catalogue public) ----
 async function handleFormations(req, res, supabase) {
   if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
-  const { data, error } = await supabase.from('formations').select('*').eq('actif', true).order('id');
-  if (error) return safeError(res, 500, error.message);
-  return res.status(200).json(data);
+  const [formRes, bookRes] = await Promise.all([
+    supabase.from('formations').select('*').eq('actif', true).order('id'),
+    supabase.from('formation_bookings').select('formation_id, date_choisie, status'),
+  ]);
+  if (formRes.error) return safeError(res, 500, formRes.error.message);
+
+  const bookings = bookRes.data || [];
+  const formations = (formRes.data || []).map(f => {
+    const placesMax = f.places_max || 4;
+    const fBookings = bookings.filter(b => b.formation_id === f.id && b.status !== 'cancelled');
+    const datePlaces = {};
+    (f.dates || []).forEach(d => {
+      const taken = fBookings.filter(b => b.date_choisie === d).length;
+      datePlaces[d] = Math.max(0, placesMax - taken);
+    });
+    return { ...f, date_places: datePlaces };
+  });
+  return res.status(200).json(formations);
 }
 
 // ---- Réservations de formation ----
@@ -84,14 +99,27 @@ async function handleFormationBookings(req, res, supabase) {
   if (!formation_id || !user_email?.trim()) return safeError(res, 400, 'Formation et email requis');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user_email.trim())) return safeError(res, 400, 'Email invalide');
 
+  const fId = parseInt(formation_id);
+  const dateVal = date_choisie?.trim() || '';
+
+  if (dateVal) {
+    const [formRes, countRes] = await Promise.all([
+      supabase.from('formations').select('places_max').eq('id', fId).single(),
+      supabase.from('formation_bookings').select('id').eq('formation_id', fId).eq('date_choisie', dateVal).neq('status', 'cancelled'),
+    ]);
+    const placesMax = formRes.data?.places_max || 4;
+    const taken     = (countRes.data || []).length;
+    if (taken >= placesMax) return safeError(res, 400, 'Plus de places disponibles pour cette date.');
+  }
+
   const row = {
-    formation_id: parseInt(formation_id),
+    formation_id: fId,
     user_email:   user_email.trim(),
     user_name:    user_name?.trim() || '',
     user_phone:   user_phone?.trim() || '',
     message:      message?.trim() || '',
   };
-  if (date_choisie?.trim()) row.date_choisie = date_choisie.trim();
+  if (dateVal) row.date_choisie = dateVal;
 
   const { data, error } = await supabase.from('formation_bookings').insert([row]).select().single();
 
