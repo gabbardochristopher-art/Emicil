@@ -144,7 +144,8 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
       <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(29,26,22,0.45)", zIndex: 95,
         opacity: menuOpen ? 1 : 0, pointerEvents: menuOpen ? "auto" : "none", transition: "opacity .3s" }} />
       <aside style={{ position: "fixed", top: 0, left: 0, height: "100%", width: "min(320px, 85vw)", background: "var(--beige-bg)", zIndex: 96,
-        transform: menuOpen ? "none" : "translateX(-100%)", transition: "transform .35s", padding: "1.4rem", display: "flex", flexDirection: "column" }}>
+        transform: menuOpen ? "none" : "translateX(-100%)", transition: "transform .35s", padding: "1.4rem", display: "flex", flexDirection: "column",
+        overflowY: "auto", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
           <Logo size={18} /><button onClick={() => setMenuOpen(false)}><Ico.close width={24} height={24} /></button>
         </div>
