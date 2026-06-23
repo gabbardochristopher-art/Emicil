@@ -153,21 +153,100 @@ document.getElementById('clients-tbody')?.addEventListener('click', async e => {
 // =========================================================
 //  OVERVIEW
 // =========================================================
+let chartClients = null, chartOrders = null, chartBookings = null, chartPopups = null;
+
+function getLast30Days() {
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+  return days;
+}
+
+function countByDay(items, dateField, days) {
+  const counts = {};
+  days.forEach(d => counts[d] = 0);
+  items.forEach(item => {
+    const d = (item[dateField] || '').slice(0, 10);
+    if (counts[d] !== undefined) counts[d]++;
+  });
+  return days.map(d => counts[d]);
+}
+
+function formatDayLabel(isoDate) {
+  const d = new Date(isoDate + 'T00:00:00');
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
+function createChart(canvasId, label, labels, data, color) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return null;
+  return new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label, data,
+        backgroundColor: color + '33',
+        borderColor: color,
+        borderWidth: 2,
+        borderRadius: 4,
+        barPercentage: 0.7,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#7b7f93', font: { size: 10 }, maxRotation: 45 } },
+        y: { beginAtZero: true, ticks: { color: '#7b7f93', stepSize: 1 }, grid: { color: 'rgba(255,255,255,.06)' } }
+      }
+    }
+  });
+}
+
 async function loadStats() {
-  const [prodRes, ordRes] = await Promise.all([
+  const [prodRes, ordRes, usersRes, bookRes, popRes] = await Promise.all([
     fetch(`${API}/products`),
     fetch(`${API}/admin/orders`, { headers: headers() }),
+    fetch(`${API}/admin/users`, { headers: headers() }),
+    fetch(`${API}/admin/formation-bookings`, { headers: headers() }),
+    fetch(`${API}/admin/popup-submissions`, { headers: headers() }),
   ]);
-  const prods  = prodRes.ok  ? await prodRes.json()  : [];
-  const orders = ordRes.ok   ? await ordRes.json()   : [];
+  const prods    = prodRes.ok  ? await prodRes.json()  : [];
+  const orders   = ordRes.ok   ? await ordRes.json()   : [];
+  const users    = usersRes.ok ? await usersRes.json()  : [];
+  const bookings = bookRes.ok  ? await bookRes.json()   : [];
+  const popups   = popRes.ok   ? await popRes.json()    : [];
+
   document.getElementById('stat-products').textContent = prods.length;
   document.getElementById('stat-featured').textContent = prods.filter(p => p.featured).length;
   document.getElementById('stat-stock').textContent    = prods.reduce((s, p) => s + (p.stock || 0), 0);
+  document.getElementById('stat-clients').textContent  = users.length;
+  document.getElementById('stat-orders').textContent   = orders.length;
+  const revenue = orders.filter(o => o.status === 'validated').reduce((s, o) => s + (parseFloat(o.total) || 0), 0);
+  document.getElementById('stat-revenue').textContent  = revenue.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 
   const pending = orders.filter(o => o.status === 'pending').length;
   const badge   = document.getElementById('orders-badge');
   if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline'; }
   else badge.style.display = 'none';
+
+  // Graphiques
+  const days   = getLast30Days();
+  const labels = days.map(formatDayLabel);
+
+  if (chartClients) chartClients.destroy();
+  if (chartOrders) chartOrders.destroy();
+  if (chartBookings) chartBookings.destroy();
+  if (chartPopups) chartPopups.destroy();
+
+  chartClients  = createChart('chart-clients', 'Inscriptions', labels, countByDay(users, 'createdAt', days), '#6c63ff');
+  chartOrders   = createChart('chart-orders', 'Commandes', labels, countByDay(orders, 'created_at', days), '#b08d57');
+  chartBookings = createChart('chart-bookings', 'Réservations', labels, countByDay(bookings, 'created_at', days), '#22c55e');
+  chartPopups   = createChart('chart-popups', 'Prospects', labels, countByDay(popups, 'created_at', days), '#ef4444');
 }
 
 // =========================================================
