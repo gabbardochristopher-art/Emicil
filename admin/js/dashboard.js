@@ -180,28 +180,35 @@ function formatDayLabel(isoDate) {
 }
 
 function createChart(canvasId, label, labels, data, color) {
-  const ctx = document.getElementById(canvasId);
-  if (!ctx) return null;
-  return new Chart(ctx, {
-    type: 'bar',
+  const el = document.getElementById(canvasId);
+  if (!el) return null;
+  return new Chart(el.getContext('2d'), {
+    type: 'line',
     data: {
       labels,
       datasets: [{
         label, data,
-        backgroundColor: color + '33',
+        backgroundColor: color + '20',
         borderColor: color,
         borderWidth: 2,
-        borderRadius: 4,
-        barPercentage: 0.7,
+        pointBackgroundColor: color,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        fill: true,
+        tension: 0.3,
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: '#1a1d27', titleColor: '#e2e4ed', bodyColor: '#e2e4ed', cornerRadius: 6, padding: 10 }
+      },
       scales: {
-        x: { grid: { display: false }, ticks: { color: '#7b7f93', font: { size: 10 }, maxRotation: 45 } },
-        y: { beginAtZero: true, ticks: { color: '#7b7f93', stepSize: 1 }, grid: { color: 'rgba(255,255,255,.06)' } }
+        x: { grid: { display: false }, ticks: { color: '#7b7f93', font: { size: 9 }, maxRotation: 50, autoSkip: true, maxTicksLimit: 10 } },
+        y: { beginAtZero: true, ticks: { color: '#7b7f93', stepSize: 1, font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.06)' } }
       }
     }
   });
