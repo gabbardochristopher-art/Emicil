@@ -165,7 +165,7 @@ function Footer({ go }) {
       <div className="container" style={{ paddingTop: "clamp(3rem,6vw,5rem)", paddingBottom: "2.5rem" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1.2fr", gap: "2.5rem" }} data-footer-grid>
           <div>
-            <img src="assets/logo-emicils.png" alt="Emicils" style={{ width: 150, marginBottom: "1.2rem", marginLeft: -10 }} />
+            <img src="assets/logo-emicils.png" alt="Emicils" style={{ width: 150, maxWidth: "100%", marginBottom: "1.2rem" }} />
             <p style={{ fontSize: "0.86rem", maxWidth: 260 }}>Institut de beauté & boutique spécialisés dans le regard, aux Pennes-Mirabeau.</p>
           </div>
           {[["Boutique", [["Boîtes de cils","cils"],["Accessoires","accessoires"],["Soins","soins"],["Cartes & prestations","cartes"]]],
