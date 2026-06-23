@@ -85,7 +85,7 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
             className="hdr-nav"
             style={{ fontFamily: "var(--f-display)", letterSpacing: "0.14em", textTransform: "uppercase", fontSize: "0.82rem",
               color: "var(--blanc)", background: "var(--noir)", padding: "0.75em 1.6em", borderRadius: "var(--r-sm)",
-              whiteSpace: "nowrap", flexShrink: 0, marginRight: "auto" }}>Prendre RDV</a>
+              whiteSpace: "nowrap", flexShrink: 0, margin: "0 auto" }}>Prendre RDV</a>
           <button onClick={() => setSearchOpen(v => !v)} aria-label="Rechercher" aria-expanded={searchOpen} style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: searchOpen ? "var(--or)" : "var(--noir)" }}>{searchOpen ? <Ico.close width={20} height={20} /> : <Ico.search width={20} height={20} />}</button>
           <button onClick={() => go("account")} aria-label="Compte" style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: loggedIn ? "var(--or)" : "var(--noir)" }}><Ico.user width={20} height={20} /></button>
           <button onClick={onCart} aria-label="Panier" style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: "var(--noir)", position: "relative" }}>
