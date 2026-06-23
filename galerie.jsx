@@ -36,7 +36,10 @@ function GaleriePage({ go }) {
         <>
           <div onClick={() => setLightbox(null)} style={{ position: "fixed", inset: 0, background: "rgba(29,26,22,0.85)", zIndex: 200, cursor: "pointer" }} />
           <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 201, width: "94vw", maxWidth: 800, maxHeight: "90vh", display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <img src={lightboxPhoto.url} alt={lightboxPhoto.legende || ""} style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: "var(--r-md)" }} />
+            {lightboxPhoto.type === "video"
+              ? <video src={lightboxPhoto.url} controls autoPlay style={{ maxWidth: "100%", maxHeight: "80vh", borderRadius: "var(--r-md)" }} />
+              : <img src={lightboxPhoto.url} alt={lightboxPhoto.legende || ""} style={{ maxWidth: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: "var(--r-md)" }} />
+            }
             {lightboxPhoto.legende && (
               <p style={{ textAlign: "center", color: "var(--blanc)", fontFamily: "var(--f-display)", fontSize: "0.9rem", marginTop: "1rem" }}>{lightboxPhoto.legende}</p>
             )}
@@ -90,7 +93,12 @@ function GaleriePage({ go }) {
             <div key={p.id || i} onClick={() => setLightbox(i)} style={{ breakInside: "avoid", marginBottom: "1rem", cursor: "pointer", borderRadius: "var(--r-md)", overflow: "hidden", position: "relative" }}
               onMouseEnter={e => e.currentTarget.querySelector('.galerie-overlay').style.opacity = 1}
               onMouseLeave={e => e.currentTarget.querySelector('.galerie-overlay').style.opacity = 0}>
-              <img src={p.url} alt={p.legende || "Photo Emicils"} style={{ width: "100%", display: "block", borderRadius: "var(--r-md)" }} />
+              {p.type === "video"
+                ? <><video src={p.url} muted loop playsInline style={{ width: "100%", display: "block", borderRadius: "var(--r-md)" }}
+                    onMouseEnter={e => e.target.play()} onMouseLeave={e => { e.target.pause(); e.target.currentTime = 0; }} />
+                  <div style={{ position: "absolute", top: 10, left: 10, background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: "0.65rem", padding: "2px 8px", borderRadius: 4 }}>▶ Vidéo</div></>
+                : <img src={p.url} alt={p.legende || "Photo Emicils"} style={{ width: "100%", display: "block", borderRadius: "var(--r-md)" }} />
+              }
               <div className="galerie-overlay" style={{ position: "absolute", inset: 0, background: "rgba(29,26,22,0.3)", display: "flex", alignItems: "flex-end", padding: "1rem", opacity: 0, transition: "opacity .25s", borderRadius: "var(--r-md)" }}>
                 <div>
                   {p.legende && <span style={{ color: "var(--blanc)", fontSize: "0.82rem", fontFamily: "var(--f-display)", display: "block" }}>{p.legende}</span>}

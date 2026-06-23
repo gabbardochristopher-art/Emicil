@@ -840,7 +840,10 @@ function renderGalerie() {
   }
   grid.innerHTML = allGaleriePhotos.map(p => `
     <div style="position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--a-border);background:var(--a-surface);">
-      <img src="${esc(p.url)}" style="width:100%;height:160px;object-fit:cover;display:block;" />
+      ${p.type === 'video'
+        ? `<video src="${esc(p.url)}" style="width:100%;height:160px;object-fit:cover;display:block;" muted></video>
+           <div style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);color:#fff;font-size:.65rem;padding:2px 8px;border-radius:4px;">▶ Vidéo</div>`
+        : `<img src="${esc(p.url)}" style="width:100%;height:160px;object-fit:cover;display:block;" />`}
       <div style="padding:10px 12px;">
         <div style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.legende) || '<span style="color:var(--a-muted)">Sans légende</span>'}</div>
         <div style="font-size:.72rem;color:var(--a-muted);margin-top:4px">${esc(p.categorie) || 'Sans catégorie'} · Pos. ${p.position} · ${p.visible ? '✓ Visible' : '✗ Masquée'}</div>
@@ -868,6 +871,9 @@ function closeGalerieModal() {
   galerieModal.classList.add('hidden');
   galerieForm.reset();
   document.getElementById('g-preview').style.display = 'none';
+  document.getElementById('g-preview-img').style.display = 'block';
+  document.getElementById('g-preview-video').style.display = 'none';
+  document.getElementById('g-type').value = 'image';
   document.getElementById('g-file-group').style.display = '';
 }
 
@@ -877,13 +883,22 @@ galerieModal?.addEventListener('click', e => { if (e.target === galerieModal) cl
 
 document.getElementById('g-file')?.addEventListener('change', e => {
   const file = e.target.files[0];
-  const preview = document.getElementById('g-preview');
-  const img = document.getElementById('g-preview-img');
-  if (file) {
+  const preview  = document.getElementById('g-preview');
+  const img      = document.getElementById('g-preview-img');
+  const video    = document.getElementById('g-preview-video');
+  if (!file) { preview.style.display = 'none'; return; }
+  const isVideo = file.type.startsWith('video/');
+  document.getElementById('g-type').value = isVideo ? 'video' : 'image';
+  if (isVideo) {
+    img.style.display = 'none'; video.style.display = 'block';
+    video.src = URL.createObjectURL(file);
+  } else {
+    video.style.display = 'none'; img.style.display = 'block';
     const reader = new FileReader();
-    reader.onload = ev => { img.src = ev.target.result; preview.style.display = 'block'; };
+    reader.onload = ev => { img.src = ev.target.result; };
     reader.readAsDataURL(file);
-  } else { preview.style.display = 'none'; }
+  }
+  preview.style.display = 'block';
 });
 
 async function uploadToSupabase(file) {
@@ -913,16 +928,25 @@ function openGalerieEdit(id) {
   if (!p) return;
   document.getElementById('g-id').value         = p.id;
   document.getElementById('g-url').value        = p.url || '';
+  document.getElementById('g-type').value       = p.type || 'image';
   document.getElementById('g-categorie').value  = p.categorie || '';
   document.getElementById('g-legende').value    = p.legende || '';
   document.getElementById('g-position').value   = p.position || 0;
   document.getElementById('g-visible').checked  = !!p.visible;
   document.getElementById('g-file-group').style.display = 'none';
   if (p.url) {
-    document.getElementById('g-preview-img').src = p.url;
+    if (p.type === 'video') {
+      document.getElementById('g-preview-img').style.display = 'none';
+      document.getElementById('g-preview-video').style.display = 'block';
+      document.getElementById('g-preview-video').src = p.url;
+    } else {
+      document.getElementById('g-preview-video').style.display = 'none';
+      document.getElementById('g-preview-img').style.display = 'block';
+      document.getElementById('g-preview-img').src = p.url;
+    }
     document.getElementById('g-preview').style.display = 'block';
   }
-  openGalerieModal('Modifier la photo');
+  openGalerieModal(p.type === 'video' ? 'Modifier la vidéo' : 'Modifier la photo');
 }
 
 galerieForm?.addEventListener('submit', async e => {
@@ -948,8 +972,10 @@ galerieForm?.addEventListener('submit', async e => {
       imageUrl = await uploadToSupabase(file);
     }
 
+    const mediaType = file ? (file.type.startsWith('video/') ? 'video' : 'image') : document.getElementById('g-type').value || 'image';
     const body = {
       url:       imageUrl,
+      type:      mediaType,
       categorie: document.getElementById('g-categorie').value,
       legende:   document.getElementById('g-legende').value.trim(),
       position:  parseInt(document.getElementById('g-position').value) || 0,

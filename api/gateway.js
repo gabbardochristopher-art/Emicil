@@ -705,8 +705,10 @@ async function handleAdmin(req, res, supabase, segments) {
         if (req.method === 'POST') {
           const body = req.body || {};
           if (!body.url?.trim()) return res.status(400).json({ error: 'URL image requise' });
+          const mediaType = ['image', 'video'].includes(body.type) ? body.type : 'image';
           const { data, error } = await supabase.from('galerie').insert([{
             url: body.url.trim(),
+            type: mediaType,
             categorie: str(body.categorie, 50),
             legende: body.legende?.trim() || '',
             position: parseInt(body.position) || 0,
@@ -721,6 +723,7 @@ async function handleAdmin(req, res, supabase, segments) {
           const body = req.body || {};
           const updates = {};
           if (body.url       !== undefined) updates.url       = body.url.trim();
+          if (body.type      !== undefined) updates.type      = ['image', 'video'].includes(body.type) ? body.type : 'image';
           if (body.categorie !== undefined) updates.categorie = str(body.categorie, 50);
           if (body.legende   !== undefined) updates.legende   = body.legende.trim();
           if (body.position  !== undefined) updates.position  = parseInt(body.position) || 0;

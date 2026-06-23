@@ -239,12 +239,14 @@
           <input type="hidden" id="g-id" />
           <div style="padding:20px 24px;display:flex;flex-direction:column;gap:16px;">
             <input type="hidden" id="g-url" />
+            <input type="hidden" id="g-type" value="image" />
             <div class="form-group" id="g-file-group">
-              <label>Image *</label>
-              <input type="file" id="g-file" accept="image/*" style="padding:8px;cursor:pointer" />
+              <label>Image ou Vidéo *</label>
+              <input type="file" id="g-file" accept="image/*,video/*" style="padding:8px;cursor:pointer" />
             </div>
             <div id="g-preview" style="border-radius:8px;overflow:hidden;max-height:200px;display:none;">
               <img id="g-preview-img" style="width:100%;object-fit:cover;border-radius:8px;" />
+              <video id="g-preview-video" style="width:100%;border-radius:8px;display:none;" controls muted></video>
             </div>
             <div class="form-group">
               <label>Catégorie *</label>
