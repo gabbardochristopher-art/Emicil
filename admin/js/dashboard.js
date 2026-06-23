@@ -894,5 +894,59 @@ document.getElementById('password-form').addEventListener('submit', async e => {
   e.target.reset();
 });
 
+// =========================================================
+//  NOTIFICATIONS TEMPS RÉEL (Supabase Realtime)
+// =========================================================
+function showNotifDot(sectionName) {
+  const link = document.querySelector(`.nav-link[data-section="${sectionName}"]`);
+  if (!link || link.classList.contains('active')) return;
+  if (link.querySelector('.notif-dot')) return;
+  const dot = document.createElement('span');
+  dot.className = 'notif-dot';
+  dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;margin-left:6px;animation:notifPulse 1s ease infinite';
+  link.appendChild(dot);
+}
+
+function clearNotifDot(sectionName) {
+  const link = document.querySelector(`.nav-link[data-section="${sectionName}"]`);
+  if (!link) return;
+  link.querySelectorAll('.notif-dot').forEach(d => d.remove());
+}
+
+// Ajoute l'animation pulse
+const notifStyle = document.createElement('style');
+notifStyle.textContent = '@keyframes notifPulse{0%,100%{opacity:1}50%{opacity:.4}}';
+document.head.appendChild(notifStyle);
+
+// Clear dots quand on clique sur une section
+navLinks.forEach(link => link.addEventListener('click', () => clearNotifDot(link.dataset.section)));
+
+if (window.SUPABASE) {
+  window.SUPABASE
+    .channel('admin-realtime-notifs')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => {
+      showNotifDot('orders');
+      const currentSection = document.querySelector('.nav-link.active')?.dataset.section;
+      if (currentSection === 'orders') loadOrders();
+      if (currentSection === 'overview') loadStats();
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'formation_bookings' }, () => {
+      showNotifDot('formations');
+      const currentSection = document.querySelector('.nav-link.active')?.dataset.section;
+      if (currentSection === 'formations') loadBookings();
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reviews' }, () => {
+      showNotifDot('reviews');
+      const currentSection = document.querySelector('.nav-link.active')?.dataset.section;
+      if (currentSection === 'reviews') loadReviews();
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'popup_submissions' }, () => {
+      showNotifDot('popup');
+      const currentSection = document.querySelector('.nav-link.active')?.dataset.section;
+      if (currentSection === 'popup') loadPopupSubmissions();
+    })
+    .subscribe();
+}
+
 // Init
 showSection('overview');
