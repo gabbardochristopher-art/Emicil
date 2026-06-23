@@ -139,7 +139,7 @@ function FormationPage({ go }) {
 
                 <div>
                   <h3 style={{ fontSize: "1.15rem", fontWeight: 400, marginBottom: "0.5rem" }}>{f.titre}</h3>
-                  <p style={{ fontSize: "0.86rem", color: "var(--texte-doux)", lineHeight: 1.65 }}>{f.description || f.desc}</p>
+                  <p style={{ fontSize: "0.86rem", color: "var(--texte-doux)", lineHeight: 1.65, whiteSpace: "pre-line" }}>{f.description || f.desc}</p>
                 </div>
 
                 <ul style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
