@@ -81,12 +81,12 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
 
         <button onClick={() => go("home")} aria-label="Emicils" style={{ position: "absolute", left: "50%", transform: "translateX(-50%)" }}><Logo size={36} /></button>
 
-        <div className="hdr-actions" style={{ display: "flex", gap: "0.3rem", alignItems: "center", justifyContent: "flex-end" }}>
+        <div className="hdr-actions" style={{ display: "flex", gap: "0.5rem", alignItems: "center", justifyContent: "flex-end" }}>
           <a href="https://www.planity.com/emicils-13240-septemes-les-vallons-58l" target="_blank" rel="noopener noreferrer"
             className="hdr-nav"
-            style={{ fontFamily: "var(--f-display)", letterSpacing: "0.14em", textTransform: "uppercase", fontSize: "0.82rem",
-              color: "var(--blanc)", background: "var(--noir)", padding: "0.75em 1.6em", borderRadius: "var(--r-sm)",
-              whiteSpace: "nowrap", flexShrink: 0, marginRight: "auto" }}>Prendre RDV</a>
+            style={{ fontFamily: "var(--f-display)", letterSpacing: "0.14em", textTransform: "uppercase", fontSize: "0.78rem",
+              color: "var(--blanc)", background: "var(--noir)", padding: "0.65em 1.3em", borderRadius: "var(--r-sm)",
+              whiteSpace: "nowrap", flexShrink: 0 }}>Prendre RDV</a>
           <button onClick={() => setSearchOpen(v => !v)} aria-label="Rechercher" aria-expanded={searchOpen} style={{ width: 38, height: 38, borderRadius: "50%", display: "grid", placeItems: "center", color: searchOpen ? "var(--or)" : "var(--noir)", flexShrink: 0 }}>{searchOpen ? <Ico.close width={19} height={19} /> : <Ico.search width={19} height={19} />}</button>
           <button onClick={() => go("account")} aria-label="Compte" style={{ width: 38, height: 38, borderRadius: "50%", display: "grid", placeItems: "center", color: loggedIn ? "var(--or)" : "var(--noir)", flexShrink: 0 }}><Ico.user width={19} height={19} /></button>
           <button onClick={onCart} aria-label="Panier" style={{ width: 38, height: 38, borderRadius: "50%", display: "grid", placeItems: "center", color: "var(--noir)", position: "relative", flexShrink: 0 }}>
