@@ -182,6 +182,9 @@ function formatDayLabel(isoDate) {
 function createChart(canvasId, label, labels, data, color) {
   const el = document.getElementById(canvasId);
   if (!el) return null;
+  const parent = el.parentElement;
+  el.width  = parent.clientWidth;
+  el.height = 250;
   return new Chart(el.getContext('2d'), {
     type: 'line',
     data: {
