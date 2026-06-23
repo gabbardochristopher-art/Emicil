@@ -843,7 +843,7 @@ function renderGalerie() {
       <img src="${esc(p.url)}" style="width:100%;height:160px;object-fit:cover;display:block;" />
       <div style="padding:10px 12px;">
         <div style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.legende) || '<span style="color:var(--a-muted)">Sans légende</span>'}</div>
-        <div style="font-size:.72rem;color:var(--a-muted);margin-top:4px">Position: ${p.position} · ${p.visible ? '✓ Visible' : '✗ Masquée'}</div>
+        <div style="font-size:.72rem;color:var(--a-muted);margin-top:4px">${esc(p.categorie) || 'Sans catégorie'} · Pos. ${p.position} · ${p.visible ? '✓ Visible' : '✗ Masquée'}</div>
         <div style="display:flex;gap:6px;margin-top:8px">
           <button class="btn-action btn-edit" data-galerie-edit="${p.id}">Modifier</button>
           <button class="btn-action btn-delete" data-galerie-delete="${p.id}">Supprimer</button>
@@ -911,11 +911,12 @@ document.getElementById('btn-add-photo')?.addEventListener('click', () => {
 function openGalerieEdit(id) {
   const p = allGaleriePhotos.find(p => p.id === id);
   if (!p) return;
-  document.getElementById('g-id').value       = p.id;
-  document.getElementById('g-url').value      = p.url || '';
-  document.getElementById('g-legende').value  = p.legende || '';
-  document.getElementById('g-position').value = p.position || 0;
-  document.getElementById('g-visible').checked = !!p.visible;
+  document.getElementById('g-id').value         = p.id;
+  document.getElementById('g-url').value        = p.url || '';
+  document.getElementById('g-categorie').value  = p.categorie || '';
+  document.getElementById('g-legende').value    = p.legende || '';
+  document.getElementById('g-position').value   = p.position || 0;
+  document.getElementById('g-visible').checked  = !!p.visible;
   document.getElementById('g-file-group').style.display = 'none';
   if (p.url) {
     document.getElementById('g-preview-img').src = p.url;
@@ -948,10 +949,11 @@ galerieForm?.addEventListener('submit', async e => {
     }
 
     const body = {
-      url:      imageUrl,
-      legende:  document.getElementById('g-legende').value.trim(),
-      position: parseInt(document.getElementById('g-position').value) || 0,
-      visible:  document.getElementById('g-visible').checked,
+      url:       imageUrl,
+      categorie: document.getElementById('g-categorie').value,
+      legende:   document.getElementById('g-legende').value.trim(),
+      position:  parseInt(document.getElementById('g-position').value) || 0,
+      visible:   document.getElementById('g-visible').checked,
     };
 
     const url    = id ? `${API}/admin/galerie/${id}` : `${API}/admin/galerie`;

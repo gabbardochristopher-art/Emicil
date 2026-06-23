@@ -707,6 +707,7 @@ async function handleAdmin(req, res, supabase, segments) {
           if (!body.url?.trim()) return res.status(400).json({ error: 'URL image requise' });
           const { data, error } = await supabase.from('galerie').insert([{
             url: body.url.trim(),
+            categorie: str(body.categorie, 50),
             legende: body.legende?.trim() || '',
             position: parseInt(body.position) || 0,
             visible: body.visible !== false,
@@ -719,10 +720,11 @@ async function handleAdmin(req, res, supabase, segments) {
         if (req.method === 'PUT') {
           const body = req.body || {};
           const updates = {};
-          if (body.url      !== undefined) updates.url      = body.url.trim();
-          if (body.legende  !== undefined) updates.legende   = body.legende.trim();
-          if (body.position !== undefined) updates.position  = parseInt(body.position) || 0;
-          if (body.visible  !== undefined) updates.visible   = !!body.visible;
+          if (body.url       !== undefined) updates.url       = body.url.trim();
+          if (body.categorie !== undefined) updates.categorie = str(body.categorie, 50);
+          if (body.legende   !== undefined) updates.legende   = body.legende.trim();
+          if (body.position  !== undefined) updates.position  = parseInt(body.position) || 0;
+          if (body.visible   !== undefined) updates.visible   = !!body.visible;
           const { data, error } = await supabase.from('galerie').update(updates).eq('id', id).select().single();
           if (error) return res.status(500).json({ error: error.message });
           return res.status(200).json(data);
