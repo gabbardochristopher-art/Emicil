@@ -857,31 +857,54 @@ const galerieModal      = document.getElementById('galerie-modal');
 const galerieForm       = document.getElementById('galerie-form');
 const galerieModalError = document.getElementById('galerie-modal-error');
 
+const SUPABASE_URL = window.SUPABASE?.supabaseUrl || 'https://mspqucufnwgvjytwsnfp.supabase.co';
+
 function openGalerieModal(title) {
   document.getElementById('galerie-modal-title').textContent = title;
   galerieModalError.classList.add('hidden');
   galerieModal.classList.remove('hidden');
-  updateGaleriePreview();
 }
-function closeGalerieModal() { galerieModal.classList.add('hidden'); galerieForm.reset(); document.getElementById('g-preview').style.display = 'none'; }
+function closeGalerieModal() {
+  galerieModal.classList.add('hidden');
+  galerieForm.reset();
+  document.getElementById('g-preview').style.display = 'none';
+  document.getElementById('g-file-group').style.display = '';
+}
 
 document.getElementById('galerie-modal-close')?.addEventListener('click', closeGalerieModal);
 document.getElementById('galerie-modal-cancel')?.addEventListener('click', closeGalerieModal);
 galerieModal?.addEventListener('click', e => { if (e.target === galerieModal) closeGalerieModal(); });
 
-function updateGaleriePreview() {
-  const url = document.getElementById('g-url').value.trim();
+document.getElementById('g-file')?.addEventListener('change', e => {
+  const file = e.target.files[0];
   const preview = document.getElementById('g-preview');
   const img = document.getElementById('g-preview-img');
-  if (url) { img.src = url; preview.style.display = 'block'; }
-  else preview.style.display = 'none';
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = ev => { img.src = ev.target.result; preview.style.display = 'block'; };
+    reader.readAsDataURL(file);
+  } else { preview.style.display = 'none'; }
+});
+
+async function uploadToSupabase(file) {
+  const ext  = file.name.split('.').pop().toLowerCase();
+  const name = `photo_${Date.now()}.${ext}`;
+  const { data, error } = await window.SUPABASE.storage.from('galerie').upload(name, file, {
+    cacheControl: '3600',
+    upsert: false,
+  });
+  if (error) throw new Error(error.message);
+  const { data: urlData } = window.SUPABASE.storage.from('galerie').getPublicUrl(name);
+  return urlData.publicUrl;
 }
-document.getElementById('g-url')?.addEventListener('input', updateGaleriePreview);
 
 document.getElementById('btn-add-photo')?.addEventListener('click', () => {
   document.getElementById('g-id').value = '';
+  document.getElementById('g-url').value = '';
   document.getElementById('g-visible').checked = true;
   document.getElementById('g-position').value = allGaleriePhotos.length;
+  document.getElementById('g-file-group').style.display = '';
+  document.getElementById('g-preview').style.display = 'none';
   openGalerieModal('Ajouter une photo');
 });
 
@@ -893,6 +916,11 @@ function openGalerieEdit(id) {
   document.getElementById('g-legende').value  = p.legende || '';
   document.getElementById('g-position').value = p.position || 0;
   document.getElementById('g-visible').checked = !!p.visible;
+  document.getElementById('g-file-group').style.display = 'none';
+  if (p.url) {
+    document.getElementById('g-preview-img').src = p.url;
+    document.getElementById('g-preview').style.display = 'block';
+  }
   openGalerieModal('Modifier la photo');
 }
 
@@ -901,23 +929,44 @@ galerieForm?.addEventListener('submit', async e => {
   const id  = document.getElementById('g-id').value;
   const btn = document.getElementById('galerie-modal-submit');
   btn.textContent = 'Enregistrement…'; btn.disabled = true;
+  galerieModalError.classList.add('hidden');
 
-  const body = {
-    url:      document.getElementById('g-url').value.trim(),
-    legende:  document.getElementById('g-legende').value.trim(),
-    position: parseInt(document.getElementById('g-position').value) || 0,
-    visible:  document.getElementById('g-visible').checked,
-  };
+  try {
+    let imageUrl = document.getElementById('g-url').value.trim();
+    const file   = document.getElementById('g-file').files[0];
 
-  const url    = id ? `${API}/admin/galerie/${id}` : `${API}/admin/galerie`;
-  const method = id ? 'PUT' : 'POST';
-  const res    = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });
-  const data   = await res.json();
+    if (!id && !file) {
+      galerieModalError.textContent = 'Veuillez sélectionner une image.';
+      galerieModalError.classList.remove('hidden');
+      btn.textContent = 'Enregistrer'; btn.disabled = false;
+      return;
+    }
+
+    if (file) {
+      btn.textContent = 'Upload en cours…';
+      imageUrl = await uploadToSupabase(file);
+    }
+
+    const body = {
+      url:      imageUrl,
+      legende:  document.getElementById('g-legende').value.trim(),
+      position: parseInt(document.getElementById('g-position').value) || 0,
+      visible:  document.getElementById('g-visible').checked,
+    };
+
+    const url    = id ? `${API}/admin/galerie/${id}` : `${API}/admin/galerie`;
+    const method = id ? 'PUT' : 'POST';
+    const res    = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });
+    const data   = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Erreur');
+    closeGalerieModal();
+    loadGalerie();
+  } catch (err) {
+    galerieModalError.textContent = err.message;
+    galerieModalError.classList.remove('hidden');
+  }
   btn.textContent = 'Enregistrer'; btn.disabled = false;
-
-  if (!res.ok) { galerieModalError.textContent = data.error || 'Erreur'; galerieModalError.classList.remove('hidden'); return; }
-  closeGalerieModal();
-  loadGalerie();
 });
 
 async function deleteGaleriePhoto(id) {

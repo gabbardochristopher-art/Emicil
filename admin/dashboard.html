@@ -238,9 +238,13 @@
         <form id="galerie-form" novalidate>
           <input type="hidden" id="g-id" />
           <div style="padding:20px 24px;display:flex;flex-direction:column;gap:16px;">
-            <div class="form-group">
-              <label>URL de l'image *</label>
-              <input type="text" id="g-url" required placeholder="https://…" />
+            <input type="hidden" id="g-url" />
+            <div class="form-group" id="g-file-group">
+              <label>Image *</label>
+              <input type="file" id="g-file" accept="image/*" style="padding:8px;cursor:pointer" />
+            </div>
+            <div id="g-preview" style="border-radius:8px;overflow:hidden;max-height:200px;display:none;">
+              <img id="g-preview-img" style="width:100%;object-fit:cover;border-radius:8px;" />
             </div>
             <div class="form-group">
               <label>Légende</label>
@@ -254,9 +258,6 @@
               <label class="checkbox-label">
                 <input type="checkbox" id="g-visible" checked /> Visible sur le site
               </label>
-            </div>
-            <div id="g-preview" style="border-radius:8px;overflow:hidden;max-height:200px;display:none;">
-              <img id="g-preview-img" style="width:100%;object-fit:cover;border-radius:8px;" />
             </div>
           </div>
           <p class="error-msg hidden" id="galerie-modal-error" style="padding:0 24px;"></p>
