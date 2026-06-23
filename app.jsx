@@ -48,7 +48,7 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
     ).slice(0, 6);
   }, [query]);
 
-  const nav = [["home","Accueil"], ...CATEGORIES.map(c => ["cat:"+c.id, c.label]), ["formation","Formation"], ["account","Fidélité"], ["galerie","Galerie"]];
+  const nav = [["home","Accueil"], ...CATEGORIES.map(c => ["cat:"+c.id, c.label]), ["formation","Formation"], ["account","Fidélité"], ["galerie","Galerie"], ["faq","FAQ"]];
 
   function handleNav(key) {
     setMenuOpen(false);
@@ -56,6 +56,7 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
     else if (key === "account") go("account");
     else if (key === "formation") go("formation");
     else if (key === "galerie") go("galerie");
+    else if (key === "faq") go("faq");
     else if (key.startsWith("cat:")) go("shop", { cat: key.slice(4) });
   }
 
@@ -71,7 +72,7 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
         <button className="hdr-burger" onClick={() => setMenuOpen(true)} aria-label="Menu" style={{ display: "none", color: "var(--noir)", position: "relative", zIndex: 2 }}><Ico.menu width={24} height={24} /></button>
 
         <nav className="hdr-nav" style={{ display: "flex", gap: "1.6rem", flex: 1 }}>
-          {[["home","Accueil"],["shop","Boutique"],["formation","Formation"],["account","Fidélité"],["galerie","Galerie"]].map(([k,l]) => (
+          {[["home","Accueil"],["shop","Boutique"],["formation","Formation"],["account","Fidélité"],["galerie","Galerie"],["faq","FAQ"]].map(([k,l]) => (
             <button key={k} onClick={() => k === "shop" ? go("shop") : handleNav(k)}
               style={{ fontFamily: "var(--f-display)", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.74rem",
                 color: route.page === (k === "shop" ? "shop" : k) ? "var(--noir)" : "var(--texte-doux)", paddingBottom: 3,
@@ -395,6 +396,7 @@ function App() {
   else if (route.page === "formation") content = <FormationPage go={go} user={user} />;
   else if (route.page === "account") content = <AccountPage user={user} onLogout={async () => { await window.SUPABASE.auth.signOut(); }} go={go} points={points} orders={newOrders} />;
   else if (route.page === "galerie") content = <GaleriePage go={go} />;
+  else if (route.page === "faq") content = <FaqPage go={go} />;
   else if (route.page === "legal") content = <LegalPage go={go} section={route.section} />;
 
   return (
