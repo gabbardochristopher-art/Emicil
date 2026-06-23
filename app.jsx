@@ -76,12 +76,13 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
                 color: route.page === (k === "shop" ? "shop" : k) ? "var(--noir)" : "var(--texte-doux)", paddingBottom: 3,
                 borderBottom: "1px solid " + (route.page === (k === "shop" ? "shop" : k) ? "var(--or)" : "transparent") }}>{l}</button>
           ))}
-          <a href="https://www.planity.com/emicils-13240-septemes-les-vallons-58l" target="_blank" rel="noopener noreferrer"
-            style={{ fontFamily: "var(--f-display)", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.74rem",
-              color: "var(--or)", paddingBottom: 3, borderBottom: "1px solid transparent", whiteSpace: "nowrap" }}>Prendre RDV</a>
         </nav>
 
         <button onClick={() => go("home")} aria-label="Emicils" style={{ flexShrink: 0 }}><Logo size={42} /></button>
+        <a href="https://www.planity.com/emicils-13240-septemes-les-vallons-58l" target="_blank" rel="noopener noreferrer"
+          style={{ fontFamily: "var(--f-display)", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.7rem",
+            color: "var(--blanc)", background: "var(--noir)", padding: "0.55em 1.2em", borderRadius: "var(--r-sm)",
+            whiteSpace: "nowrap", flexShrink: 0, marginLeft: "0.8rem" }}>Prendre RDV</a>
 
         <div className="hdr-actions" style={{ display: "flex", gap: "0.4rem", alignItems: "center", flex: 1, justifyContent: "flex-end" }}>
           <button onClick={() => setSearchOpen(v => !v)} aria-label="Rechercher" aria-expanded={searchOpen} style={{ width: 42, height: 42, borderRadius: "50%", display: "grid", placeItems: "center", color: searchOpen ? "var(--or)" : "var(--noir)" }}>{searchOpen ? <Ico.close width={20} height={20} /> : <Ico.search width={20} height={20} />}</button>
