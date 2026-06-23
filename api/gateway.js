@@ -80,17 +80,20 @@ async function handleFormations(req, res, supabase) {
 async function handleFormationBookings(req, res, supabase) {
   if (req.method !== 'POST') return safeError(res, 405, 'Méthode non autorisée');
 
-  const { formation_id, user_email, user_name, user_phone, message } = req.body || {};
+  const { formation_id, user_email, user_name, user_phone, message, date_choisie } = req.body || {};
   if (!formation_id || !user_email?.trim()) return safeError(res, 400, 'Formation et email requis');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user_email.trim())) return safeError(res, 400, 'Email invalide');
 
-  const { data, error } = await supabase.from('formation_bookings').insert([{
+  const row = {
     formation_id: parseInt(formation_id),
     user_email:   user_email.trim(),
     user_name:    user_name?.trim() || '',
     user_phone:   user_phone?.trim() || '',
     message:      message?.trim() || '',
-  }]).select().single();
+  };
+  if (date_choisie?.trim()) row.date_choisie = date_choisie.trim();
+
+  const { data, error } = await supabase.from('formation_bookings').insert([row]).select().single();
 
   if (error) return safeError(res, 500, error.message);
 
@@ -552,6 +555,7 @@ async function handleAdmin(req, res, supabase, segments) {
             niveau: body.niveau?.trim() || 'Tous niveaux', prix: parseFloat(body.prix),
             description: body.description?.trim() || '',
             points: Array.isArray(body.points) ? body.points : [],
+            dates: Array.isArray(body.dates) ? body.dates : [],
             places_max: parseInt(body.places_max) || 4, actif: body.actif !== false,
           }]).select().single();
           if (error) return res.status(500).json({ error: error.message });
@@ -568,6 +572,7 @@ async function handleAdmin(req, res, supabase, segments) {
           if (body.prix        !== undefined) updates.prix        = parseFloat(body.prix);
           if (body.description !== undefined) updates.description = body.description.trim();
           if (body.points      !== undefined) updates.points      = Array.isArray(body.points) ? body.points : [];
+          if (body.dates       !== undefined) updates.dates       = Array.isArray(body.dates) ? body.dates : [];
           if (body.places_max  !== undefined) updates.places_max  = parseInt(body.places_max) || 4;
           if (body.actif       !== undefined) updates.actif       = !!body.actif;
           const { data, error } = await supabase.from('formations').update(updates).eq('id', id).select().single();

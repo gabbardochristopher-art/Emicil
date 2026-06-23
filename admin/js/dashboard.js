@@ -484,6 +484,7 @@ function openFormationEdit(id) {
   document.getElementById('f-places').value       = f.places_max || 4;
   document.getElementById('f-description').value  = f.description || '';
   document.getElementById('f-points').value       = (f.points || []).join('\n');
+  document.getElementById('f-dates').value        = (f.dates || []).join('\n');
   document.getElementById('f-actif').checked      = !!f.actif;
   openFormationModal('Modifier la formation');
 }
@@ -497,6 +498,8 @@ formationForm.addEventListener('submit', async e => {
 
   const pointsRaw = document.getElementById('f-points').value.trim();
   const points    = pointsRaw ? pointsRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+  const datesRaw  = document.getElementById('f-dates').value.trim();
+  const dates     = datesRaw ? datesRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
 
   const body = {
     titre:       document.getElementById('f-titre').value.trim(),
@@ -506,6 +509,7 @@ formationForm.addEventListener('submit', async e => {
     places_max:  parseInt(document.getElementById('f-places').value) || 4,
     description: document.getElementById('f-description').value.trim(),
     points,
+    dates,
     actif:       document.getElementById('f-actif').checked,
   };
 
@@ -580,7 +584,7 @@ function renderBookings() {
   const tbody = document.getElementById('bookings-tbody');
   const list  = bookingFilter === 'all' ? allBookings : allBookings.filter(b => b.status === bookingFilter);
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Aucune réservation.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#7b7f93;padding:28px">Aucune réservation.</td></tr>`;
     return;
   }
   const STATUS = { pending: '⏳ En attente', confirmed: '✓ Confirmée', cancelled: '✗ Annulée' };
@@ -590,6 +594,7 @@ function renderBookings() {
       <td>${esc(b.user_name) || '—'}</td>
       <td>${esc(b.user_email)}</td>
       <td>${esc(b.user_phone) || '—'}</td>
+      <td style="color:#b08d57;font-weight:500">${esc(b.date_choisie) || '—'}</td>
       <td style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#7b7f93">${esc(b.message) || '—'}</td>
       <td><span class="badge badge-${b.status === 'pending' ? 'new' : b.status === 'confirmed' ? 'oui' : 'non'}">${STATUS[b.status] || esc(b.status)}</span></td>
       <td style="color:#7b7f93">${new Date(b.created_at).toLocaleDateString('fr-FR')}</td>

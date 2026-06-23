@@ -176,7 +176,7 @@
         <div class="table-wrapper">
           <table class="admin-table">
             <thead><tr>
-              <th>Formation</th><th>Client</th><th>Email</th><th>Téléphone</th><th>Message</th><th>Statut</th><th>Date</th><th>Actions</th>
+              <th>Formation</th><th>Client</th><th>Email</th><th>Téléphone</th><th>Date choisie</th><th>Message</th><th>Statut</th><th>Date</th><th>Actions</th>
             </tr></thead>
             <tbody id="bookings-tbody"></tbody>
           </table>
@@ -368,6 +368,11 @@
             <label>Programme (un point par ligne)</label>
             <textarea id="f-points" rows="10" placeholder="Anatomie de l'œil & sécurité&#10;Choix des cils & colle&#10;Technique de pose&#10;…" style="min-height:200px"></textarea>
             <p style="font-size:.78rem;color:#7b7f93;margin-top:6px;">Chaque ligne = un point du programme.</p>
+          </div>
+          <div class="form-group form-group--full">
+            <label>Dates proposées (une par ligne)</label>
+            <textarea id="f-dates" rows="5" placeholder="Samedi 12 juillet 2025&#10;Dimanche 20 juillet 2025&#10;…" style="min-height:100px"></textarea>
+            <p style="font-size:.78rem;color:#7b7f93;margin-top:6px;">Chaque ligne = une date proposée. Écrivez au format libre (ex: Samedi 12 juillet 2025 — 9h/17h).</p>
           </div>
           <div class="form-group form-group--checkboxes">
             <label class="checkbox-label">

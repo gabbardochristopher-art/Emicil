@@ -4,7 +4,8 @@
 
 
 function BookingModal({ formation, onClose }) {
-  const [form, setForm]       = React.useState({ name: "", email: "", phone: "", message: "" });
+  const [form, setForm]       = React.useState({ name: "", email: "", phone: "", message: "", date: "" });
+  const dates = formation.dates || [];
   const [sending, setSending] = React.useState(false);
   const [done, setDone]       = React.useState(false);
   const [error, setError]     = React.useState(null);
@@ -17,7 +18,7 @@ function BookingModal({ formation, onClose }) {
       const res = await fetch('/api/formation-bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formation_id: formation.id, user_email: form.email, user_name: form.name, user_phone: form.phone, message: form.message }),
+        body: JSON.stringify({ formation_id: formation.id, user_email: form.email, user_name: form.name, user_phone: form.phone, message: form.message, date_choisie: form.date }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Erreur, réessayez.'); setSending(false); return; }
@@ -56,6 +57,15 @@ function BookingModal({ formation, onClose }) {
             <label><span style={lbl}>Prénom & Nom</span><input style={inp} value={form.name} onChange={e => setForm(v => ({...v, name: e.target.value}))} placeholder="Marie Dupont" /></label>
             <label><span style={lbl}>Email *</span><input style={inp} type="email" required value={form.email} onChange={e => setForm(v => ({...v, email: e.target.value}))} placeholder="marie@exemple.fr" /></label>
             <label><span style={lbl}>Téléphone</span><input style={inp} type="tel" value={form.phone} onChange={e => setForm(v => ({...v, phone: e.target.value}))} placeholder="06 12 34 56 78" /></label>
+            {dates.length > 0 && (
+              <label>
+                <span style={lbl}>Date souhaitée</span>
+                <select style={inp} value={form.date} onChange={e => setForm(v => ({...v, date: e.target.value}))}>
+                  <option value="">— Choisir une date —</option>
+                  {dates.map((d, i) => <option key={i} value={d}>{d}</option>)}
+                </select>
+              </label>
+            )}
             <label><span style={lbl}>Message (facultatif)</span><textarea style={{...inp, resize: "vertical"}} rows={3} value={form.message} onChange={e => setForm(v => ({...v, message: e.target.value}))} placeholder="Questions, disponibilités…" /></label>
             {error && <p style={{ color: "#c0392b", fontSize: "0.82rem" }}>{error}</p>}
             <button className="btn btn-dark btn-block" type="submit" disabled={sending} style={{ height: 48, opacity: sending ? 0.6 : 1 }}>
