@@ -1216,7 +1216,38 @@ if (window.SUPABASE) {
     .subscribe();
 }
 
-// Polling fallback
+// Chargement initial des notifications existantes + polling
+async function loadInitialNotifications() {
+  try {
+    const [ordRes, bookRes, revRes, popRes] = await Promise.all([
+      fetch(`${API}/admin/orders`, { headers: headers() }),
+      fetch(`${API}/admin/formation-bookings`, { headers: headers() }),
+      fetch(`${API}/admin/reviews`, { headers: headers() }),
+      fetch(`${API}/admin/popup-submissions`, { headers: headers() }),
+    ]);
+    const orders   = ordRes.ok  ? await ordRes.json()  : [];
+    const bookings = bookRes.ok ? await bookRes.json() : [];
+    const reviews  = revRes.ok  ? await revRes.json()  : [];
+    const popups   = popRes.ok  ? await popRes.json()  : [];
+
+    orders.filter(o => o.status === 'pending').forEach(o => {
+      addNotification('order', `Commande en attente — ${esc(o.id)}`, 'orders', o.id);
+    });
+    bookings.filter(b => b.status === 'pending').forEach(b => {
+      addNotification('booking', `Réservation formation — ${esc(b.user_name || b.user_email || '')}`, 'formations', b.id);
+    });
+    reviews.filter(r => r.status === 'pending').forEach(r => {
+      addNotification('review', `Avis en attente — ${esc(r.user_name || '')}`, 'reviews', r.id);
+    });
+    const seenPopups = getSeenPopups();
+    popups.filter(p => !seenPopups.includes(p.id)).forEach(p => {
+      addNotification('popup', `Prospect — ${esc(p.prenom || '')} ${esc(p.nom || '')}`, 'popup', p.id);
+    });
+  } catch {}
+}
+loadInitialNotifications();
+
+// Polling pour détecter les nouvelles entrées
 let lastOrderCount = -1, lastBookingCount = -1, lastReviewCount = -1, lastPopupCount = -1;
 async function pollNotifications() {
   try {
@@ -1244,7 +1275,7 @@ async function pollNotifications() {
     lastOrderCount = po; lastBookingCount = pb; lastReviewCount = pr; lastPopupCount = pp;
   } catch {}
 }
-pollNotifications();
+setTimeout(pollNotifications, 35000);
 setInterval(pollNotifications, 30000);
 
 // Init
