@@ -831,12 +831,24 @@ async function loadPopupSubmissions() {
   }
   allPopupSubmissions = await res.json();
   document.getElementById('popup-count').textContent = `${allPopupSubmissions.length} réponse(s)`;
-
-  const badge = document.getElementById('popup-badge');
-  if (allPopupSubmissions.length > 0) { badge.textContent = allPopupSubmissions.length; badge.style.display = 'inline'; }
-  else badge.style.display = 'none';
-
+  updatePopupBadge();
   renderPopupSubmissions(allPopupSubmissions);
+}
+
+function getSeenPopups() {
+  try { return JSON.parse(localStorage.getItem('popup_seen') || '[]'); } catch { return []; }
+}
+function markPopupSeen(id) {
+  const seen = getSeenPopups();
+  if (!seen.includes(id)) { seen.push(id); localStorage.setItem('popup_seen', JSON.stringify(seen)); }
+}
+
+function updatePopupBadge() {
+  const seen    = getSeenPopups();
+  const unseen  = allPopupSubmissions.filter(s => !seen.includes(s.id)).length;
+  const badge   = document.getElementById('popup-badge');
+  if (unseen > 0) { badge.textContent = unseen; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
 }
 
 function renderPopupSubmissions(list) {
@@ -845,9 +857,12 @@ function renderPopupSubmissions(list) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Aucune réponse au quiz.</td></tr>';
     return;
   }
-  tbody.innerHTML = list.map(s => `
-    <tr>
-      <td><strong>${esc(s.prenom)}</strong></td>
+  const seen = getSeenPopups();
+  tbody.innerHTML = list.map(s => {
+    const isNew = !seen.includes(s.id);
+    return `
+    <tr style="cursor:pointer;${isNew ? 'background:rgba(108,99,255,.06)' : ''}" data-popup-id="${s.id}">
+      <td><strong>${esc(s.prenom)}</strong> ${isNew ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;margin-left:6px"></span>' : ''}</td>
       <td>${esc(s.nom)}</td>
       <td>${esc(s.email)}</td>
       <td>${esc(s.telephone) || '—'}</td>
@@ -855,8 +870,20 @@ function renderPopupSubmissions(list) {
       <td style="color:#7b7f93;font-size:.82rem">${esc(s.experience) || '—'}</td>
       <td style="color:#7b7f93;font-size:.82rem">${esc(s.objectif) || '—'}</td>
       <td style="color:#7b7f93">${new Date(s.created_at).toLocaleDateString('fr-FR')}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
+
+document.getElementById('popup-tbody')?.addEventListener('click', e => {
+  const row = e.target.closest('[data-popup-id]');
+  if (!row) return;
+  const id = parseInt(row.dataset.popupId);
+  markPopupSeen(id);
+  row.style.background = '';
+  const dot = row.querySelector('span[style*="border-radius:50%"]');
+  if (dot) dot.remove();
+  updatePopupBadge();
+});
 
 document.getElementById('search-popup')?.addEventListener('input', e => {
   const q = e.target.value.toLowerCase();
