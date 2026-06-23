@@ -107,8 +107,8 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
             borderBottom: "1px solid var(--ligne)", paddingBottom: "1rem" }}>
             <Ico.search width={20} height={20} style={{ color: "var(--texte-doux)", flexShrink: 0 }} />
             <input ref={searchInputRef} value={query} onChange={e => setQuery(e.target.value)} type="text"
-              placeholder="Rechercher un produit, une marque, une catégorie…"
-              style={{ flex: 1, fontSize: "1.05rem", fontFamily: "var(--f-display)", letterSpacing: "0.01em", color: "var(--noir)", background: "transparent" }} />
+              placeholder="Rechercher un produit…"
+              style={{ flex: 1, fontSize: "0.95rem", fontFamily: "var(--f-display)", letterSpacing: "0.01em", color: "var(--noir)", background: "transparent", minWidth: 0 }} />
             <button type="button" onClick={closeSearch} aria-label="Fermer la recherche" style={{ color: "var(--texte-doux)", flexShrink: 0 }}><Ico.close width={20} height={20} /></button>
           </form>
 
