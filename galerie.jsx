@@ -38,17 +38,13 @@ function GaleriePage({ go }) {
           <h1 style={{ color: "var(--blanc)", fontSize: "clamp(2rem,5vw,3.2rem)", margin: "1rem 0 1rem", lineHeight: 1.08 }}>
             Galerie <span style={{ fontFamily: "var(--f-serif)", fontStyle: "italic", fontWeight: 400 }}>Photos</span>
           </h1>
-          <p style={{ color: "rgba(251,248,242,0.7)", fontSize: "1rem" }}>
+          <p style={{ color: "rgba(251,248,242,0.7)", fontSize: "1rem", marginBottom: "2rem" }}>
             Découvrez nos réalisations, notre institut et le savoir-faire de nos lash artists.
           </p>
+          <img src="assets/galerie_hero.png" alt="Présentation Emicils" style={{
+            width: "100%", maxWidth: 480, maxHeight: 260, objectFit: "cover", borderRadius: "var(--r-md)",
+            margin: "0 auto", display: "block" }} />
         </div>
-      </section>
-
-      {/* Photo de présentation */}
-      <section className="container" style={{ paddingTop: "var(--pad-section)" }}>
-        <img src="assets/galerie_hero.png" alt="Présentation Emicils" style={{
-          width: "100%", maxHeight: 420, objectFit: "cover", borderRadius: "var(--r-lg)",
-          boxShadow: "var(--shadow-soft)" }} />
       </section>
 
       {/* Grille photos */}
