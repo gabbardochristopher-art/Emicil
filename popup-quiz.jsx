@@ -12,7 +12,7 @@ function PopupQuiz({ onClose }) {
 
   function select(key, value) {
     setAnswers(prev => ({ ...prev, [key]: value }));
-    if (step < 2) setTimeout(() => setStep(s => s + 1), 250);
+    if (step < 3) setTimeout(() => setStep(s => s + 1), 250);
   }
 
   async function submit(e) {
