@@ -352,6 +352,13 @@ async function handlePopupSubmissions(req, res, supabase) {
   return res.status(201).json(data);
 }
 
+// ---- Tracking visite ----
+async function handleTrackVisit(req, res, supabase) {
+  if (req.method !== 'POST') return safeError(res, 405, 'Méthode non autorisée');
+  await supabase.from('visits').insert([{ page: str(req.body?.page, 50) || 'home' }]);
+  return res.status(200).json({ ok: true });
+}
+
 // ---- Réservations du client connecté ----
 async function handleMyBookings(req, res, supabase) {
   if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
@@ -742,6 +749,15 @@ async function handleAdmin(req, res, supabase, segments) {
     } catch { return safeError(res, 500, 'Erreur serveur'); }
   }
 
+  if (route === 'visits') {
+    try {
+      if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
+      const { data, error } = await supabase.from('visits').select('created_at');
+      if (error) return res.status(500).json({ error: error.message });
+      return res.status(200).json(data || []);
+    } catch { return safeError(res, 500, 'Erreur serveur'); }
+  }
+
   if (route === 'client-activity') {
     const { userId, userEmail } = req.query;
     if (!userId && !userEmail) return res.status(400).json({ error: 'userId ou userEmail requis' });
@@ -785,6 +801,7 @@ module.exports = async function handler(req, res) {
     case 'popup-submissions':     return handlePopupSubmissions(req, res, supabase);
     case 'my-bookings':           return handleMyBookings(req, res, supabase);
     case 'galerie':               return handleGalerie(req, res, supabase);
+    case 'track-visit':           return handleTrackVisit(req, res, supabase);
     case 'admin':                 return handleAdmin(req, res, supabase, segments.slice(1));
     default:                      return safeError(res, 404, 'Route inconnue');
   }

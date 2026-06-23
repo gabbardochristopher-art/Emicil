@@ -365,6 +365,10 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    fetch('/api/track-visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ page: 'home' }) }).catch(() => {});
+  }, []);
+
   function go(page, params = {}) { setRoute({ page, ...params }); window.scrollTo(0, 0); }
   function flash(msg) { setToast(msg); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(""), 2200); }
 
