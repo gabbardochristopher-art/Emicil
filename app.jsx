@@ -80,8 +80,8 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
 
         <button onClick={() => go("home")} aria-label="Emicils" style={{ flexShrink: 0 }}><Logo size={42} /></button>
         <a href="https://www.planity.com/emicils-13240-septemes-les-vallons-58l" target="_blank" rel="noopener noreferrer"
-          style={{ fontFamily: "var(--f-display)", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.7rem",
-            color: "var(--blanc)", background: "var(--noir)", padding: "0.55em 1.2em", borderRadius: "var(--r-sm)",
+          style={{ fontFamily: "var(--f-display)", letterSpacing: "0.14em", textTransform: "uppercase", fontSize: "0.82rem",
+            color: "var(--blanc)", background: "var(--noir)", padding: "0.75em 1.6em", borderRadius: "var(--r-sm)",
             whiteSpace: "nowrap", flexShrink: 0, marginLeft: "0.8rem" }}>Prendre RDV</a>
 
         <div className="hdr-actions" style={{ display: "flex", gap: "0.4rem", alignItems: "center", flex: 1, justifyContent: "flex-end" }}>
