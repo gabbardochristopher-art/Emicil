@@ -395,6 +395,7 @@ function App() {
       <CartDrawer open={cartOpen} items={cart} onClose={() => setCartOpen(false)} onQty={setQty} onRemove={removeItem}
         onCheckout={() => { setCartOpen(false); go("checkout"); }} go={go} />
       <Toast msg={toast} />
+      <PopupQuizWrapper />
       <EmicilsTweaks />
     </>
   );

@@ -37,7 +37,7 @@ const headers = () => ({ 'Content-Type': 'application/json', Authorization: `Bea
 const navLinks   = document.querySelectorAll('.nav-link');
 const sections   = document.querySelectorAll('.admin-section');
 const pageTitle  = document.getElementById('page-title');
-const TITLES = { overview: 'Tableau de bord', clients: 'Clients', products: 'Produits', orders: 'Commandes', formations: 'Formations', reviews: 'Avis', settings: 'Paramètres' };
+const TITLES = { overview: 'Tableau de bord', clients: 'Clients', products: 'Produits', orders: 'Commandes', formations: 'Formations', reviews: 'Avis', popup: 'Pop-up', settings: 'Paramètres' };
 
 function showSection(name) {
   navLinks.forEach(l  => l.classList.toggle('active', l.dataset.section === name));
@@ -49,6 +49,7 @@ function showSection(name) {
   if (name === 'orders')     loadOrders();
   if (name === 'formations') loadFormations();
   if (name === 'reviews')    loadReviews();
+  if (name === 'popup')      loadPopupSubmissions();
 }
 
 navLinks.forEach(link => link.addEventListener('click', e => { e.preventDefault(); showSection(link.dataset.section); }));
@@ -733,6 +734,59 @@ document.getElementById('clients-tbody')?.addEventListener('click', async e => {
       </tbody>
     </table>` : '<p style="color:#7b7f93;font-size:.85rem;">Aucune réservation de formation.</p>'}
   `;
+});
+
+// =========================================================
+//  POPUP SUBMISSIONS
+// =========================================================
+let allPopupSubmissions = [];
+
+async function loadPopupSubmissions() {
+  const tbody = document.getElementById('popup-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Chargement…</td></tr>';
+  const res = await fetch(`${API}/admin/popup-submissions`, { headers: headers() });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    tbody.innerHTML = `<tr><td colspan="8" style="color:red;padding:16px">Erreur ${res.status} : ${err.error || res.statusText}</td></tr>`;
+    return;
+  }
+  allPopupSubmissions = await res.json();
+  document.getElementById('popup-count').textContent = `${allPopupSubmissions.length} réponse(s)`;
+
+  const badge = document.getElementById('popup-badge');
+  if (allPopupSubmissions.length > 0) { badge.textContent = allPopupSubmissions.length; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
+
+  renderPopupSubmissions(allPopupSubmissions);
+}
+
+function renderPopupSubmissions(list) {
+  const tbody = document.getElementById('popup-tbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#7b7f93;padding:28px">Aucune réponse au quiz.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(s => `
+    <tr>
+      <td><strong>${esc(s.prenom)}</strong></td>
+      <td>${esc(s.nom)}</td>
+      <td>${esc(s.email)}</td>
+      <td>${esc(s.telephone) || '—'}</td>
+      <td><span class="badge badge-new">${esc(s.style) || '—'}</span></td>
+      <td style="color:#7b7f93;font-size:.82rem">${esc(s.experience) || '—'}</td>
+      <td style="color:#7b7f93;font-size:.82rem">${esc(s.objectif) || '—'}</td>
+      <td style="color:#7b7f93">${new Date(s.created_at).toLocaleDateString('fr-FR')}</td>
+    </tr>`).join('');
+}
+
+document.getElementById('search-popup')?.addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  renderPopupSubmissions(allPopupSubmissions.filter(s =>
+    (s.prenom + ' ' + s.nom).toLowerCase().includes(q) ||
+    s.email.toLowerCase().includes(q) ||
+    (s.telephone || '').includes(q) ||
+    (s.style || '').toLowerCase().includes(q)
+  ));
 });
 
 // =========================================================

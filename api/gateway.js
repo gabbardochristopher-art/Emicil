@@ -297,6 +297,30 @@ async function handleReviews(req, res, supabase) {
   return safeError(res, 405, 'Méthode non autorisée');
 }
 
+// ---- Soumissions popup quiz ----
+async function handlePopupSubmissions(req, res, supabase) {
+  if (req.method !== 'POST') return safeError(res, 405, 'Méthode non autorisée');
+
+  const body     = req.body || {};
+  const prenom   = str(body.prenom, 100);
+  const nom      = str(body.nom, 100);
+  const telephone = str(body.telephone, 30);
+  const emailVal = email(body.email);
+  const style    = str(body.style, 100);
+  const experience = str(body.experience, 100);
+  const objectif = str(body.objectif, 100);
+
+  if (!prenom || !nom) return safeError(res, 400, 'Nom et prénom requis');
+  if (!emailVal) return safeError(res, 400, 'Email invalide');
+
+  const { data, error: dbErr } = await supabase.from('popup_submissions').insert([{
+    prenom, nom, telephone, email: emailVal, style, experience, objectif,
+  }]).select().single();
+
+  if (dbErr) return safeError(res, 500, dbErr.message);
+  return res.status(201).json(data);
+}
+
 // ---- Produits (public + admin) ----
 async function handleProducts(req, res, supabase, id) {
   if (!id) {
@@ -574,6 +598,16 @@ async function handleAdmin(req, res, supabase, segments) {
     } catch { return safeError(res, 500, 'Erreur serveur'); }
   }
 
+  if (route === 'popup-submissions') {
+    try {
+      if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
+      const { data, error } = await supabase
+        .from('popup_submissions').select('*').order('created_at', { ascending: false });
+      if (error) return res.status(500).json({ error: error.message });
+      return res.status(200).json(data);
+    } catch { return safeError(res, 500, 'Erreur serveur'); }
+  }
+
   if (route === 'client-activity') {
     const { userId, userEmail } = req.query;
     if (!userId && !userEmail) return res.status(400).json({ error: 'userId ou userEmail requis' });
@@ -614,6 +648,7 @@ module.exports = async function handler(req, res) {
     case 'profile':               return handleProfile(req, res, supabase);
     case 'reviews':               return handleReviews(req, res, supabase);
     case 'products':              return handleProducts(req, res, supabase, sub);
+    case 'popup-submissions':     return handlePopupSubmissions(req, res, supabase);
     case 'admin':                 return handleAdmin(req, res, supabase, segments.slice(1));
     default:                      return safeError(res, 404, 'Route inconnue');
   }
