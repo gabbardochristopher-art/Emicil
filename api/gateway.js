@@ -463,8 +463,32 @@ async function handleAdmin(req, res, supabase, segments) {
         phone:     u.user_metadata?.phone     || '',
         points:    profileMap[u.id]?.points   || 0,
         confirmed: !!u.email_confirmed_at,
+        banned:    !!u.banned_until || !!u.user_metadata?.banned,
         createdAt: u.created_at,
       })));
+    } catch (err) { return safeError(res, 500, err.message); }
+  }
+
+  if (route === 'users-ban' && id) {
+    if (req.method !== 'PUT') return safeError(res, 405, 'Méthode non autorisée');
+    try {
+      const { ban } = req.body || {};
+      const banData = ban
+        ? { banned_until: '2099-12-31T23:59:59Z' }
+        : { banned_until: 'none' };
+      const { error } = await supabase.auth.admin.updateUserById(id, ban ? { ban_duration: '876000h' } : { ban_duration: 'none' });
+      if (error) return safeError(res, 500, error.message);
+      return res.status(200).json({ success: true, banned: !!ban });
+    } catch (err) { return safeError(res, 500, err.message); }
+  }
+
+  if (route === 'users-delete' && id) {
+    if (req.method !== 'DELETE') return safeError(res, 405, 'Méthode non autorisée');
+    try {
+      await supabase.from('profiles').delete().eq('id', id);
+      const { error } = await supabase.auth.admin.deleteUser(id);
+      if (error) return safeError(res, 500, error.message);
+      return res.status(200).json({ success: true });
     } catch (err) { return safeError(res, 500, err.message); }
   }
 

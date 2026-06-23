@@ -84,7 +84,7 @@ async function loadClients() {
 function renderClients(list) {
   const tbody = document.getElementById('clients-tbody');
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#7b7f93;padding:28px">Aucun client inscrit.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#7b7f93;padding:28px">Aucun client inscrit.</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(u => `
@@ -93,9 +93,19 @@ function renderClients(list) {
       <td>${esc(u.email)}</td>
       <td>${esc(u.phone) || '—'}</td>
       <td style="color:#b08d57;font-weight:600">${u.points} pts</td>
-      <td><span class="badge badge-${u.confirmed ? 'oui' : 'non'}">${u.confirmed ? '✓ Oui' : '✗ Non'}</span></td>
+      <td>
+        ${u.banned
+          ? '<span class="badge badge-non" style="background:rgba(239,68,68,.15);color:#fca5a5">Bloqué</span>'
+          : u.confirmed
+            ? '<span class="badge badge-oui">Actif</span>'
+            : '<span class="badge badge-non">Non confirmé</span>'}
+      </td>
       <td style="color:#7b7f93">${new Date(u.createdAt).toLocaleDateString('fr-FR')}</td>
-      <td><button class="btn-action btn-edit" data-user-id="${esc(u.id)}" data-user-email="${esc(u.email)}" data-user-name="${esc(u.firstName)}">Activité</button></td>
+      <td style="white-space:nowrap">
+        <button class="btn-action btn-edit" data-user-id="${esc(u.id)}" data-user-email="${esc(u.email)}" data-user-name="${esc(u.firstName)}">Activité</button>
+        <button class="btn-action ${u.banned ? 'btn-edit' : 'btn-delete'}" data-client-ban="${esc(u.id)}" data-banned="${u.banned ? '1' : '0'}" data-client-name="${esc(u.firstName || u.email)}">${u.banned ? 'Débloquer' : 'Bloquer'}</button>
+        <button class="btn-action btn-delete" data-client-delete="${esc(u.id)}" data-client-name="${esc(u.firstName || u.email)}">Supprimer</button>
+      </td>
     </tr>`).join('');
 }
 
@@ -106,6 +116,36 @@ document.getElementById('search-clients')?.addEventListener('input', e => {
     (u.firstName + ' ' + u.lastName).toLowerCase().includes(q) ||
     (u.phone || '').includes(q)
   ));
+});
+
+// Bloquer / Débloquer un client
+document.getElementById('clients-tbody')?.addEventListener('click', async e => {
+  const banBtn = e.target.closest('[data-client-ban]');
+  if (banBtn) {
+    const userId  = banBtn.dataset.clientBan;
+    const name    = banBtn.dataset.clientName;
+    const isBanned = banBtn.dataset.banned === '1';
+    const action  = isBanned ? 'Débloquer' : 'Bloquer';
+    if (!confirm(`${action} le client ${name} ?`)) return;
+    const res = await fetch(`${API}/admin/users-ban/${userId}`, {
+      method: 'PUT', headers: headers(), body: JSON.stringify({ ban: !isBanned })
+    });
+    if (res.ok) loadClients();
+    else alert('Erreur lors du traitement.');
+    return;
+  }
+
+  const delBtn = e.target.closest('[data-client-delete]');
+  if (delBtn) {
+    const userId = delBtn.dataset.clientDelete;
+    const name   = delBtn.dataset.clientName;
+    if (!confirm(`Supprimer définitivement le compte de ${name} ?\nCette action est irréversible.`)) return;
+    const res = await fetch(`${API}/admin/users-delete/${userId}`, {
+      method: 'DELETE', headers: headers()
+    });
+    if (res.ok) loadClients();
+    else alert('Erreur lors de la suppression.');
+  }
 });
 
 // =========================================================
