@@ -44,8 +44,15 @@ function GaleriePage({ go }) {
         </div>
       </section>
 
+      {/* Photo de présentation */}
+      <section className="container" style={{ paddingTop: "var(--pad-section)" }}>
+        <img src="assets/galerie_hero.png" alt="Présentation Emicils" style={{
+          width: "100%", maxHeight: 420, objectFit: "cover", borderRadius: "var(--r-lg)",
+          boxShadow: "var(--shadow-soft)" }} />
+      </section>
+
       {/* Grille photos */}
-      <section className="container" style={{ paddingTop: "var(--pad-section)", paddingBottom: "var(--pad-section)" }}>
+      <section className="container" style={{ paddingTop: "2rem", paddingBottom: "var(--pad-section)" }}>
         {photos.length === 0 && (
           <p style={{ textAlign: "center", color: "var(--texte-doux)", padding: "2rem 0" }}>Les photos arrivent bientôt...</p>
         )}
