@@ -3,8 +3,15 @@
 // ==========================================================================
 
 
-function BookingModal({ formation, onClose }) {
-  const [form, setForm]       = React.useState({ name: "", email: "", phone: "", message: "", date: "" });
+function BookingModal({ formation, user, onClose }) {
+  const meta = user?.user_metadata || {};
+  const [form, setForm] = React.useState({
+    name:  [meta.firstName || "", meta.lastName || ""].filter(Boolean).join(" "),
+    email: user?.email || "",
+    phone: meta.phone || "",
+    message: "",
+    date: "",
+  });
   const dates       = formation.dates || [];
   const datePlaces  = formation.date_places || {};
   const [sending, setSending] = React.useState(false);
@@ -84,7 +91,7 @@ function BookingModal({ formation, onClose }) {
   );
 }
 
-function FormationPage({ go }) {
+function FormationPage({ go, user }) {
   const [formations, setFormations] = React.useState(null);
   const [booking, setBooking]       = React.useState(null);
 
@@ -106,7 +113,7 @@ function FormationPage({ go }) {
 
   return (
     <div>
-      {booking && <BookingModal formation={booking} onClose={() => setBooking(null)} />}
+      {booking && <BookingModal formation={booking} user={user} onClose={() => setBooking(null)} />}
       {/* Hero */}
       <section style={{ background: "var(--noir)", color: "var(--blanc)", padding: "clamp(3rem,7vw,6rem) 0" }}>
         <div className="container" style={{ maxWidth: 780, textAlign: "center" }}>

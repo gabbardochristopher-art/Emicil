@@ -391,7 +391,7 @@ function App() {
   else if (route.page === "shop") content = <ShopPage go={go} onOpen={openProduct} onAdd={addToCart} favs={favs} onFav={toggleFav} initialCat={route.cat} initialQuery={route.q} />;
   else if (route.page === "product") content = <ProductPage p={route.product} go={go} onAdd={addToCart} favs={favs} onFav={toggleFav} onOpen={openProduct} user={user} />;
   else if (route.page === "checkout") content = <CheckoutPage items={cart} go={go} onDone={onCheckoutDone} compte={{ points }} user={user} />;
-  else if (route.page === "formation") content = <FormationPage go={go} />;
+  else if (route.page === "formation") content = <FormationPage go={go} user={user} />;
   else if (route.page === "account") content = <AccountPage user={user} onLogout={async () => { await window.SUPABASE.auth.signOut(); }} go={go} points={points} orders={newOrders} />;
   else if (route.page === "legal") content = <LegalPage go={go} section={route.section} />;
 
