@@ -15,6 +15,10 @@
     <div class="sidebar-logo">Emicil</div>
     <nav class="sidebar-nav">
       <ul>
+        <li><a href="#" class="nav-link" data-section="notifications">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Notifications <span class="badge-count" id="notif-badge" style="display:none"></span>
+        </a></li>
         <li><a href="#" class="nav-link active" data-section="overview">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           Tableau de bord
@@ -61,6 +65,13 @@
       <h1 id="page-title">Tableau de bord</h1>
       <a href="../index.html" target="_blank" class="btn-site">Voir le site →</a>
     </header>
+
+    <!-- NOTIFICATIONS -->
+    <section class="admin-section hidden" id="section-notifications">
+      <div id="notif-list" style="display:flex;flex-direction:column;gap:8px;">
+        <p style="color:#7b7f93;text-align:center;padding:28px">Aucune notification.</p>
+      </div>
+    </section>
 
     <!-- OVERVIEW -->
     <section class="admin-section" id="section-overview">

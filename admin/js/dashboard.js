@@ -37,7 +37,7 @@ const headers = () => ({ 'Content-Type': 'application/json', Authorization: `Bea
 const navLinks   = document.querySelectorAll('.nav-link');
 const sections   = document.querySelectorAll('.admin-section');
 const pageTitle  = document.getElementById('page-title');
-const TITLES = { overview: 'Tableau de bord', clients: 'Clients', products: 'Produits', orders: 'Commandes', formations: 'Formations', reviews: 'Avis', popup: 'Pop-up', settings: 'Paramètres' };
+const TITLES = { notifications: 'Notifications', overview: 'Tableau de bord', clients: 'Clients', products: 'Produits', orders: 'Commandes', formations: 'Formations', reviews: 'Avis', popup: 'Pop-up', settings: 'Paramètres' };
 
 function showSection(name) {
   navLinks.forEach(l  => l.classList.toggle('active', l.dataset.section === name));
@@ -48,8 +48,9 @@ function showSection(name) {
   if (name === 'products')   loadProducts();
   if (name === 'orders')     loadOrders();
   if (name === 'formations') loadFormations();
-  if (name === 'reviews')    loadReviews();
-  if (name === 'popup')      loadPopupSubmissions();
+  if (name === 'reviews')       loadReviews();
+  if (name === 'popup')         loadPopupSubmissions();
+  if (name === 'notifications') renderNotifications();
 }
 
 navLinks.forEach(link => link.addEventListener('click', e => { e.preventDefault(); showSection(link.dataset.section); }));
@@ -922,64 +923,106 @@ document.getElementById('password-form').addEventListener('submit', async e => {
 });
 
 // =========================================================
-//  NOTIFICATIONS TEMPS RÉEL (Supabase Realtime)
+//  CENTRE DE NOTIFICATIONS
 // =========================================================
-function showNotifDot(sectionName) {
-  const link = document.querySelector(`.nav-link[data-section="${sectionName}"]`);
-  if (!link) return;
-  if (link.querySelector('.notif-dot')) return;
-  const dot = document.createElement('span');
-  dot.className = 'notif-dot';
-  dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;margin-left:6px;animation:notifPulse 1s ease infinite';
-  link.appendChild(dot);
+let notifications = [];
+
+function getSeenNotifs() {
+  try { return JSON.parse(localStorage.getItem('admin_notifs_seen') || '[]'); } catch { return []; }
+}
+function markNotifSeen(id) {
+  const seen = getSeenNotifs();
+  if (!seen.includes(id)) { seen.push(id); localStorage.setItem('admin_notifs_seen', JSON.stringify(seen)); }
 }
 
-function clearNotifDot(sectionName) {
-  const link = document.querySelector(`.nav-link[data-section="${sectionName}"]`);
-  if (!link) return;
-  link.querySelectorAll('.notif-dot').forEach(d => d.remove());
+function addNotification(type, label, section, refId) {
+  const id = `${type}_${refId}`;
+  if (notifications.find(n => n.id === id)) return;
+  notifications.unshift({ id, type, label, section, time: new Date() });
+  updateNotifBadge();
+  const currentSection = document.querySelector('.nav-link.active')?.dataset.section;
+  if (currentSection === 'notifications') renderNotifications();
 }
 
-// Ajoute l'animation pulse
-const notifStyle = document.createElement('style');
-notifStyle.textContent = '@keyframes notifPulse{0%,100%{opacity:1}50%{opacity:.4}}';
-document.head.appendChild(notifStyle);
+function updateNotifBadge() {
+  const seen   = getSeenNotifs();
+  const unseen = notifications.filter(n => !seen.includes(n.id)).length;
+  const badge  = document.getElementById('notif-badge');
+  if (unseen > 0) { badge.textContent = unseen; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
+}
 
-// Clear dots quand on clique sur une section
-navLinks.forEach(link => link.addEventListener('click', () => clearNotifDot(link.dataset.section)));
+function renderNotifications() {
+  const container = document.getElementById('notif-list');
+  const seen = getSeenNotifs();
+  if (!notifications.length) {
+    container.innerHTML = '<p style="color:#7b7f93;text-align:center;padding:28px">Aucune notification.</p>';
+    return;
+  }
+  container.innerHTML = notifications.map(n => {
+    const isNew = !seen.includes(n.id);
+    const ICONS = { order: '🛒', booking: '📚', review: '⭐', popup: '💬' };
+    const time  = n.time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const date  = n.time.toLocaleDateString('fr-FR');
+    return `
+      <div data-notif-id="${esc(n.id)}" data-notif-section="${esc(n.section)}" style="
+        display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:10px;cursor:pointer;
+        border:1px solid ${isNew ? 'rgba(108,99,255,.3)' : 'var(--a-border)'};
+        background:${isNew ? 'rgba(108,99,255,.08)' : 'var(--a-surface)'};
+        transition:all .15s;">
+        <span style="font-size:1.3rem;flex-shrink:0">${ICONS[n.type] || '🔔'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.9rem;${isNew ? 'font-weight:600;color:var(--a-text)' : 'color:var(--a-muted)'}">${esc(n.label)}</div>
+          <div style="font-size:.75rem;color:var(--a-muted);margin-top:2px">${date} à ${time}</div>
+        </div>
+        ${isNew ? '<span style="width:10px;height:10px;border-radius:50%;background:#ef4444;flex-shrink:0"></span>' : ''}
+        <span style="font-size:.75rem;color:var(--a-primary)">Voir →</span>
+      </div>`;
+  }).join('');
+}
 
+document.getElementById('notif-list')?.addEventListener('click', e => {
+  const card = e.target.closest('[data-notif-id]');
+  if (!card) return;
+  markNotifSeen(card.dataset.notifId);
+  updateNotifBadge();
+  showSection(card.dataset.notifSection);
+});
+
+// Realtime
 if (window.SUPABASE) {
   window.SUPABASE
     .channel('admin-realtime-notifs')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => {
-      showNotifDot('orders');
-      const currentSection = document.querySelector('.nav-link.active')?.dataset.section;
-      if (currentSection === 'orders') loadOrders();
-      if (currentSection === 'overview') loadStats();
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
+      const o = payload.new;
+      addNotification('order', `Nouvelle commande ${o.id || ''}`, 'orders', o.id || Date.now());
+      const cs = document.querySelector('.nav-link.active')?.dataset.section;
+      if (cs === 'orders') loadOrders();
+      if (cs === 'overview') loadStats();
     })
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'formation_bookings' }, () => {
-      showNotifDot('formations');
-      const currentSection = document.querySelector('.nav-link.active')?.dataset.section;
-      if (currentSection === 'formations') loadBookings();
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'formation_bookings' }, (payload) => {
+      const b = payload.new;
+      addNotification('booking', `Nouvelle réservation formation — ${b.user_name || b.user_email || ''}`, 'formations', b.id || Date.now());
+      const cs = document.querySelector('.nav-link.active')?.dataset.section;
+      if (cs === 'formations') loadBookings();
     })
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reviews' }, () => {
-      showNotifDot('reviews');
-      const currentSection = document.querySelector('.nav-link.active')?.dataset.section;
-      if (currentSection === 'reviews') loadReviews();
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reviews' }, (payload) => {
+      const r = payload.new;
+      addNotification('review', `Nouvel avis — ${r.user_name || ''}`, 'reviews', r.id || Date.now());
+      const cs = document.querySelector('.nav-link.active')?.dataset.section;
+      if (cs === 'reviews') loadReviews();
     })
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'popup_submissions' }, () => {
-      showNotifDot('popup');
-      const currentSection = document.querySelector('.nav-link.active')?.dataset.section;
-      if (currentSection === 'popup') loadPopupSubmissions();
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'popup_submissions' }, (payload) => {
+      const p = payload.new;
+      addNotification('popup', `Nouveau prospect — ${p.prenom || ''} ${p.nom || ''}`, 'popup', p.id || Date.now());
+      const cs = document.querySelector('.nav-link.active')?.dataset.section;
+      if (cs === 'popup') loadPopupSubmissions();
     })
     .subscribe();
 }
 
-// =========================================================
-//  POLLING FALLBACK (si Realtime pas activé sur une table)
-// =========================================================
+// Polling fallback
 let lastOrderCount = -1, lastBookingCount = -1, lastReviewCount = -1, lastPopupCount = -1;
-
 async function pollNotifications() {
   try {
     const [ordRes, bookRes, revRes, popRes] = await Promise.all([
@@ -988,28 +1031,24 @@ async function pollNotifications() {
       fetch(`${API}/admin/reviews`, { headers: headers() }),
       fetch(`${API}/admin/popup-submissions`, { headers: headers() }),
     ]);
-    const orders   = ordRes.ok   ? await ordRes.json()   : [];
-    const bookings = bookRes.ok  ? await bookRes.json()  : [];
-    const reviews  = revRes.ok   ? await revRes.json()    : [];
-    const popups   = popRes.ok   ? await popRes.json()    : [];
+    const orders   = ordRes.ok  ? await ordRes.json()  : [];
+    const bookings = bookRes.ok ? await bookRes.json() : [];
+    const reviews  = revRes.ok  ? await revRes.json()  : [];
+    const popups   = popRes.ok  ? await popRes.json()  : [];
 
-    const pendingOrders   = orders.filter(o => o.status === 'pending').length;
-    const pendingBookings = bookings.filter(b => b.status === 'pending').length;
-    const pendingReviews  = reviews.filter(r => r.status === 'pending').length;
-    const newPopups       = popups.length;
+    const po = orders.filter(o => o.status === 'pending').length;
+    const pb = bookings.filter(b => b.status === 'pending').length;
+    const pr = reviews.filter(r => r.status === 'pending').length;
+    const pp = popups.length;
 
-    if (lastOrderCount >= 0 && pendingOrders > lastOrderCount) showNotifDot('orders');
-    if (lastBookingCount >= 0 && pendingBookings > lastBookingCount) showNotifDot('formations');
-    if (lastReviewCount >= 0 && pendingReviews > lastReviewCount) showNotifDot('reviews');
-    if (lastPopupCount >= 0 && newPopups > lastPopupCount) showNotifDot('popup');
+    if (lastOrderCount >= 0 && po > lastOrderCount)   addNotification('order', 'Nouvelle commande en attente', 'orders', 'poll_' + Date.now());
+    if (lastBookingCount >= 0 && pb > lastBookingCount) addNotification('booking', 'Nouvelle réservation formation', 'formations', 'poll_' + Date.now());
+    if (lastReviewCount >= 0 && pr > lastReviewCount)  addNotification('review', 'Nouvel avis en attente', 'reviews', 'poll_' + Date.now());
+    if (lastPopupCount >= 0 && pp > lastPopupCount)    addNotification('popup', 'Nouveau prospect popup', 'popup', 'poll_' + Date.now());
 
-    lastOrderCount   = pendingOrders;
-    lastBookingCount = pendingBookings;
-    lastReviewCount  = pendingReviews;
-    lastPopupCount   = newPopups;
+    lastOrderCount = po; lastBookingCount = pb; lastReviewCount = pr; lastPopupCount = pp;
   } catch {}
 }
-
 pollNotifications();
 setInterval(pollNotifications, 30000);
 
