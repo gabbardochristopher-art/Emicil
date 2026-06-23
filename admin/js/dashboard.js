@@ -623,7 +623,8 @@ function renderBookings() {
         ${b.status === 'pending' ? `
           <button class="btn-action btn-edit"   data-id="${b.id}" data-booking-action="confirmed">Confirmer</button>
           <button class="btn-action btn-delete" data-id="${b.id}" data-booking-action="cancelled">Annuler</button>
-        ` : '—'}
+        ` : ''}
+        <button class="btn-action btn-delete" data-id="${b.id}" data-booking-delete="1" style="margin-top:${b.status === 'pending' ? '4px' : '0'}">Supprimer</button>
       </td>
     </tr>`;
   }).join('');
@@ -639,7 +640,18 @@ async function updateBooking(id, status) {
   else alert('Erreur lors du traitement.');
 }
 
+async function deleteBooking(id) {
+  if (!confirm('Supprimer définitivement cette réservation ?')) return;
+  const res = await fetch(`${API}/admin/formation-bookings/${id}`, {
+    method: 'DELETE', headers: headers()
+  });
+  if (res.ok) loadBookings();
+  else alert('Erreur lors de la suppression.');
+}
+
 document.getElementById('bookings-tbody')?.addEventListener('click', e => {
+  const delBtn = e.target.closest('[data-booking-delete]');
+  if (delBtn) { deleteBooking(delBtn.dataset.id); return; }
   const btn = e.target.closest('[data-booking-action]');
   if (btn) updateBooking(btn.dataset.id, btn.dataset.bookingAction);
 });

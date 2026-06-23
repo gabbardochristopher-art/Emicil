@@ -640,12 +640,19 @@ async function handleAdmin(req, res, supabase, segments) {
         if (error) return res.status(500).json({ error: error.message });
         return res.status(200).json(data);
       } else {
-        if (req.method !== 'PUT') return safeError(res, 405, 'Méthode non autorisée');
-        const { status } = req.body || {};
-        if (!['confirmed', 'cancelled'].includes(status)) return res.status(400).json({ error: 'Statut invalide' });
-        const { data, error } = await supabase.from('formation_bookings').update({ status }).eq('id', id).select().single();
-        if (error) return res.status(500).json({ error: error.message });
-        return res.status(200).json(data);
+        if (req.method === 'PUT') {
+          const { status } = req.body || {};
+          if (!['confirmed', 'cancelled'].includes(status)) return res.status(400).json({ error: 'Statut invalide' });
+          const { data, error } = await supabase.from('formation_bookings').update({ status }).eq('id', id).select().single();
+          if (error) return res.status(500).json({ error: error.message });
+          return res.status(200).json(data);
+        }
+        if (req.method === 'DELETE') {
+          const { error } = await supabase.from('formation_bookings').delete().eq('id', id);
+          if (error) return res.status(500).json({ error: error.message });
+          return res.status(200).json({ success: true });
+        }
+        return safeError(res, 405, 'Méthode non autorisée');
       }
     } catch { return safeError(res, 500, 'Erreur serveur'); }
   }
