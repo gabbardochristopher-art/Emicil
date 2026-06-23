@@ -71,10 +71,10 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
       <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, gap: "0.5rem", position: "relative" }}>
         <button className="hdr-burger" onClick={() => setMenuOpen(true)} aria-label="Menu" style={{ display: "none", color: "var(--noir)", position: "relative", zIndex: 2 }}><Ico.menu width={24} height={24} /></button>
 
-        <nav className="hdr-nav" style={{ display: "flex", gap: "1.2rem", flex: 1, justifyContent: "flex-start" }}>
+        <nav className="hdr-nav" style={{ display: "flex", gap: "1.4rem", flex: 1, justifyContent: "flex-start", marginLeft: "-0.5rem" }}>
           {[["home","Accueil"],["shop","Boutique"],["formation","Formation"],["account","Fidélité"],["galerie","Galerie"],["faq","FAQ"]].map(([k,l]) => (
             <button key={k} onClick={() => k === "shop" ? go("shop") : handleNav(k)}
-              style={{ fontFamily: "var(--f-display)", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.74rem",
+              style={{ fontFamily: "var(--f-display)", letterSpacing: "0.1em", textTransform: "uppercase", fontSize: "0.82rem",
                 color: route.page === (k === "shop" ? "shop" : k) ? "var(--noir)" : "var(--texte-doux)", paddingBottom: 3,
                 borderBottom: "1px solid " + (route.page === (k === "shop" ? "shop" : k) ? "var(--or)" : "transparent") }}>{l}</button>
           ))}
