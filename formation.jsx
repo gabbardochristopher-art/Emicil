@@ -105,7 +105,7 @@ function FormationPage({ go }) {
             Petits groupes, matériel fourni, certification à l'issue de chaque formation.
           </p>
           <div style={{ display: "flex", gap: "2.4rem", justifyContent: "center", flexWrap: "wrap" }}>
-            {[["Petits groupes","4 personnes max"],["Matériel fourni","Kit inclus"],["Certifiée","Attestation remise"]].map(([a,b]) => (
+            {[["Petits groupes","4 personnes max"],["Matériel fourni","Tout est prévu"],["Certifiée","Attestation remise"]].map(([a,b]) => (
               <div key={a} style={{ textAlign: "center" }}>
                 <div style={{ fontFamily: "var(--f-display)", fontSize: "1.3rem", color: "var(--or)" }}>{a}</div>
                 <div style={{ fontSize: "0.72rem", letterSpacing: "0.08em", color: "rgba(251,248,242,0.55)", textTransform: "uppercase" }}>{b}</div>
