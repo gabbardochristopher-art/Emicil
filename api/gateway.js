@@ -366,6 +366,14 @@ async function handleMyBookings(req, res, supabase) {
   return res.status(200).json(data || []);
 }
 
+// ---- Galerie photos (public) ----
+async function handleGalerie(req, res, supabase) {
+  if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
+  const { data, error } = await supabase.from('galerie').select('*').eq('visible', true).order('position', { ascending: true });
+  if (error) return safeError(res, 500, error.message);
+  return res.status(200).json(data || []);
+}
+
 // ---- Produits (public + admin) ----
 async function handleProducts(req, res, supabase, id) {
   if (!id) {
@@ -686,6 +694,49 @@ async function handleAdmin(req, res, supabase, segments) {
     } catch { return safeError(res, 500, 'Erreur serveur'); }
   }
 
+  if (route === 'galerie') {
+    try {
+      if (!id) {
+        if (req.method === 'GET') {
+          const { data, error } = await supabase.from('galerie').select('*').order('position', { ascending: true });
+          if (error) return res.status(500).json({ error: error.message });
+          return res.status(200).json(data);
+        }
+        if (req.method === 'POST') {
+          const body = req.body || {};
+          if (!body.url?.trim()) return res.status(400).json({ error: 'URL image requise' });
+          const { data, error } = await supabase.from('galerie').insert([{
+            url: body.url.trim(),
+            legende: body.legende?.trim() || '',
+            position: parseInt(body.position) || 0,
+            visible: body.visible !== false,
+          }]).select().single();
+          if (error) return res.status(500).json({ error: error.message });
+          return res.status(201).json(data);
+        }
+        return safeError(res, 405, 'Méthode non autorisée');
+      } else {
+        if (req.method === 'PUT') {
+          const body = req.body || {};
+          const updates = {};
+          if (body.url      !== undefined) updates.url      = body.url.trim();
+          if (body.legende  !== undefined) updates.legende   = body.legende.trim();
+          if (body.position !== undefined) updates.position  = parseInt(body.position) || 0;
+          if (body.visible  !== undefined) updates.visible   = !!body.visible;
+          const { data, error } = await supabase.from('galerie').update(updates).eq('id', id).select().single();
+          if (error) return res.status(500).json({ error: error.message });
+          return res.status(200).json(data);
+        }
+        if (req.method === 'DELETE') {
+          const { error } = await supabase.from('galerie').delete().eq('id', id);
+          if (error) return res.status(500).json({ error: error.message });
+          return res.status(200).json({ success: true });
+        }
+        return safeError(res, 405, 'Méthode non autorisée');
+      }
+    } catch { return safeError(res, 500, 'Erreur serveur'); }
+  }
+
   if (route === 'client-activity') {
     const { userId, userEmail } = req.query;
     if (!userId && !userEmail) return res.status(400).json({ error: 'userId ou userEmail requis' });
@@ -728,6 +779,7 @@ module.exports = async function handler(req, res) {
     case 'products':              return handleProducts(req, res, supabase, sub);
     case 'popup-submissions':     return handlePopupSubmissions(req, res, supabase);
     case 'my-bookings':           return handleMyBookings(req, res, supabase);
+    case 'galerie':               return handleGalerie(req, res, supabase);
     case 'admin':                 return handleAdmin(req, res, supabase, segments.slice(1));
     default:                      return safeError(res, 404, 'Route inconnue');
   }

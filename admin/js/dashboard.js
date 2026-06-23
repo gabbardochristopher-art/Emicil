@@ -37,7 +37,7 @@ const headers = () => ({ 'Content-Type': 'application/json', Authorization: `Bea
 const navLinks   = document.querySelectorAll('.nav-link');
 const sections   = document.querySelectorAll('.admin-section');
 const pageTitle  = document.getElementById('page-title');
-const TITLES = { notifications: 'Notifications', overview: 'Tableau de bord', clients: 'Clients', products: 'Produits', orders: 'Commandes', formations: 'Formations', reviews: 'Avis', popup: 'Pop-up', settings: 'Paramètres' };
+const TITLES = { notifications: 'Notifications', overview: 'Tableau de bord', clients: 'Clients', products: 'Produits', orders: 'Commandes', formations: 'Formations', reviews: 'Avis', galerie: 'Galerie', popup: 'Pop-up', settings: 'Paramètres' };
 
 function showSection(name) {
   navLinks.forEach(l  => l.classList.toggle('active', l.dataset.section === name));
@@ -49,6 +49,7 @@ function showSection(name) {
   if (name === 'orders')     loadOrders();
   if (name === 'formations') loadFormations();
   if (name === 'reviews')       loadReviews();
+  if (name === 'galerie')       loadGalerie();
   if (name === 'popup')         loadPopupSubmissions();
   if (name === 'notifications') renderNotifications();
 }
@@ -814,6 +815,123 @@ document.getElementById('clients-tbody')?.addEventListener('click', async e => {
       </tbody>
     </table>` : '<p style="color:#7b7f93;font-size:.85rem;">Aucune réservation de formation.</p>'}
   `;
+});
+
+// =========================================================
+//  GALERIE PHOTOS
+// =========================================================
+let allGaleriePhotos = [];
+
+async function loadGalerie() {
+  const grid = document.getElementById('galerie-grid');
+  grid.innerHTML = '<p style="color:#7b7f93;text-align:center;padding:28px;grid-column:1/-1">Chargement…</p>';
+  const res = await fetch(`${API}/admin/galerie`, { headers: headers() });
+  if (!res.ok) { grid.innerHTML = '<p style="color:red;padding:16px">Erreur.</p>'; return; }
+  allGaleriePhotos = await res.json();
+  document.getElementById('galerie-count').textContent = `${allGaleriePhotos.length} photo(s)`;
+  renderGalerie();
+}
+
+function renderGalerie() {
+  const grid = document.getElementById('galerie-grid');
+  if (!allGaleriePhotos.length) {
+    grid.innerHTML = '<p style="color:#7b7f93;text-align:center;padding:28px;grid-column:1/-1">Aucune photo. Ajoutez-en une !</p>';
+    return;
+  }
+  grid.innerHTML = allGaleriePhotos.map(p => `
+    <div style="position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--a-border);background:var(--a-surface);">
+      <img src="${esc(p.url)}" style="width:100%;height:160px;object-fit:cover;display:block;" />
+      <div style="padding:10px 12px;">
+        <div style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.legende) || '<span style="color:var(--a-muted)">Sans légende</span>'}</div>
+        <div style="font-size:.72rem;color:var(--a-muted);margin-top:4px">Position: ${p.position} · ${p.visible ? '✓ Visible' : '✗ Masquée'}</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="btn-action btn-edit" data-galerie-edit="${p.id}">Modifier</button>
+          <button class="btn-action btn-delete" data-galerie-delete="${p.id}">Supprimer</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// Modal galerie
+const galerieModal      = document.getElementById('galerie-modal');
+const galerieForm       = document.getElementById('galerie-form');
+const galerieModalError = document.getElementById('galerie-modal-error');
+
+function openGalerieModal(title) {
+  document.getElementById('galerie-modal-title').textContent = title;
+  galerieModalError.classList.add('hidden');
+  galerieModal.classList.remove('hidden');
+  updateGaleriePreview();
+}
+function closeGalerieModal() { galerieModal.classList.add('hidden'); galerieForm.reset(); document.getElementById('g-preview').style.display = 'none'; }
+
+document.getElementById('galerie-modal-close')?.addEventListener('click', closeGalerieModal);
+document.getElementById('galerie-modal-cancel')?.addEventListener('click', closeGalerieModal);
+galerieModal?.addEventListener('click', e => { if (e.target === galerieModal) closeGalerieModal(); });
+
+function updateGaleriePreview() {
+  const url = document.getElementById('g-url').value.trim();
+  const preview = document.getElementById('g-preview');
+  const img = document.getElementById('g-preview-img');
+  if (url) { img.src = url; preview.style.display = 'block'; }
+  else preview.style.display = 'none';
+}
+document.getElementById('g-url')?.addEventListener('input', updateGaleriePreview);
+
+document.getElementById('btn-add-photo')?.addEventListener('click', () => {
+  document.getElementById('g-id').value = '';
+  document.getElementById('g-visible').checked = true;
+  document.getElementById('g-position').value = allGaleriePhotos.length;
+  openGalerieModal('Ajouter une photo');
+});
+
+function openGalerieEdit(id) {
+  const p = allGaleriePhotos.find(p => p.id === id);
+  if (!p) return;
+  document.getElementById('g-id').value       = p.id;
+  document.getElementById('g-url').value      = p.url || '';
+  document.getElementById('g-legende').value  = p.legende || '';
+  document.getElementById('g-position').value = p.position || 0;
+  document.getElementById('g-visible').checked = !!p.visible;
+  openGalerieModal('Modifier la photo');
+}
+
+galerieForm?.addEventListener('submit', async e => {
+  e.preventDefault();
+  const id  = document.getElementById('g-id').value;
+  const btn = document.getElementById('galerie-modal-submit');
+  btn.textContent = 'Enregistrement…'; btn.disabled = true;
+
+  const body = {
+    url:      document.getElementById('g-url').value.trim(),
+    legende:  document.getElementById('g-legende').value.trim(),
+    position: parseInt(document.getElementById('g-position').value) || 0,
+    visible:  document.getElementById('g-visible').checked,
+  };
+
+  const url    = id ? `${API}/admin/galerie/${id}` : `${API}/admin/galerie`;
+  const method = id ? 'PUT' : 'POST';
+  const res    = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });
+  const data   = await res.json();
+  btn.textContent = 'Enregistrer'; btn.disabled = false;
+
+  if (!res.ok) { galerieModalError.textContent = data.error || 'Erreur'; galerieModalError.classList.remove('hidden'); return; }
+  closeGalerieModal();
+  loadGalerie();
+});
+
+async function deleteGaleriePhoto(id) {
+  if (!confirm('Supprimer cette photo ?')) return;
+  const res = await fetch(`${API}/admin/galerie/${id}`, { method: 'DELETE', headers: headers() });
+  if (res.ok) loadGalerie();
+  else alert('Erreur lors de la suppression.');
+}
+
+document.getElementById('galerie-grid')?.addEventListener('click', e => {
+  const editBtn = e.target.closest('[data-galerie-edit]');
+  if (editBtn) { openGalerieEdit(parseInt(editBtn.dataset.galerieEdit)); return; }
+  const delBtn = e.target.closest('[data-galerie-delete]');
+  if (delBtn) deleteGaleriePhoto(parseInt(delBtn.dataset.galerieDelete));
 });
 
 // =========================================================

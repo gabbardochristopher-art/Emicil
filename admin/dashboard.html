@@ -43,6 +43,10 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           Avis <span class="badge-count" id="reviews-badge" style="display:none"></span>
         </a></li>
+        <li><a href="#" class="nav-link" data-section="galerie">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Galerie
+        </a></li>
         <li><a href="#" class="nav-link" data-section="popup">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Pop-up <span class="badge-count" id="popup-badge" style="display:none"></span>
@@ -214,6 +218,55 @@
         </table>
       </div>
     </section>
+
+    <!-- GALERIE -->
+    <section class="admin-section hidden" id="section-galerie">
+      <div class="section-toolbar">
+        <span id="galerie-count" style="font-size:.85rem;color:#7b7f93"></span>
+        <button class="btn-admin btn-primary" id="btn-add-photo">+ Ajouter une photo</button>
+      </div>
+      <div id="galerie-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;"></div>
+    </section>
+
+    <!-- MODAL GALERIE -->
+    <div class="modal-overlay hidden" id="galerie-modal">
+      <div class="modal" style="max-width:480px;">
+        <div class="modal-header">
+          <h2 id="galerie-modal-title">Ajouter une photo</h2>
+          <button class="modal-close" id="galerie-modal-close">✕</button>
+        </div>
+        <form id="galerie-form" novalidate>
+          <input type="hidden" id="g-id" />
+          <div style="padding:20px 24px;display:flex;flex-direction:column;gap:16px;">
+            <div class="form-group">
+              <label>URL de l'image *</label>
+              <input type="text" id="g-url" required placeholder="https://…" />
+            </div>
+            <div class="form-group">
+              <label>Légende</label>
+              <input type="text" id="g-legende" placeholder="Ex: Pose volume russe" />
+            </div>
+            <div class="form-group">
+              <label>Position (ordre d'affichage)</label>
+              <input type="number" id="g-position" value="0" min="0" />
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="g-visible" checked /> Visible sur le site
+              </label>
+            </div>
+            <div id="g-preview" style="border-radius:8px;overflow:hidden;max-height:200px;display:none;">
+              <img id="g-preview-img" style="width:100%;object-fit:cover;border-radius:8px;" />
+            </div>
+          </div>
+          <p class="error-msg hidden" id="galerie-modal-error" style="padding:0 24px;"></p>
+          <div class="modal-actions">
+            <button type="button" class="btn-admin btn-outline" id="galerie-modal-cancel">Annuler</button>
+            <button type="submit" class="btn-admin btn-primary" id="galerie-modal-submit">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- POPUP SUBMISSIONS -->
     <section class="admin-section hidden" id="section-popup">
