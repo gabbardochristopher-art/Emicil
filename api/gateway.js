@@ -324,6 +324,20 @@ async function handlePopupSubmissions(req, res, supabase) {
   return res.status(201).json(data);
 }
 
+// ---- Réservations du client connecté ----
+async function handleMyBookings(req, res, supabase) {
+  if (req.method !== 'GET') return safeError(res, 405, 'Méthode non autorisée');
+  const user = await getBearerUser(req, supabase);
+  if (!user) return safeError(res, 401, 'Non connecté');
+  const { data, error } = await supabase
+    .from('formation_bookings')
+    .select('id, status, created_at, date_choisie, formations(titre, niveau, prix)')
+    .eq('user_email', user.email)
+    .order('created_at', { ascending: false });
+  if (error) return safeError(res, 500, error.message);
+  return res.status(200).json(data || []);
+}
+
 // ---- Produits (public + admin) ----
 async function handleProducts(req, res, supabase, id) {
   if (!id) {
@@ -678,6 +692,7 @@ module.exports = async function handler(req, res) {
     case 'reviews':               return handleReviews(req, res, supabase);
     case 'products':              return handleProducts(req, res, supabase, sub);
     case 'popup-submissions':     return handlePopupSubmissions(req, res, supabase);
+    case 'my-bookings':           return handleMyBookings(req, res, supabase);
     case 'admin':                 return handleAdmin(req, res, supabase, segments.slice(1));
     default:                      return safeError(res, 404, 'Route inconnue');
   }

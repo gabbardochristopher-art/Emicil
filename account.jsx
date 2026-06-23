@@ -168,8 +168,8 @@ function AuthScreen({ onLogin, go, notice }) {
 function AccountPage({ user, onLogout, go, points: pointsProp }) {
   const [tab, setTab]               = useState("fidelite");
   const [realOrders, setRealOrders] = useState([]);
+  const [myBookings, setMyBookings] = useState([]);
 
-  // Charge les commandes réelles
   useEffect(() => {
     if (!user) return;
     window.SUPABASE.auth.getSession().then(({ data: { session } }) => {
@@ -177,6 +177,9 @@ function AccountPage({ user, onLogout, go, points: pointsProp }) {
       fetch('/api/orders', { headers: { Authorization: `Bearer ${session.access_token}` } })
         .then(r => r.ok ? r.json() : [])
         .then(data => setRealOrders(Array.isArray(data) ? data : []));
+      fetch('/api/my-bookings', { headers: { Authorization: `Bearer ${session.access_token}` } })
+        .then(r => r.ok ? r.json() : [])
+        .then(data => setMyBookings(Array.isArray(data) ? data : []));
     });
   }, [user]);
 
@@ -191,7 +194,7 @@ function AccountPage({ user, onLogout, go, points: pointsProp }) {
   const eurosDispo = Math.floor(pts / 100) * 5;
   const palier     = pts >= 1500 ? "VIP" : pts >= 500 ? "Or" : pts >= 100 ? "Argent" : "Membre";
   const palierNext = pts >= 1500 ? "VIP" : pts >= 500 ? "VIP" : pts >= 100 ? "Or" : "Argent";
-  const tabs = [["fidelite","Fidélité"],["commandes","Commandes"],["infos","Mes infos"]];
+  const tabs = [["fidelite","Fidélité"],["commandes","Commandes"],["formations","Mes formations"],["infos","Mes infos"]];
 
   return (
     <div className="container" style={{ paddingTop: "2.5rem", paddingBottom: "var(--pad-section)" }}>
@@ -313,6 +316,38 @@ function AccountPage({ user, onLogout, go, points: pointsProp }) {
                   <div style={{ fontSize: "0.72rem", color: "var(--or)" }}>+{o.points_to_award || 0} pts</div>
                 </div>
                 <button className="btn btn-light" style={{ padding: "0.55em 1.1em" }}>Détails</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {tab === "formations" && (
+        <div className="fade-up" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {myBookings.length === 0 && <p style={{ color: "var(--texte-doux)", fontSize: "0.9rem" }}>Aucune formation réservée pour le moment.</p>}
+          {myBookings.map((b, i) => {
+            const STATUS_LABEL = { pending: "En attente", confirmed: "Confirmée", cancelled: "Annulée" };
+            const statusColor  = b.status === "confirmed" ? "var(--or)" : b.status === "cancelled" ? "#c0392b" : "var(--texte-doux)";
+            const dateStr      = b.created_at ? new Date(b.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
+            return (
+              <div key={i} style={{ background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-md)", padding: "1.3rem 1.5rem",
+                display: "flex", gap: "1.2rem", alignItems: "center" }}>
+                <div style={{ width: 46, height: 46, borderRadius: "50%", background: "var(--beige-bg2)", display: "grid", placeItems: "center", color: "var(--or)", flexShrink: 0 }}>
+                  <Ico.sparkle width={20} height={20} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "var(--f-display)", fontSize: "1rem" }}>{b.formations?.titre || "Formation"}</div>
+                  <div style={{ fontSize: "0.78rem", color: "var(--texte-doux)", marginTop: 2 }}>
+                    {dateStr}
+                    {b.date_choisie ? ` · ${b.date_choisie}` : ""}
+                    {b.formations?.niveau ? ` · ${b.formations.niveau}` : ""}
+                  </div>
+                </div>
+                <span style={{ fontSize: "0.76rem", padding: "3px 10px", borderRadius: 999, fontWeight: 600,
+                  background: b.status === "confirmed" ? "rgba(176,141,87,0.15)" : b.status === "cancelled" ? "rgba(192,57,43,0.1)" : "var(--beige-bg2)",
+                  color: statusColor, letterSpacing: "0.04em" }}>
+                  {STATUS_LABEL[b.status] || b.status}
+                </span>
               </div>
             );
           })}
