@@ -218,18 +218,20 @@ function createChart(canvasId, label, labels, data, color) {
 }
 
 async function loadStats() {
-  const [prodRes, ordRes, usersRes, bookRes, popRes] = await Promise.all([
+  const [prodRes, ordRes, usersRes, bookRes, popRes, revRes] = await Promise.all([
     fetch(`${API}/products`),
     fetch(`${API}/admin/orders`, { headers: headers() }),
     fetch(`${API}/admin/users`, { headers: headers() }),
     fetch(`${API}/admin/formation-bookings`, { headers: headers() }),
     fetch(`${API}/admin/popup-submissions`, { headers: headers() }),
+    fetch(`${API}/admin/reviews`, { headers: headers() }),
   ]);
   const prods    = prodRes.ok  ? await prodRes.json()  : [];
   const orders   = ordRes.ok   ? await ordRes.json()   : [];
   const users    = usersRes.ok ? await usersRes.json()  : [];
   const bookings = bookRes.ok  ? await bookRes.json()   : [];
   const popups   = popRes.ok   ? await popRes.json()    : [];
+  const reviews  = revRes.ok   ? await revRes.json()    : [];
 
   document.getElementById('stat-products').textContent = prods.length;
   document.getElementById('stat-featured').textContent = prods.filter(p => p.featured).length;
@@ -257,6 +259,23 @@ async function loadStats() {
   chartOrders   = createChart('chart-orders', 'Commandes', labels, countByDay(orders, 'created_at', days), '#b08d57');
   chartBookings = createChart('chart-bookings', 'Réservations', labels, countByDay(bookings, 'created_at', days), '#22c55e');
   chartPopups   = createChart('chart-popups', 'Prospects', labels, countByDay(popups, 'created_at', days), '#ef4444');
+
+  // Stats de la semaine
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+  const isThisWeek = (dateStr) => dateStr && new Date(dateStr) >= weekAgo;
+  const wPopups   = popups.filter(p => isThisWeek(p.created_at)).length;
+  const wOrders   = orders.filter(o => isThisWeek(o.created_at)).length;
+  const wClients  = users.filter(u => isThisWeek(u.createdAt)).length;
+  const wBookings = bookings.filter(b => isThisWeek(b.created_at)).length;
+  const wReviews  = reviews.filter(r => isThisWeek(r.created_at)).length;
+  const wRevenue  = orders.filter(o => o.status === 'validated' && isThisWeek(o.created_at)).reduce((s, o) => s + (parseFloat(o.total) || 0), 0);
+
+  document.getElementById('stat-w-popups').textContent   = wPopups;
+  document.getElementById('stat-w-orders').textContent   = wOrders;
+  document.getElementById('stat-w-clients').textContent  = wClients;
+  document.getElementById('stat-w-bookings').textContent = wBookings;
+  document.getElementById('stat-w-reviews').textContent  = wReviews;
+  document.getElementById('stat-w-revenue').textContent  = wRevenue.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
 }
 
 // =========================================================
