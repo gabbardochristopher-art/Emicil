@@ -174,7 +174,8 @@ function InstitutBlock({ go }) {
   return (
     <section className="container" style={{ paddingTop: "var(--pad-section)" }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(2rem,5vw,4rem)", alignItems: "center" }} data-inst-grid>
-        <Photo cat="cils" ratio="5 / 4" label="photo · institut Pennes-Mirabeau" radius="var(--r-lg)" />
+        <img src="assets/regard_cils_pro.png" alt="Institut Emicils — Les Pennes-Mirabeau" style={{
+            width: "100%", aspectRatio: "5 / 4", objectFit: "cover", borderRadius: "var(--r-lg)" }} />
         <div>
           <div className="eyebrow">L'institut</div>
           <h2 style={{ fontSize: "clamp(1.8rem,3.8vw,2.8rem)", margin: "1rem 0 1.2rem" }}>
