@@ -199,8 +199,11 @@ function PopupQuiz({ onClose }) {
               </div>
               <div style={{ marginTop: 12 }}>
                 <label style={labelStyle}>Téléphone</label>
-                <input value={form.telephone} onChange={e => setForm(f => ({ ...f, telephone: e.target.value }))}
-                  style={inputStyle} placeholder="06 12 34 56 78" type="tel" />
+                <input value={form.telephone} onChange={e => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setForm(f => ({ ...f, telephone: digits }));
+                  }}
+                  style={inputStyle} placeholder="0612345678" type="tel" maxLength={10} />
               </div>
               <div style={{ marginTop: 12 }}>
                 <label style={labelStyle}>Email *</label>
