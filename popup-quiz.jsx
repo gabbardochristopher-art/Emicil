@@ -241,16 +241,10 @@ const inputStyle = {
 };
 
 function PopupQuizWrapper() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (localStorage.getItem('emicils_popup_done')) return;
-    setVisible(true);
-  }, []);
+  const [visible, setVisible] = useState(true);
 
   function handleClose() {
     setVisible(false);
-    localStorage.setItem('emicils_popup_done', '1');
   }
 
   if (!visible) return null;
