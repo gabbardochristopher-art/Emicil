@@ -30,8 +30,9 @@ function Hero({ go }) {
           </div>
         </div>
         <div className="fade-up" style={{ position: "relative", animationDelay: ".1s" }}>
-          <Photo cat="cils" ratio="4 / 5" label="visuel campagne · regard cils" radius="var(--r-lg)"
-            style={{ boxShadow: "0 40px 80px -40px rgba(0,0,0,0.6)" }} />
+          <img src="assets/salon_emicils_pro.jpg" alt="Salon Emicils" style={{
+            width: "100%", aspectRatio: "4 / 5", objectFit: "cover", borderRadius: "var(--r-lg)",
+            boxShadow: "0 40px 80px -40px rgba(0,0,0,0.6)" }} />
           <div style={{ position: "absolute", bottom: -22, left: -22, background: "var(--blanc)", color: "var(--noir)",
             borderRadius: "var(--r-md)", padding: "1rem 1.2rem", boxShadow: "var(--shadow)", display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 42, height: 42, borderRadius: "50%", background: "var(--or-soft)", display: "grid", placeItems: "center", color: "var(--or)" }}>
