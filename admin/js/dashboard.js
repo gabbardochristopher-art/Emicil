@@ -926,7 +926,7 @@ document.getElementById('password-form').addEventListener('submit', async e => {
 // =========================================================
 function showNotifDot(sectionName) {
   const link = document.querySelector(`.nav-link[data-section="${sectionName}"]`);
-  if (!link || link.classList.contains('active')) return;
+  if (!link) return;
   if (link.querySelector('.notif-dot')) return;
   const dot = document.createElement('span');
   dot.className = 'notif-dot';
