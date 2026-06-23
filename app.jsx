@@ -71,7 +71,7 @@ function Header({ route, go, cartCount, onCart, loggedIn }) {
       <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 64, gap: "0.5rem", position: "relative" }}>
         <button className="hdr-burger" onClick={() => setMenuOpen(true)} aria-label="Menu" style={{ display: "none", color: "var(--noir)", position: "relative", zIndex: 2 }}><Ico.menu width={24} height={24} /></button>
 
-        <nav className="hdr-nav" style={{ display: "flex", gap: "1.6rem", flex: 1 }}>
+        <nav className="hdr-nav" style={{ display: "flex", gap: "1.2rem", flex: 1, justifyContent: "flex-start" }}>
           {[["home","Accueil"],["shop","Boutique"],["formation","Formation"],["account","Fidélité"],["galerie","Galerie"],["faq","FAQ"]].map(([k,l]) => (
             <button key={k} onClick={() => k === "shop" ? go("shop") : handleNav(k)}
               style={{ fontFamily: "var(--f-display)", letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.74rem",
