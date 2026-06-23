@@ -263,14 +263,15 @@ function AccountPage({ user, onLogout, go, points: pointsProp }) {
                 const dateStr = o.created_at ? new Date(o.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
                 const pts = o.points_to_award || 0;
                 const validated = o.status === "validated" || o.status === "shipped";
+                const refused   = o.status === "refused";
                 return (
                   <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.8rem 0", borderTop: i ? "1px solid var(--ligne)" : "none" }}>
                     <div>
                       <div style={{ fontSize: "0.9rem" }}>Commande {o.id}</div>
                       <div style={{ fontSize: "0.74rem", color: "var(--texte-doux)" }}>{dateStr}</div>
                     </div>
-                    <span style={{ fontFamily: "var(--f-display)", color: validated ? "var(--or)" : "var(--texte-doux)" }}>
-                      {validated ? `+${pts}` : `(${pts} en attente)`} pts
+                    <span style={{ fontFamily: "var(--f-display)", color: refused ? "#c0392b" : validated ? "var(--or)" : "var(--texte-doux)" }}>
+                      {refused ? "Refusée" : validated ? `+${pts} pts` : `(${pts} en attente) pts`}
                     </span>
                   </div>
                 );
