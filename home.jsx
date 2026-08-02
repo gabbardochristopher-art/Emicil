@@ -6,7 +6,7 @@ function Hero({ go }) {
   return (
     <section style={{ position: "relative", background: "var(--noir)", color: "var(--blanc)", overflow: "hidden" }}>
       <div className="container" style={{ display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: "clamp(2rem,5vw,4.5rem)",
-        alignItems: "center", paddingTop: "clamp(3.5rem,7vw,6rem)", paddingBottom: "clamp(3.5rem,7vw,6rem)", minHeight: "82vh" }}
+        alignItems: "center", paddingTop: "clamp(3.5rem,7vw,6rem)", paddingBottom: "clamp(2rem,4vw,3rem)", minHeight: "76vh" }}
         data-hero-grid>
         <div className="fade-up" style={{ maxWidth: 560 }}>
           <div className="eyebrow" style={{ color: "var(--or)" }}>Institut & boutique · Les Pennes-Mirabeau</div>
@@ -97,7 +97,7 @@ function FormationsTeaser({ go }) {
 
   return (
     <section style={{ background: "var(--noir)", color: "var(--blanc)" }}>
-      <div className="container" style={{ paddingTop: "clamp(1.5rem,3vw,2.5rem)", paddingBottom: "clamp(3.5rem,7vw,6rem)" }}>
+      <div className="container" style={{ paddingTop: 0, paddingBottom: "clamp(3.5rem,7vw,6rem)" }}>
         <div style={{ textAlign: "center", maxWidth: 640, margin: "0 auto" }}>
           <div className="eyebrow" style={{ color: "var(--or)" }}>Formations extensions de cils</div>
           <h2 style={{ color: "var(--blanc)", fontSize: "clamp(1.8rem,3.8vw,2.8rem)", margin: "1rem 0 1.2rem" }}>
