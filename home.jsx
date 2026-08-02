@@ -6,7 +6,7 @@ function Hero({ go }) {
   return (
     <section style={{ position: "relative", background: "var(--noir)", color: "var(--blanc)", overflow: "hidden" }}>
       <div className="container" style={{ display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: "clamp(2rem,5vw,4.5rem)",
-        alignItems: "center", paddingTop: "clamp(2.5rem,5vw,4rem)", paddingBottom: "clamp(1rem,2vw,1.5rem)", minHeight: "68vh" }}
+        alignItems: "center", paddingTop: "clamp(2rem,4vw,3rem)", paddingBottom: "clamp(1rem,2vw,1.5rem)" }}
         data-hero-grid>
         <div className="fade-up" style={{ maxWidth: 560 }}>
           <div className="eyebrow" style={{ color: "var(--or)" }}>Institut & boutique · Les Pennes-Mirabeau</div>
@@ -33,7 +33,7 @@ function Hero({ go }) {
         </div>
         <div className="fade-up" style={{ position: "relative", animationDelay: ".1s" }}>
           <img src="assets/salon_emicils_pro.jpg" alt="Salon Emicils" style={{
-            width: "100%", aspectRatio: "4 / 5", objectFit: "cover", borderRadius: "var(--r-lg)",
+            width: "100%", aspectRatio: "5 / 4", objectFit: "cover", borderRadius: "var(--r-lg)",
             boxShadow: "0 40px 80px -40px rgba(0,0,0,0.6)" }} />
           <div style={{ position: "absolute", bottom: -14, left: "50%", transform: "translateX(-50%)", background: "var(--blanc)", color: "var(--noir)",
             borderRadius: "var(--r-md)", padding: "0.8rem 1.1rem", boxShadow: "var(--shadow)", display: "flex", alignItems: "center", gap: 12, maxWidth: "90%", width: "max-content" }}>
