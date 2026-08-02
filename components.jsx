@@ -29,6 +29,9 @@ const Ico = {
   instagram: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17" cy="7" r="0.6" fill="currentColor" stroke="none"/></svg>,
   tiktok: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M15.8 3.8v10.6a3.8 3.8 0 1 1-3.8-3.8c.27 0 .54.02.8.07"/><path d="M15.8 3.8c.5 2.6 2.4 4.5 5 4.9"/></svg>,
   calendar: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v3.4M16 3v3.4"/></svg>,
+  cap: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M2 9l10-4.5L22 9l-10 4.5L2 9Z"/><path d="M6 11.5V17c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-5.5"/><path d="M22 9v6"/></svg>,
+  certificate: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3" y="4" width="18" height="12.5" rx="2"/><path d="M6.5 7.5h11M6.5 10.5h7"/><circle cx="12" cy="19" r="2.3"/><path d="M9.9 18.2 8.5 21.8 12 20.3l3.5 1.5-1.4-3.6"/></svg>,
+  users: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 2.7-5.8 6-5.8s6 2.3 6 5.8"/><path d="M15.5 5.3a3.2 3.2 0 0 1 0 6.2M18 14.4c2.4.5 3.5 2.3 3.5 5.6"/></svg>,
 };
 
 // ---------- Wordmark ----------
