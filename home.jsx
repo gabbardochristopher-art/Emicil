@@ -6,7 +6,7 @@ function Hero({ go }) {
   return (
     <section style={{ position: "relative", background: "var(--noir)", color: "var(--blanc)", overflow: "hidden" }}>
       <div className="container" style={{ display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: "clamp(2rem,5vw,4.5rem)",
-        alignItems: "center", paddingTop: "clamp(3.5rem,7vw,6rem)", paddingBottom: "clamp(2rem,4vw,3rem)", minHeight: "76vh" }}
+        alignItems: "center", paddingTop: "clamp(2.5rem,5vw,4rem)", paddingBottom: "clamp(1rem,2vw,1.5rem)", minHeight: "68vh" }}
         data-hero-grid>
         <div className="fade-up" style={{ maxWidth: 560 }}>
           <div className="eyebrow" style={{ color: "var(--or)" }}>Institut & boutique · Les Pennes-Mirabeau</div>
