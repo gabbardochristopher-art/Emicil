@@ -5,10 +5,10 @@
 function Hero({ go }) {
   return (
     <section style={{ position: "relative", background: "var(--noir)", color: "var(--blanc)", overflow: "hidden" }}>
-      <img src="assets/regard_cils_pro.png" alt="" aria-hidden="true" style={{
-        position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "right center" }} />
+      <img src="assets/institut_hero.jpg" alt="" aria-hidden="true" style={{
+        position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
       <div style={{ position: "absolute", inset: 0,
-        background: "linear-gradient(90deg, var(--noir) 0%, var(--noir) 32%, rgba(29,26,22,0.82) 50%, rgba(29,26,22,0.35) 68%, rgba(29,26,22,0.1) 85%)" }} />
+        background: "linear-gradient(90deg, var(--noir) 0%, var(--noir) 38%, rgba(29,26,22,0.9) 54%, rgba(29,26,22,0.55) 70%, rgba(29,26,22,0.22) 88%, rgba(29,26,22,0.12) 100%)" }} />
       <div className="container" style={{ position: "relative", paddingTop: "clamp(2.5rem,5vw,4rem)", paddingBottom: "clamp(2.5rem,5vw,4rem)",
         minHeight: "58vh", display: "flex", alignItems: "center" }}>
         <div className="fade-up" style={{ maxWidth: 560 }}>
