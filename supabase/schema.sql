@@ -128,8 +128,11 @@ CREATE TABLE IF NOT EXISTS formations (
   points      JSONB DEFAULT '[]',
   places_max  INTEGER DEFAULT 4,
   actif       BOOLEAN DEFAULT true,
+  image       TEXT DEFAULT '',
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE formations ADD COLUMN IF NOT EXISTS image TEXT DEFAULT '';
 
 ALTER TABLE formations ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Lecture publique formations" ON formations;

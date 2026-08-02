@@ -147,10 +147,14 @@ function FormationPage({ go, user }) {
             const niv = NIVEAU_COLOR[f.niveau] || NIVEAU_COLOR["Tous niveaux"];
             return (
               <div key={i} className="fade-up" style={{ background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-lg)",
-                padding: "1.8rem", display: "flex", flexDirection: "column", gap: "1.1rem",
+                overflow: "hidden", display: "flex", flexDirection: "column", gap: "1.1rem",
                 transition: "box-shadow .25s", animationDelay: `${i * .08}s` }}
                 onMouseEnter={e => e.currentTarget.style.boxShadow = "var(--shadow-soft)"}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}>
+                {f.image && (
+                  <img src={f.image} alt={f.titre} style={{ width: "100%", aspectRatio: "16 / 9", objectFit: "cover", display: "block" }} />
+                )}
+                <div style={{ padding: "1.8rem", display: "flex", flexDirection: "column", gap: "1.1rem", flex: 1 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                   <span style={{ background: niv.bg, color: niv.c, fontSize: "0.65rem", fontFamily: "var(--f-display)",
                     letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 10px", borderRadius: "var(--r-pill)" }}>
@@ -160,7 +164,7 @@ function FormationPage({ go, user }) {
                 </div>
 
                 <div>
-                  <h3 style={{ fontSize: "1.15rem", fontWeight: 400, marginBottom: "0.5rem" }}>{f.titre}</h3>
+                  <h3 style={{ fontSize: "1.3rem", fontWeight: 700, marginBottom: "0.5rem" }}>{f.titre}</h3>
                   <p style={{ fontSize: "0.86rem", color: "var(--texte-doux)", lineHeight: 1.65, whiteSpace: "pre-line" }}>{f.description || f.desc}</p>
                 </div>
 
@@ -180,6 +184,7 @@ function FormationPage({ go, user }) {
                     onClick={() => setBooking(f)}>
                     S'inscrire
                   </button>
+                </div>
                 </div>
               </div>
             );

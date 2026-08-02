@@ -485,6 +485,14 @@
       <form id="formation-form" novalidate>
         <input type="hidden" id="f-id" />
         <div class="modal-grid">
+          <input type="hidden" id="f-image" />
+          <div class="form-group form-group--full">
+            <label>Photo</label>
+            <input type="file" id="f-image-file" accept="image/*" style="padding:8px;cursor:pointer" />
+            <div id="f-image-preview" style="border-radius:8px;overflow:hidden;max-height:160px;display:none;margin-top:8px;">
+              <img id="f-image-preview-img" style="width:100%;object-fit:cover;border-radius:8px;" />
+            </div>
+          </div>
           <div class="form-group form-group--full">
             <label>Titre *</label>
             <input type="text" id="f-titre" required />

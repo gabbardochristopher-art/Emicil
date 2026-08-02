@@ -584,14 +584,34 @@ formationModal.addEventListener('click', e => { if (e.target === formationModal)
 
 document.getElementById('btn-add-formation').addEventListener('click', () => {
   document.getElementById('f-id').value = '';
+  document.getElementById('f-image').value = '';
+  document.getElementById('f-image-file').value = '';
+  document.getElementById('f-image-preview').style.display = 'none';
   document.getElementById('f-actif').checked = true;
   openFormationModal('Nouvelle formation');
+});
+
+document.getElementById('f-image-file')?.addEventListener('change', e => {
+  const file    = e.target.files[0];
+  const preview = document.getElementById('f-image-preview');
+  const img     = document.getElementById('f-image-preview-img');
+  if (!file) { preview.style.display = 'none'; return; }
+  const reader = new FileReader();
+  reader.onload = ev => { img.src = ev.target.result; };
+  reader.readAsDataURL(file);
+  preview.style.display = 'block';
 });
 
 function openFormationEdit(id) {
   const f = allFormations.find(f => f.id === id);
   if (!f) return;
   document.getElementById('f-id').value          = f.id;
+  document.getElementById('f-image').value       = f.image || '';
+  document.getElementById('f-image-file').value  = '';
+  const preview = document.getElementById('f-image-preview');
+  const previewImg = document.getElementById('f-image-preview-img');
+  if (f.image) { previewImg.src = f.image; preview.style.display = 'block'; }
+  else preview.style.display = 'none';
   document.getElementById('f-titre').value        = f.titre || '';
   document.getElementById('f-duree').value        = f.duree || '';
   document.getElementById('f-niveau').value       = f.niveau || 'Tous niveaux';
@@ -616,6 +636,21 @@ formationForm.addEventListener('submit', async e => {
   const datesRaw  = document.getElementById('f-dates').value.trim();
   const dates     = datesRaw ? datesRaw.split('\n').map(s => s.trim()).filter(Boolean) : [];
 
+  let image = document.getElementById('f-image').value;
+  const imageFile = document.getElementById('f-image-file').files[0];
+  if (imageFile) {
+    try {
+      submitBtn.textContent = 'Upload de la photo…';
+      image = await uploadToSupabase(imageFile);
+    } catch (err) {
+      formationModalError.textContent = err.message || 'Erreur upload photo';
+      formationModalError.classList.remove('hidden');
+      submitBtn.textContent = 'Enregistrer';
+      submitBtn.disabled    = false;
+      return;
+    }
+  }
+
   const body = {
     titre:       document.getElementById('f-titre').value.trim(),
     duree:       document.getElementById('f-duree').value.trim(),
@@ -626,8 +661,10 @@ formationForm.addEventListener('submit', async e => {
     points,
     dates,
     actif:       document.getElementById('f-actif').checked,
+    image,
   };
 
+  submitBtn.textContent = 'Enregistrement…';
   const url    = id ? `${API}/admin/formations/${id}` : `${API}/admin/formations`;
   const method = id ? 'PUT' : 'POST';
   const res    = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });

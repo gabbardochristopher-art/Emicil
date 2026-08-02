@@ -5,15 +5,18 @@
 function Hero({ go }) {
   return (
     <section style={{ position: "relative", background: "var(--noir)", color: "var(--blanc)", overflow: "hidden" }}>
-      <div className="container" style={{ display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: "clamp(2rem,5vw,4.5rem)",
-        alignItems: "center", paddingTop: "clamp(2rem,4vw,3rem)", paddingBottom: "clamp(1rem,2vw,1.5rem)" }}
-        data-hero-grid>
+      <img src="assets/regard_cils_pro.png" alt="" aria-hidden="true" style={{
+        position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "right center" }} />
+      <div style={{ position: "absolute", inset: 0,
+        background: "linear-gradient(90deg, var(--noir) 0%, var(--noir) 32%, rgba(29,26,22,0.82) 50%, rgba(29,26,22,0.35) 68%, rgba(29,26,22,0.1) 85%)" }} />
+      <div className="container" style={{ position: "relative", paddingTop: "clamp(2.5rem,5vw,4rem)", paddingBottom: "clamp(2.5rem,5vw,4rem)",
+        minHeight: "58vh", display: "flex", alignItems: "center" }}>
         <div className="fade-up" style={{ maxWidth: 560 }}>
           <div className="eyebrow" style={{ color: "var(--or)" }}>Institut & boutique · Les Pennes-Mirabeau</div>
           <h1 style={{ color: "var(--blanc)", fontSize: "clamp(2.6rem, 6vw, 4.6rem)", margin: "1.4rem 0 0", lineHeight: 1.04 }}>
             Le regard,<br /><span style={{ fontFamily: "var(--f-serif)", fontStyle: "italic", fontWeight: 400 }}>sublimé</span> avec soin.
           </h1>
-          <p style={{ color: "rgba(251,248,242,0.72)", fontSize: "1.06rem", maxWidth: 440, margin: "1.6rem 0 2.4rem" }}>
+          <p style={{ color: "rgba(251,248,242,0.85)", fontSize: "1.06rem", maxWidth: 440, margin: "1.6rem 0 2.4rem" }}>
             Boîtes de cils, accessoires de pose et soins sélectionnés par nos lash artists.
             Commandez en ligne, retirez en boutique en 2 h.
           </p>
@@ -29,21 +32,6 @@ function Hero({ go }) {
                 <div style={{ fontSize: "0.74rem", letterSpacing: "0.08em", color: "rgba(251,248,242,0.6)", textTransform: "uppercase" }}>{b}</div>
               </div>
             ))}
-          </div>
-        </div>
-        <div className="fade-up" style={{ position: "relative", animationDelay: ".1s" }}>
-          <img src="assets/salon_emicils_pro.jpg" alt="Salon Emicils" style={{
-            width: "100%", aspectRatio: "5 / 4", objectFit: "cover", borderRadius: "var(--r-lg)",
-            boxShadow: "0 40px 80px -40px rgba(0,0,0,0.6)" }} />
-          <div style={{ position: "absolute", bottom: -14, left: "50%", transform: "translateX(-50%)", background: "var(--blanc)", color: "var(--noir)",
-            borderRadius: "var(--r-md)", padding: "0.8rem 1.1rem", boxShadow: "var(--shadow)", display: "flex", alignItems: "center", gap: 12, maxWidth: "90%", width: "max-content" }}>
-            <div style={{ width: 42, height: 42, borderRadius: "50%", background: "var(--or-soft)", display: "grid", placeItems: "center", color: "var(--or)" }}>
-              <Ico.store width={20} height={20} />
-            </div>
-            <div>
-              <div style={{ fontFamily: "var(--f-display)", fontSize: "0.95rem" }}>Click & Collect</div>
-              <div style={{ fontSize: "0.72rem", color: "var(--texte-doux)" }}>Prêt sous 2 h en boutique</div>
-            </div>
           </div>
         </div>
       </div>
@@ -131,7 +119,7 @@ function FormationsTeaser({ go }) {
             {list.map((f, i) => (
               <div key={f.id ?? i} style={{ background: "var(--beige-bg)", color: "var(--texte)", borderRadius: "var(--r-lg)", overflow: "hidden" }}>
                 {f.image && (
-                  <img src={f.image} alt={f.titre} style={{ width: "100%", aspectRatio: "4 / 3", objectFit: "cover", display: "block" }} />
+                  <img src={f.image} alt={f.titre} style={{ width: "100%", aspectRatio: "16 / 9", objectFit: "cover", display: "block" }} />
                 )}
                 <div style={{ padding: "1.4rem 1.5rem 0" }}>
                   <span style={{ fontSize: "0.65rem", fontFamily: "var(--f-display)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--texte-doux)" }}>
@@ -139,7 +127,7 @@ function FormationsTeaser({ go }) {
                   </span>
                 </div>
                 <div style={{ padding: "0.8rem 1.5rem 1.6rem" }}>
-                  <h3 style={{ fontSize: "1.15rem", fontWeight: 400, margin: "0.2rem 0 0.6rem" }}>{f.titre}</h3>
+                  <h3 style={{ fontSize: "1.3rem", fontWeight: 700, margin: "0.2rem 0 0.6rem" }}>{f.titre}</h3>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8rem", color: "var(--texte-doux)", marginBottom: "0.8rem" }}>
                     <Ico.clock width={14} height={14} /> {f.duree}
                   </div>

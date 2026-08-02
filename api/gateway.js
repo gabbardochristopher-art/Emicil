@@ -614,6 +614,7 @@ async function handleAdmin(req, res, supabase, segments) {
             points: Array.isArray(body.points) ? body.points : [],
             dates: Array.isArray(body.dates) ? body.dates : [],
             places_max: parseInt(body.places_max) || 4, actif: body.actif !== false,
+            image: body.image?.trim() || '',
           }]).select().single();
           if (error) return res.status(500).json({ error: error.message });
           return res.status(201).json(data);
@@ -632,6 +633,7 @@ async function handleAdmin(req, res, supabase, segments) {
           if (body.dates       !== undefined) updates.dates       = Array.isArray(body.dates) ? body.dates : [];
           if (body.places_max  !== undefined) updates.places_max  = parseInt(body.places_max) || 4;
           if (body.actif       !== undefined) updates.actif       = !!body.actif;
+          if (body.image       !== undefined) updates.image       = body.image.trim();
           const { data, error } = await supabase.from('formations').update(updates).eq('id', id).select().single();
           if (error) return res.status(500).json({ error: error.message });
           return res.status(200).json(data);
