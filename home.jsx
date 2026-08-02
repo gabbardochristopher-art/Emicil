@@ -96,63 +96,62 @@ function FormationsTeaser({ go }) {
   if (formations !== null && list.length === 0) return null;
 
   return (
-    <section style={{ marginTop: "var(--pad-section)", background: "var(--noir)", color: "var(--blanc)" }}>
-      <div className="container" style={{ paddingTop: "var(--pad-section)", paddingBottom: "var(--pad-section)" }}>
-        <div style={{ textAlign: "center", maxWidth: 640, margin: "0 auto" }}>
-          <div className="eyebrow" style={{ color: "var(--or)" }}>Formations extensions de cils</div>
-          <h2 style={{ color: "var(--blanc)", fontSize: "clamp(1.8rem,3.8vw,2.8rem)", margin: "1rem 0 1.2rem" }}>
+    <section style={{ background: "var(--noir)", color: "var(--blanc)" }}>
+      <div className="container" style={{ paddingTop: "1.5rem", paddingBottom: "clamp(2.5rem,5vw,4rem)" }}>
+        <div style={{ textAlign: "center", maxWidth: 560, margin: "0 auto" }}>
+          <div className="eyebrow" style={{ color: "var(--or)", fontSize: "0.68rem" }}>Formations extensions de cils</div>
+          <h2 style={{ color: "var(--blanc)", fontSize: "clamp(1.3rem,2.6vw,1.9rem)", margin: "0.6rem 0 0.7rem" }}>
             Apprenez. Maîtrisez. Sublimez.
           </h2>
-          <p style={{ color: "rgba(251,248,242,0.7)" }}>
+          <p style={{ color: "rgba(251,248,242,0.7)", fontSize: "0.85rem" }}>
             Des formations complètes, encadrées par des professionnelles,
             pour révéler votre talent et vivre de votre passion.
           </p>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "center", gap: "clamp(1.6rem,5vw,3.5rem)", flexWrap: "wrap", margin: "clamp(2.2rem,4vw,3rem) 0" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "clamp(1.2rem,3.5vw,2.4rem)", flexWrap: "wrap", margin: "clamp(1.4rem,2.5vw,2rem) 0" }}>
           {[["cap", "Formations complètes", "De débutant à confirmé"],
             ["certificate", "Certificat remis", "À la fin de la formation"],
             ["users", "Accompagnement", "Avant, pendant et après"]].map(([ico, t, d]) => (
-            <div key={t} style={{ textAlign: "center", maxWidth: 200 }}>
-              <div style={{ width: 56, height: 56, borderRadius: "50%", border: "1px solid rgba(212,175,120,0.4)",
-                display: "grid", placeItems: "center", color: "var(--or)", margin: "0 auto 1rem" }}>
-                {Ico[ico]({ width: 24, height: 24 })}
+            <div key={t} style={{ textAlign: "center", maxWidth: 160 }}>
+              <div style={{ width: 40, height: 40, borderRadius: "50%", border: "1px solid rgba(212,175,120,0.4)",
+                display: "grid", placeItems: "center", color: "var(--or)", margin: "0 auto 0.6rem" }}>
+                {Ico[ico]({ width: 18, height: 18 })}
               </div>
-              <div style={{ fontFamily: "var(--f-display)", fontSize: "0.95rem", marginBottom: 4 }}>{t}</div>
-              <div style={{ fontSize: "0.8rem", color: "rgba(251,248,242,0.6)" }}>{d}</div>
+              <div style={{ fontFamily: "var(--f-display)", fontSize: "0.8rem", marginBottom: 2 }}>{t}</div>
+              <div style={{ fontSize: "0.7rem", color: "rgba(251,248,242,0.6)" }}>{d}</div>
             </div>
           ))}
         </div>
 
         {formations === null ? (
-          <div style={{ textAlign: "center", padding: "2rem 0", color: "rgba(251,248,242,0.6)" }}>Chargement…</div>
+          <div style={{ textAlign: "center", padding: "1rem 0", color: "rgba(251,248,242,0.6)", fontSize: "0.85rem" }}>Chargement…</div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "clamp(1.2rem,2.5vw,2rem)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "0.9rem", maxWidth: 780, margin: "0 auto" }}>
             {list.map((f, i) => (
-              <div key={f.id ?? i} style={{ background: "var(--beige-bg)", color: "var(--texte)", borderRadius: "var(--r-lg)", overflow: "hidden" }}>
+              <div key={f.id ?? i} style={{ background: "var(--beige-bg)", color: "var(--texte)", borderRadius: "var(--r-md)", overflow: "hidden" }}>
                 {f.image && (
-                  <img src={f.image} alt={f.titre} style={{ width: "100%", aspectRatio: "4 / 3", objectFit: "cover", display: "block" }} />
+                  <img src={f.image} alt={f.titre} style={{ width: "100%", aspectRatio: "16 / 9", objectFit: "cover", display: "block" }} />
                 )}
-                <div style={{ padding: "1.4rem 1.5rem 0" }}>
-                  <span style={{ fontSize: "0.65rem", fontFamily: "var(--f-display)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--texte-doux)" }}>
+                <div style={{ padding: "0.9rem 1rem 0" }}>
+                  <span style={{ fontSize: "0.58rem", fontFamily: "var(--f-display)", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--texte-doux)" }}>
                     {f.niveau}
                   </span>
                 </div>
-                <div style={{ padding: "0.8rem 1.5rem 1.6rem" }}>
-                  <h3 style={{ fontSize: "1.15rem", fontWeight: 400, margin: "0.2rem 0 0.6rem" }}>{f.titre}</h3>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.8rem", color: "var(--texte-doux)", marginBottom: "0.8rem" }}>
-                    <Ico.clock width={14} height={14} /> {f.duree}
+                <div style={{ padding: "0.4rem 1rem 1rem" }}>
+                  <h3 style={{ fontSize: "0.95rem", fontWeight: 400, margin: "0.1rem 0 0.4rem" }}>{f.titre}</h3>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "0.72rem", color: "var(--texte-doux)", marginBottom: "0.5rem" }}>
+                    <Ico.clock width={12} height={12} /> {f.duree}
                   </div>
-                  <p style={{ fontSize: "0.85rem", color: "var(--texte-doux)", marginBottom: "1.2rem" }}>{f.description || f.desc}</p>
-                  <Price value={f.prix} size="1.3rem" />
+                  <Price value={f.prix} size="1.05rem" />
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        <div style={{ textAlign: "center", marginTop: "clamp(2rem,4vw,3rem)" }}>
-          <button className="btn btn-outline" style={{ boxShadow: "inset 0 0 0 1px rgba(251,248,242,0.5)", color: "var(--blanc)" }}
+        <div style={{ textAlign: "center", marginTop: "clamp(1.4rem,2.5vw,2rem)" }}>
+          <button className="btn btn-outline" style={{ boxShadow: "inset 0 0 0 1px rgba(251,248,242,0.5)", color: "var(--blanc)", padding: "0.6em 1.3em", fontSize: "0.72rem" }}
             onClick={() => go("formation")}>Découvrir toutes les formations</button>
         </div>
       </div>
