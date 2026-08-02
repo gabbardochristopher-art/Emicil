@@ -130,6 +130,9 @@ function FormationsTeaser({ go }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "clamp(1.2rem,2.5vw,2rem)" }}>
             {list.map((f, i) => (
               <div key={f.id ?? i} style={{ background: "var(--beige-bg)", color: "var(--texte)", borderRadius: "var(--r-lg)", overflow: "hidden" }}>
+                {f.image && (
+                  <img src={f.image} alt={f.titre} style={{ width: "100%", aspectRatio: "4 / 3", objectFit: "cover", display: "block" }} />
+                )}
                 <div style={{ padding: "1.4rem 1.5rem 0" }}>
                   <span style={{ fontSize: "0.65rem", fontFamily: "var(--f-display)", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--texte-doux)" }}>
                     {f.niveau}
