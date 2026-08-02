@@ -145,6 +145,7 @@ function FormationPage({ go, user }) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.6rem" }}>
           {liste.map((f, i) => {
             const niv = NIVEAU_COLOR[f.niveau] || NIVEAU_COLOR["Tous niveaux"];
+            const nextDate = (f.dates || []).find(d => (f.date_places?.[d] ?? 1) > 0);
             return (
               <div key={i} className="fade-up" style={{ background: "var(--blanc)", border: "1px solid var(--ligne)", borderRadius: "var(--r-lg)",
                 overflow: "hidden", display: "flex", flexDirection: "column", gap: "1.1rem",
@@ -177,13 +178,19 @@ function FormationPage({ go, user }) {
                   ))}
                 </ul>
 
-                <div style={{ marginTop: "auto", paddingTop: "1rem", borderTop: "1px solid var(--ligne)",
-                  display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <Price value={f.prix} size="1.3rem" />
-                  <button className="btn btn-dark" style={{ padding: "0.7em 1.4em" }}
-                    onClick={() => setBooking(f)}>
-                    S'inscrire
-                  </button>
+                <div style={{ marginTop: "auto", paddingTop: "1rem", borderTop: "1px solid var(--ligne)" }}>
+                  {nextDate && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.78rem", color: "var(--or)", marginBottom: "0.7rem" }}>
+                      <Ico.calendar width={13} height={13} /> Prochaine date disponible : {nextDate}
+                    </div>
+                  )}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Price value={f.prix} size="1.3rem" />
+                    <button className="btn btn-dark" style={{ padding: "0.7em 1.4em" }}
+                      onClick={() => setBooking(f)}>
+                      S'inscrire
+                    </button>
+                  </div>
                 </div>
                 </div>
               </div>

@@ -116,7 +116,9 @@ function FormationsTeaser({ go }) {
           <div style={{ textAlign: "center", padding: "2rem 0", color: "rgba(251,248,242,0.6)" }}>Chargement…</div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "clamp(1.2rem,2.5vw,2rem)" }}>
-            {list.map((f, i) => (
+            {list.map((f, i) => {
+              const nextDate = (f.dates || []).find(d => (f.date_places?.[d] ?? 1) > 0);
+              return (
               <div key={f.id ?? i} style={{ background: "var(--beige-bg)", color: "var(--texte)", borderRadius: "var(--r-lg)", overflow: "hidden" }}>
                 {f.image && (
                   <img src={f.image} alt={f.titre} style={{ width: "100%", aspectRatio: "16 / 9", objectFit: "cover", display: "block" }} />
@@ -133,9 +135,15 @@ function FormationsTeaser({ go }) {
                   </div>
                   <p style={{ fontSize: "0.85rem", color: "var(--texte-doux)", marginBottom: "1.2rem" }}>{f.description || f.desc}</p>
                   <Price value={f.prix} size="1.3rem" />
+                  {nextDate && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.78rem", color: "var(--or)", marginTop: "0.6rem" }}>
+                      <Ico.calendar width={13} height={13} /> Prochaine date disponible : {nextDate}
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
